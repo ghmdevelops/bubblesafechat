@@ -2,13 +2,17 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="refresh" content="0; URL='https://ghmdevelops.github.io/opensecurityroom'" />
+    <meta http-equiv="refresh" content="0; URL='/opensecurityroom'" />
   </head>
   <body>
     <script type="text/javascript">
       // Redireciona para o path correto, mantendo o path original
       var redirectTo = window.location.pathname;
-      window.location.href = "/opensecurityroom" + redirectTo;
+      if (redirectTo.startsWith('/opensecurityroom')) {
+        window.location.href = "/opensecurityroom" + window.location.search + window.location.hash;
+      } else {
+        window.location.href = "/opensecurityroom";
+      }
     </script>
   </body>
 </html>
