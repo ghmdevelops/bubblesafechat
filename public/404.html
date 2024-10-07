@@ -5,7 +5,8 @@
     <meta http-equiv="refresh" content="0; URL=/#/404" />
     <script type="text/javascript">
       var path = window.location.pathname;
-      window.location.href = window.location.origin + '/opensecurityroom' + path;
+      var hashPath = path.split('/').slice(1).join('/');
+      window.location.href = window.location.origin + '/opensecurityroom/#/' + hashPath;
     </script>
   </head>
   <body></body>

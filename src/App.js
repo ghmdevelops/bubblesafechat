@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import CreateRoom from './components/CreateRoom';
 import Room from './components/Room';
 import AuthExample from './components/AuthExample';
@@ -24,7 +24,7 @@ function App() {
   }
 
   return (
-    <Router basename="/opensecurityroom">
+    <Router>
       <Routes>
         <Route path="/login" element={<AuthExample />} />
         <Route path="/" element={user ? <CreateRoom /> : <Navigate to="/login" />} />
