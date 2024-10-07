@@ -27,8 +27,14 @@ function App() {
     <Router basename="/opensecurityroom">
       <Routes>
         <Route path="/login" element={<AuthExample />} />
-        <Route path="/" element={user ? <CreateRoom /> : <Navigate to="/login" />} />
-        <Route path="/room/:roomId" element={<Room />} />
+        <Route 
+          path="/" 
+          element={user ? <CreateRoom /> : <Navigate to="/login" />} 
+        />
+        <Route 
+          path="/room/:roomId" 
+          element={user || localStorage.getItem('hasJoined') ? <Room /> : <Navigate to="/login" />} 
+        />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
