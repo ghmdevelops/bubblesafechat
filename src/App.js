@@ -26,22 +26,9 @@ function App() {
   return (
     <Router basename="/opensecurityroom">
       <Routes>
-        {/* Rota de login */}
         <Route path="/login" element={<AuthExample />} />
-
-        {/* Rota da página inicial para criar sala */}
-        <Route 
-          path="/" 
-          element={user ? <CreateRoom /> : <Navigate to="/login" />} 
-        />
-
-        {/* Rota para acessar uma sala de chat */}
-        <Route 
-          path="/room/:roomId" 
-          element={user || localStorage.getItem('hasJoined') === 'true' ? <Room /> : <Navigate to="/login" />} 
-        />
-
-        {/* Rota para páginas não encontradas */}
+        <Route path="/" element={user ? <CreateRoom /> : <Navigate to="/login" />} />
+        <Route path="/room/:roomId" element={<Room />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>

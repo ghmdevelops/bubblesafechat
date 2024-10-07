@@ -1,46 +1,48 @@
 import React, { useState, useEffect } from 'react';
 import { auth, database } from '../firebaseConfig';
 import { useNavigate } from 'react-router-dom';
-import CryptoJS from 'crypto-js'; // Importando a biblioteca de criptografia
+import CryptoJS from 'crypto-js';
 
 const CreateRoom = () => {
   const [roomName, setRoomName] = useState('');
   const [userEmail, setUserEmail] = useState(null);
+  const [userName, setUserName] = useState('');
+  const [isNameConfirmed, setIsNameConfirmed] = useState(false);
   const navigate = useNavigate();
 
-  // Monitorar o usuário autenticado
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
-        setUserEmail(user.email);
+        const emailName = user.email.split('@')[0];
+        setUserEmail(emailName);
       } else {
-        navigate('/');  // Redireciona para login se o usuário não estiver autenticado
+        navigate('/');
       }
     });
 
     return () => unsubscribe();
   }, [navigate]);
 
-  // Função para gerar uma chave de criptografia para a sala
   const generateEncryptionKey = () => {
-    return CryptoJS.lib.WordArray.random(16).toString(); // Gera uma chave de 128 bits
+    return CryptoJS.lib.WordArray.random(16).toString();
   };
 
   const createRoom = () => {
     const currentUser = auth.currentUser;
-  
+
     if (currentUser) {
-      const encryptionKey = generateEncryptionKey(); // Gera a chave de criptografia
-      sessionStorage.setItem('encryptionKey', encryptionKey); // Armazena no sessionStorage
+      const encryptionKey = generateEncryptionKey();
+      sessionStorage.setItem('encryptionKey', encryptionKey);
+      localStorage.setItem('userName', userName);
 
       const roomRef = database.ref('rooms').push({
         name: roomName,
         createdAt: new Date().toISOString(),
-        creator: currentUser.uid,  // Certifique-se de que este campo está sendo salvo
-        encryptionKey: encryptionKey // Salva a chave de criptografia no banco de dados (opcional)
+        creator: currentUser.uid,
+        encryptionKey: encryptionKey
       });
 
-      navigate(`/room/${roomRef.key}`, { state: { roomName: roomName, encryptionKey } }); // Passa a chave para a sala
+      navigate(`/room/${roomRef.key}`, { state: { roomName: roomName, encryptionKey } });
     } else {
       console.error('Usuário não autenticado!');
     }
@@ -49,11 +51,19 @@ const CreateRoom = () => {
   const handleLogout = () => {
     auth.signOut()
       .then(() => {
-        navigate('/');  // Redireciona para login após logout
+        navigate('/');
       })
       .catch((error) => {
         console.error('Erro ao deslogar:', error.message);
       });
+  };
+
+  const handleConfirmName = () => {
+    if (userName.trim()) {
+      setIsNameConfirmed(true);
+    } else {
+      alert('Por favor, insira um nome de usuário válido.');
+    }
   };
 
   return (
@@ -61,13 +71,29 @@ const CreateRoom = () => {
       <h2>Bem-vindo, {userEmail}</h2>
       <button onClick={handleLogout}>Logout</button>
       <h1>Criar uma Sala</h1>
-      <input
-        type="text"
-        value={roomName}
-        onChange={(e) => setRoomName(e.target.value)}
-        placeholder="Nome da Sala"
-      />
-      <button onClick={createRoom}>Criar Sala</button>
+
+      {!isNameConfirmed ? (
+        <div>
+          <p>Por favor, insira o seu novo nome de usuário para continuar:</p>
+          <input
+            type="text"
+            value={userName}
+            onChange={(e) => setUserName(e.target.value)}
+            placeholder="Digite seu novo nome de usuário"
+          />
+          <button onClick={handleConfirmName}>Confirmar Nome</button>
+        </div>
+      ) : (
+        <>
+          <input
+            type="text"
+            value={roomName}
+            onChange={(e) => setRoomName(e.target.value)}
+            placeholder="Nome da Sala"
+          />
+          <button onClick={createRoom}>Criar Sala</button>
+        </>
+      )}
     </div>
   );
 };

@@ -2,11 +2,10 @@
 <html>
   <head>
     <meta charset="UTF-8" />
+    <meta http-equiv="refresh" content="0; URL=/#/404" />
     <script type="text/javascript">
-      var redirectTo = window.location.pathname;
-      if (!redirectTo.startsWith("/opensecurityroom")) {
-        window.location.href = "/opensecurityroom" + redirectTo + window.location.search;
-      }
+      var path = window.location.pathname;
+      window.location.href = window.location.origin + '/opensecurityroom' + path;
     </script>
   </head>
   <body></body>

@@ -1,38 +1,42 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { database, auth } from '../firebaseConfig';
 import { QRCodeCanvas } from 'qrcode.react';
 
 const Room = () => {
   const { roomId } = useParams();
-  const [userName, setUserName] = useState(localStorage.getItem('userName') || '');
+  const [userName, setUserName] = useState('');
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
-  const [hasJoined, setHasJoined] = useState(!!localStorage.getItem('hasJoined'));
+  const [typingUsers, setTypingUsers] = useState([]);
+  const [hasJoined, setHasJoined] = useState(false);
   const [isCreator, setIsCreator] = useState(false);
-  const [pendingRequests, setPendingRequests] = useState([]); // Solicitações pendentes de entrada
+  const [pendingRequests, setPendingRequests] = useState([]);
   const [statusMessage, setStatusMessage] = useState('');
-  const [isRoomLoaded, setIsRoomLoaded] = useState(false); // Verificação se a sala foi carregada
+  const [isRoomLoaded, setIsRoomLoaded] = useState(false);
+  const [roomName, setRoomName] = useState('');
+  const [hasRequestedAccess, setHasRequestedAccess] = useState(false); // Novo estado para verificar se o usuário solicitou acesso
+  const typingTimeoutRef = useRef(null);
   const navigate = useNavigate();
 
   const shareLink = `${window.location.origin}/opensecurityroom/room/${roomId}`;
 
-  // Verifica se o usuário é o criador da sala
   useEffect(() => {
-    const currentUser = auth.currentUser;
-
-    if (currentUser) {
-      const roomRef = database.ref(`rooms/${roomId}`);
-      roomRef.once('value', (snapshot) => {
-        if (snapshot.exists() && snapshot.val().creator === currentUser.uid) {
+    const roomRef = database.ref(`rooms/${roomId}`);
+    roomRef.once('value', (snapshot) => {
+      if (snapshot.exists()) {
+        const roomData = snapshot.val();
+        setRoomName(roomData.name);
+        const currentUser = auth.currentUser;
+        if (currentUser && roomData.creator === currentUser.uid) {
           setIsCreator(true);
         }
-        setIsRoomLoaded(true); // Sala carregada
-      });
-    }
+      }
+      setIsRoomLoaded(true);
+    });
   }, [roomId]);
 
-  // Carrega as mensagens da sala
+  // Carregar as mensagens do chat
   useEffect(() => {
     const messagesRef = database.ref(`rooms/${roomId}/messages`);
     messagesRef.on('value', (snapshot) => {
@@ -40,7 +44,7 @@ const Room = () => {
       if (messagesData) {
         const parsedMessages = Object.entries(messagesData).map(([key, value]) => ({
           id: key,
-          ...value
+          ...value,
         }));
         setMessages(parsedMessages);
       }
@@ -51,17 +55,7 @@ const Room = () => {
     };
   }, [roomId]);
 
-  useEffect(() => {
-    const storedUserName = localStorage.getItem('userName');
-    const storedHasJoined = localStorage.getItem('hasJoined') === 'true';
-    
-    if (storedUserName && storedHasJoined) {
-        setUserName(storedUserName);
-        setHasJoined(true); // Mantém o usuário no chat
-    }
-}, []);
-
-  // Carrega solicitações pendentes de entrada (somente criador)
+  // Carregar solicitações pendentes de entrada (somente criador)
   useEffect(() => {
     if (isCreator) {
       const requestsRef = database.ref(`rooms/${roomId}/requests`);
@@ -70,16 +64,116 @@ const Room = () => {
         if (requestsData) {
           const parsedRequests = Object.entries(requestsData).map(([key, value]) => ({
             id: key,
-            ...value
+            ...value,
           }));
           setPendingRequests(parsedRequests);
         }
       });
+
+      return () => {
+        requestsRef.off();
+      };
     }
   }, [isCreator, roomId]);
-  
 
-  // Envia mensagem para o chat
+  // Função para aceitar ou recusar solicitação de entrada
+  const handleRequest = (userId, decision) => {
+    const requestRef = database.ref(`rooms/${roomId}/requests/${userId}`);
+
+    if (decision === 'accept') {
+      requestRef.once('value', (snapshot) => {
+        const userData = snapshot.val();
+        if (userData) {
+          const allowedRef = database.ref(`rooms/${roomId}/allowedUsers/${userData.userName}`);
+          allowedRef.set(true).then(() => {
+            database.ref(`rooms/${roomId}/messages`).push({
+              text: `${userData.userName} foi autorizado a entrar na sala.`,
+              user: 'Sistema',
+              timestamp: new Date().toISOString(),
+            });
+          });
+        }
+      });
+    } else if (decision === 'deny') {
+      requestRef.once('value', (snapshot) => {
+        const userData = snapshot.val();
+        if (userData) {
+          const denyRef = database.ref(`rooms/${roomId}/deniedRequests/${userData.userName}`);
+          denyRef.set({
+            message: `Sua solicitação foi recusada. Você não tem permissão para entrar na sala.`,
+            timestamp: new Date().toISOString(),
+          });
+
+          const userRef = database.ref(`users/${userId}`);
+          userRef.update({ redirectTo: '/' });
+        }
+      });
+    }
+
+    requestRef.remove()
+      .then(() => {
+        setPendingRequests((prevRequests) => prevRequests.filter((req) => req.id !== userId));
+      })
+      .catch((error) => {
+        console.error('Erro ao processar a solicitação:', error);
+      });
+  };
+
+  // Função para solicitar acesso à sala
+  const requestAccess = () => {
+    if (!userName.trim()) {
+      setStatusMessage('Nome de usuário é obrigatório.');
+      return;
+    }
+
+    const requestsRef = database.ref(`rooms/${roomId}/requests`).push();
+    requestsRef
+      .set({
+        userName,
+        timestamp: new Date().toISOString(),
+      })
+      .then(() => {
+        setHasRequestedAccess(true); // Marca como solicitado
+        setStatusMessage('Solicitação de entrada enviada. Aguarde aprovação.');
+      })
+      .catch((error) => {
+        console.log('Erro ao enviar solicitação:', error);
+        setStatusMessage('Erro ao enviar solicitação. Tente novamente.');
+      });
+  };
+
+  // Verifica se o usuário foi autorizado ou recusado APÓS solicitar o acesso
+  useEffect(() => {
+    if (!hasRequestedAccess) return; // Somente verifica após solicitar acesso
+
+    const allowedRef = database.ref(`rooms/${roomId}/allowedUsers/${userName}`);
+    const deniedRef = database.ref(`rooms/${roomId}/deniedRequests/${userName}`);
+
+    allowedRef.on('value', (snapshot) => {
+      if (snapshot.exists()) {
+        setHasJoined(true);
+        localStorage.setItem('hasJoined', 'true');
+        localStorage.setItem('userName', userName);
+        navigate(`/room/${roomId}`);
+      }
+    });
+
+    deniedRef.on('value', (snapshot) => {
+      if (snapshot.exists() && !isCreator) { // Verifica se não é o criador
+        setStatusMessage('Sua solicitação foi recusada. Redirecionando...');
+        setTimeout(() => {
+          navigate('/');
+        }, 2000);
+      }
+    });
+
+    return () => {
+      allowedRef.off();
+      deniedRef.off();
+    };
+  }, [roomId, userName, navigate, isCreator, hasRequestedAccess]); // Adicionada dependência hasRequestedAccess
+
+  // Função para enviar mensagem
   const sendMessage = () => {
     if (message.trim()) {
       const messageRef = database.ref(`rooms/${roomId}/messages`).push();
@@ -101,84 +195,18 @@ const Room = () => {
     }, 2000);
   };
 
-  // Função para permitir ou negar entrada
- // Função para permitir ou negar entrada
-const handleRequest = (userId, decision) => {
-  const requestRef = database.ref(`rooms/${roomId}/requests/${userId}`);
-
-  if (decision === 'accept') {
-    // Permite a entrada do usuário (adiciona o nome na lista de permitidos)
-    requestRef.once('value', (snapshot) => {
-      const userData = snapshot.val();
-      if (userData) {
-        const allowedRef = database.ref(`rooms/${roomId}/allowedUsers/${userData.userName}`);
-        allowedRef.set(true).then(() => {
-          // Envia uma mensagem de notificação para o usuário aprovado
-          database.ref(`rooms/${roomId}/messages`).push({
-            text: `${userData.userName} foi autorizado a entrar na sala.`,
-            user: 'Sistema',
-            timestamp: new Date().toISOString()
-          });
-        }); // Adiciona à lista de usuários permitidos
-      }
-    });
-  }
-
-  // Remove a solicitação do usuário após aceitação ou negação
-  requestRef.remove()
-    .then(() => {
-      setPendingRequests((prevRequests) => prevRequests.filter((req) => req.id !== userId));
-    })
-    .catch((error) => {
-      console.error('Erro ao processar a solicitação:', error);
-    });
-};
-
-  // Solicita a entrada na sala (usuários convidados)
-  const requestAccess = () => {
-    const requestsRef = database.ref(`rooms/${roomId}/requests`).push();
-    requestsRef.set({
-      userName,
-      timestamp: new Date().toISOString(),
-    });
-    setStatusMessage('Solicitação de entrada enviada. Aguarde aprovação.');
-  };
-
-  // Verifica se o usuário foi autorizado (usuários convidados)
-// Verifica se o usuário foi autorizado (usuários convidados)
-useEffect(() => {
-  const allowedRef = database.ref(`rooms/${roomId}/allowedUsers/${userName}`);
-  allowedRef.on('value', (snapshot) => {
-      if (snapshot.exists()) {
-          setHasJoined(true);
-          localStorage.setItem('hasJoined', 'true'); // Certifique-se de que está sendo armazenado corretamente
-          localStorage.setItem('userName', userName); // Armazena o nome de usuário
-      }
-  });
-
-  return () => {
-      allowedRef.off();
-  };
-}, [roomId, userName]);
-
-  // Função para excluir a sala e todos os dados do chat
-  // Função para excluir a sala e todos os dados do chat
-const deleteChat = () => {
-  database.ref(`rooms/${roomId}`).remove() // Remove toda a sala, incluindo mensagens, solicitações, etc.
-    .then(() => {
-      localStorage.removeItem('hasJoined'); // Remove estado local
-      localStorage.removeItem('userName');
+  // Excluir chat
+  const deleteChat = () => {
+    database.ref(`rooms/${roomId}`).remove().then(() => {
+      setHasJoined(false);
+      setUserName('');
       setStatusMessage('Sala excluída com sucesso!');
       setTimeout(() => {
-        navigate('/'); // Redireciona para a página de criação de salas após exclusão
+        navigate('/');
       }, 2000);
-    })
-    .catch((error) => {
-      console.error('Erro ao excluir a sala:', error);
     });
-};
+  };
 
-  // Mostra solicitação de entrada se o usuário não foi autorizado
   if (!hasJoined && !isCreator) {
     return (
       <div>
@@ -198,11 +226,14 @@ const deleteChat = () => {
     );
   }
 
+  if (!isRoomLoaded) {
+    return <div>Carregando a sala...</div>;
+  }
+
   return (
     <div>
-      <h1>Sala de Chat</h1>
+      <h1>Sala de Chat - {roomName}</h1>
 
-      {/* Exibe as solicitações de entrada pendentes para o criador da sala */}
       {isCreator && pendingRequests.length > 0 && (
         <div>
           <h3>Solicitações de entrada:</h3>
@@ -236,13 +267,13 @@ const deleteChat = () => {
         Enviar
       </button>
 
-      {isCreator && isRoomLoaded && ( // Verifica se a sala está carregada antes de mostrar o QR code
+      {isCreator && (
         <div>
           <h3>Compartilhar link do chat:</h3>
           <p>Link: <a href={shareLink}>{shareLink}</a></p>
           <QRCodeCanvas value={shareLink} size={128} />
           <button onClick={leaveRoom}>Sair</button>
-          <button onClick={deleteChat}>Excluir Chat</button> {/* Novo botão para excluir chat */}
+          <button onClick={deleteChat}>Excluir Chat</button>
         </div>
       )}
 
