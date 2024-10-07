@@ -5,7 +5,11 @@
     <meta http-equiv="refresh" content="0; URL=/#/404" />
     <script type="text/javascript">
       var path = window.location.pathname;
-      window.location.href = window.location.origin + '/opensecurityroom' + path;
+      if (path.includes("/opensecurityroom")) {
+        window.location.href = window.location.origin + '/opensecurityroom/#' + path;
+      } else {
+        window.location.href = '/opensecurityroom/';
+      }
     </script>
   </head>
   <body></body>
