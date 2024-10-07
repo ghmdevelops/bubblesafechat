@@ -2,17 +2,11 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="refresh" content="0; URL='/opensecurityroom'" />
-  </head>
-  <body>
+    <meta http-equiv="refresh" content="0; URL=/#/404" />
     <script type="text/javascript">
-      // Redireciona para o path correto, mantendo o path original
-      var redirectTo = window.location.pathname;
-      if (redirectTo.startsWith('/opensecurityroom')) {
-        window.location.href = "/opensecurityroom" + window.location.search + window.location.hash;
-      } else {
-        window.location.href = "/opensecurityroom";
-      }
+      var path = window.location.pathname;
+      window.location.href = window.location.origin + '/opensecurityroom' + path;
     </script>
-  </body>
+  </head>
+  <body></body>
 </html>
