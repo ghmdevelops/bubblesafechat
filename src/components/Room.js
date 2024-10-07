@@ -6,7 +6,7 @@ import { QRCodeCanvas } from 'qrcode.react';
 const Room = () => {
   const { roomId } = useParams();
   const [userName, setUserName] = useState('');
-  const [creatorName, setCreatorName] = useState(''); // Armazena o nome do criador
+  const [creatorName, setCreatorName] = useState('');
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
   const [typingUsers, setTypingUsers] = useState([]);
@@ -17,23 +17,24 @@ const Room = () => {
   const [isRoomLoaded, setIsRoomLoaded] = useState(false);
   const [roomName, setRoomName] = useState('');
   const [hasRequestedAccess, setHasRequestedAccess] = useState(false);
+  const [destructionTime, setDestructionTime] = useState(10); // Tempo de destruição em segundos
+  const [isDestructionActive, setIsDestructionActive] = useState(false); // Controle para ativar/desativar a destruição
   const typingTimeoutRef = useRef(null);
   const navigate = useNavigate();
 
   const shareLink = `${window.location.origin}/opensecurityroom/#/room/${roomId}`;
 
-  // Carregar informações da sala
   useEffect(() => {
     const roomRef = database.ref(`rooms/${roomId}`);
     roomRef.once('value', (snapshot) => {
       if (snapshot.exists()) {
         const roomData = snapshot.val();
         setRoomName(roomData.name);
-        setCreatorName(roomData.creatorName || 'Moderador'); // Armazena o nome do criador
+        setCreatorName(roomData.creatorName || 'Moderador');
         const currentUser = auth.currentUser;
         if (currentUser && roomData.creator === currentUser.uid) {
           setIsCreator(true);
-          setUserName(roomData.creatorName || 'Moderador'); // Define o nome do criador para ele mesmo
+          setUserName(roomData.creatorName || 'Moderador');
         }
       }
       setIsRoomLoaded(true);
@@ -58,6 +59,46 @@ const Room = () => {
       messagesRef.off();
     };
   }, [roomId]);
+
+  // Função para marcar mensagens como lidas
+  const markMessageAsRead = (messageId) => {
+    const readByRef = database.ref(`rooms/${roomId}/messages/${messageId}/readBy`);
+    readByRef.once('value', (snapshot) => {
+      const readBy = snapshot.val() || [];
+      if (!readBy.includes(userName)) {
+        readByRef.set([...readBy, userName]);
+      }
+    });
+  };
+
+  // Função que marca todas as mensagens visíveis como lidas
+  const markAllMessagesAsRead = () => {
+    messages.forEach((msg) => {
+      markMessageAsRead(msg.id);
+    });
+  };
+
+  // Função para autodestruir as mensagens após o tempo definido
+  const autoDestructMessages = () => {
+    if (isDestructionActive) {
+      messages.forEach((msg) => {
+        const timeSinceCreation = (Date.now() - new Date(msg.timestamp).getTime()) / 1000;
+        if (timeSinceCreation >= destructionTime) {
+          const messageRef = database.ref(`rooms/${roomId}/messages/${msg.id}`);
+          messageRef.remove();
+        }
+      });
+    }
+  };
+
+  // Iniciar o temporizador de autodestruição
+  useEffect(() => {
+    const interval = setInterval(() => {
+      autoDestructMessages();
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [messages, destructionTime, isDestructionActive]);
 
   // Carregar quem está digitando
   useEffect(() => {
@@ -93,7 +134,6 @@ const Room = () => {
     }
   }, [isCreator, roomId]);
 
-  // Função para aceitar ou recusar solicitação de entrada
   const handleRequest = (userId, decision) => {
     const requestRef = database.ref(`rooms/${roomId}/requests/${userId}`);
 
@@ -133,7 +173,6 @@ const Room = () => {
       });
   };
 
-  // Função para solicitar acesso à sala
   const requestAccess = () => {
     if (!userName.trim()) {
       setStatusMessage('Nome de usuário é obrigatório.');
@@ -156,12 +195,12 @@ const Room = () => {
       });
   };
 
-  // Verifica se o usuário foi autorizado ou recusado APÓS solicitar o acesso
   useEffect(() => {
     if (!hasRequestedAccess) return;
 
     const allowedRef = database.ref(`rooms/${roomId}/allowedUsers/${userName}`);
     const deniedRef = database.ref(`rooms/${roomId}/deniedRequests/${userName}`);
+    const expelledRef = database.ref(`rooms/${roomId}/expelledUsers/${userName}`);
 
     allowedRef.on('value', (snapshot) => {
       if (snapshot.exists()) {
@@ -181,43 +220,67 @@ const Room = () => {
       }
     });
 
+    expelledRef.on('value', (snapshot) => {
+      if (snapshot.exists() && !isCreator) {
+        setStatusMessage('Você foi expulso da sala. Redirecionando...');
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000);
+      }
+    });
+
     return () => {
       allowedRef.off();
       deniedRef.off();
+      expelledRef.off();
     };
   }, [roomId, userName, navigate, isCreator, hasRequestedAccess]);
 
-  // Função para enviar mensagem
+  // Função para expulsar um usuário
+  const expelUser = (userName) => {
+    const expelledRef = database.ref(`rooms/${roomId}/expelledUsers/${userName}`);
+    expelledRef.set(true).then(() => {
+      database.ref(`rooms/${roomId}/messages`).push({
+        text: `${userName} foi expulso da sala.`,
+        user: 'Sistema',
+        timestamp: new Date().toISOString(),
+      });
+    });
+  };
+
+  // Manter controle dos usuários já listados para evitar botões repetidos, excluindo o criador e "Sistema"
+  const usersWithExpelButton = new Set(messages
+    .map((msg) => msg.user)
+    .filter((user) => user !== creatorName && user !== 'Sistema'));
+
   const sendMessage = () => {
     if (message.trim()) {
       const messageRef = database.ref(`rooms/${roomId}/messages`).push();
       messageRef.set({
         text: message,
-        user: userName || creatorName, // Garante que o criador seja identificado
+        user: userName || creatorName,
         timestamp: new Date().toISOString(),
       });
       setMessage('');
-      setTyping(false); // Parar de mostrar que está digitando ao enviar a mensagem
+      setTyping(false);
     }
   };
 
-  // Atualiza o status de digitação no Firebase
   const setTyping = (isTyping) => {
     const typingRef = database.ref(`rooms/${roomId}/typing/${userName}`);
     typingRef.set(isTyping ? userName : null);
 
     if (isTyping) {
       clearTimeout(typingTimeoutRef.current);
-      typingTimeoutRef.current = setTimeout(() => setTyping(false), 3000); // 3 segundos de inatividade para parar de mostrar "digitando"
+      typingTimeoutRef.current = setTimeout(() => setTyping(false), 3000);
     }
   };
 
   const handleTyping = (e) => {
     setMessage(e.target.value);
-    setTyping(true); // Mostra que está digitando enquanto o usuário digita
+    setTyping(true);
   };
 
-  // Função para sair da sala
   const leaveRoom = () => {
     setStatusMessage('Você saiu da sala.');
     setTimeout(() => {
@@ -226,7 +289,6 @@ const Room = () => {
     }, 2000);
   };
 
-  // Excluir chat
   const deleteChat = () => {
     database.ref(`rooms/${roomId}`).remove().then(() => {
       setHasJoined(false);
@@ -236,6 +298,11 @@ const Room = () => {
         navigate('/');
       }, 2000);
     });
+  };
+
+  // Função para alternar a ativação/desativação das mensagens autodestrutivas
+  const toggleDestruction = () => {
+    setIsDestructionActive((prevState) => !prevState);
   };
 
   if (!hasJoined && !isCreator) {
@@ -265,6 +332,31 @@ const Room = () => {
     <div>
       <h1>Sala de Chat - {roomName}</h1>
 
+      {isCreator && (
+        <div>
+          <label>
+            <strong>Mensagens Autodestrutivas: </strong>
+            <input
+              type="checkbox"
+              checked={isDestructionActive}
+              onChange={toggleDestruction}
+            />
+            {isDestructionActive ? 'Ativado' : 'Desativado'}
+          </label>
+          <div>
+            <label>
+              <strong>Tempo de destruição (segundos): </strong>
+              <input
+                type="number"
+                value={destructionTime}
+                onChange={(e) => setDestructionTime(Number(e.target.value))}
+                disabled={!isDestructionActive}
+              />
+            </label>
+          </div>
+        </div>
+      )}
+
       {isCreator && pendingRequests.length > 0 && (
         <div>
           <h3>Solicitações de entrada:</h3>
@@ -281,11 +373,26 @@ const Room = () => {
       )}
 
       <div style={{ height: '300px', overflowY: 'scroll', border: '1px solid #ccc', marginBottom: '10px' }}>
-        {messages.map((msg) => (
-          <div key={msg.id} style={{ padding: '5px', borderBottom: '1px solid #eee' }}>
-            <strong>{msg.user}:</strong> {msg.text}
-          </div>
-        ))}
+        {messages.map((msg) => {
+          const timeSinceCreation = (Date.now() - new Date(msg.timestamp).getTime()) / 1000;
+          const timeRemaining = destructionTime - timeSinceCreation;
+
+          return (
+            <div key={msg.id} style={{ padding: '5px', borderBottom: '1px solid #eee' }}>
+              <strong>{msg.user}:</strong> {msg.text}
+              {msg.readBy && (
+                <div>
+                  <small>Lido por: {msg.readBy.join(', ')}</small>
+                </div>
+              )}
+              {isDestructionActive && timeRemaining > 0 && (
+                <div>
+                  <small>Destrói em: {Math.max(timeRemaining.toFixed(0), 0)}s</small>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {typingUsers.length > 0 && (
@@ -299,6 +406,7 @@ const Room = () => {
         value={message}
         onChange={handleTyping}
         placeholder="Escreva sua mensagem"
+        onFocus={markAllMessagesAsRead}
       />
       <button onClick={sendMessage} disabled={!message.trim()}>
         Enviar
@@ -311,6 +419,17 @@ const Room = () => {
           <QRCodeCanvas value={shareLink} size={128} />
           <button onClick={leaveRoom}>Sair</button>
           <button onClick={deleteChat}>Excluir Chat</button>
+        </div>
+      )}
+
+      {isCreator && (
+        <div>
+          <h3>Expulsar Usuários:</h3>
+          {Array.from(usersWithExpelButton).map((user) => (
+            <div key={user}>
+              <button onClick={() => expelUser(user)}>Expulsar {user}</button>
+            </div>
+          ))}
         </div>
       )}
 
