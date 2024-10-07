@@ -1,0 +1,10 @@
+{
+  "files": {
+    "main.js": "/opensecurityroom/static/js/main.2acf93b4.js",
+    "index.html": "/opensecurityroom/index.html",
+    "main.2acf93b4.js.map": "/opensecurityroom/static/js/main.2acf93b4.js.map"
+  },
+  "entrypoints": [
+    "static/js/main.2acf93b4.js"
+  ]
+}
