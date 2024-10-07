@@ -1,33 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { auth, database } from '../firebaseConfig';
 import { useNavigate } from 'react-router-dom';
+import CryptoJS from 'crypto-js'; // Importando a biblioteca de criptografia
 
 const CreateRoom = () => {
   const [roomName, setRoomName] = useState('');
   const [userEmail, setUserEmail] = useState(null);
-  const [rooms, setRooms] = useState([]);  // Para armazenar as salas do usuário
   const navigate = useNavigate();
 
-  // Monitorar o usuário autenticado e carregar salas criadas por ele
+  // Monitorar o usuário autenticado
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
         setUserEmail(user.email);
-        
-        // Carregar as salas criadas pelo usuário com UID do usuário autenticado
-        const roomsRef = database.ref('rooms').orderByChild('creator').equalTo(user.uid);
-        roomsRef.on('value', (snapshot) => {
-          const roomsData = snapshot.val();
-          if (roomsData) {
-            const parsedRooms = Object.entries(roomsData).map(([key, value]) => ({
-              id: key,
-              ...value
-            }));
-            setRooms(parsedRooms);  // Atualiza o estado com as salas encontradas
-          } else {
-            setRooms([]);  // Nenhuma sala encontrada
-          }
-        });
       } else {
         navigate('/');  // Redireciona para login se o usuário não estiver autenticado
       }
@@ -36,30 +21,29 @@ const CreateRoom = () => {
     return () => unsubscribe();
   }, [navigate]);
 
+  // Função para gerar uma chave de criptografia para a sala
+  const generateEncryptionKey = () => {
+    return CryptoJS.lib.WordArray.random(16).toString(); // Gera uma chave de 128 bits
+  };
+
   const createRoom = () => {
     const currentUser = auth.currentUser;
   
     if (currentUser) {
+      const encryptionKey = generateEncryptionKey(); // Gera a chave de criptografia
+      sessionStorage.setItem('encryptionKey', encryptionKey); // Armazena no sessionStorage
+
       const roomRef = database.ref('rooms').push({
         name: roomName,
         createdAt: new Date().toISOString(),
-        creator: currentUser.uid  // Certifique-se de que este campo está sendo salvo
+        creator: currentUser.uid,  // Certifique-se de que este campo está sendo salvo
+        encryptionKey: encryptionKey // Salva a chave de criptografia no banco de dados (opcional)
       });
-  
-      navigate(`/room/${roomRef.key}`, { state: { roomName: roomName } });
+
+      navigate(`/room/${roomRef.key}`, { state: { roomName: roomName, encryptionKey } }); // Passa a chave para a sala
     } else {
       console.error('Usuário não autenticado!');
     }
-  };
-
-  const deleteRoom = (roomId) => {
-    database.ref(`rooms/${roomId}`).remove()
-      .then(() => {
-        console.log('Sala excluída com sucesso.');
-      })
-      .catch((error) => {
-        console.error('Erro ao excluir a sala:', error);
-      });
   };
 
   const handleLogout = () => {
@@ -84,19 +68,6 @@ const CreateRoom = () => {
         placeholder="Nome da Sala"
       />
       <button onClick={createRoom}>Criar Sala</button>
-
-      <h2>Suas Salas Criadas:</h2>
-      <ul>
-        {rooms.map((room) => (
-          <li key={room.id}>
-            <span>{room.name}</span>
-            <button onClick={() => navigate(`/room/${room.id}`, { state: { roomName: room.name } })}>
-              Entrar
-            </button>
-            <button onClick={() => deleteRoom(room.id)}>Excluir</button>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 };

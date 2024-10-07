@@ -1,23 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { database, auth } from '../firebaseConfig';
-import { QRCodeCanvas } from 'qrcode.react';  // Usar QRCodeCanvas para o QR code
+import { QRCodeCanvas } from 'qrcode.react';
 
 const Room = () => {
   const { roomId } = useParams();
-  const location = useLocation();
-  const roomName = location.state?.roomName || "Sala";
-  const [userName, setUserName] = useState(localStorage.getItem('userName') || '');  // Pegar o nome do localStorage
+  const [userName, setUserName] = useState(localStorage.getItem('userName') || '');
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
-  const [hasJoined, setHasJoined] = useState(!!localStorage.getItem('hasJoined'));  // Verificar se o usuário já entrou na sala
+  const [hasJoined, setHasJoined] = useState(!!localStorage.getItem('hasJoined'));
   const [isCreator, setIsCreator] = useState(false);
+  const [statusMessage, setStatusMessage] = useState(''); 
   const navigate = useNavigate();
 
-  // Link da sala que será compartilhado com o QR Code
-  const shareLink = `${window.location.origin}/room/${roomId}`;
+  const shareLink = `${window.location.origin}/opensecurityroom/room/${roomId}`;
 
-  // Verificar se o usuário é o criador da sala
   useEffect(() => {
     const currentUser = auth.currentUser;
 
@@ -31,9 +28,9 @@ const Room = () => {
     }
   }, [roomId]);
 
-  // Carregar mensagens em tempo real
   useEffect(() => {
     const messagesRef = database.ref(`rooms/${roomId}/messages`);
+    
     messagesRef.on('value', (snapshot) => {
       const messagesData = snapshot.val();
       if (messagesData) {
@@ -41,7 +38,7 @@ const Room = () => {
           id: key,
           ...value
         }));
-        setMessages(parsedMessages);
+        setMessages(parsedMessages); // Corrigido: Adicionado ponto e vírgula
       }
     });
 
@@ -50,7 +47,6 @@ const Room = () => {
     };
   }, [roomId]);
 
-  // Função para enviar mensagem
   const sendMessage = () => {
     if (message.trim()) {
       const messageRef = database.ref(`rooms/${roomId}/messages`).push();
@@ -63,31 +59,67 @@ const Room = () => {
     }
   };
 
-  // Função para sair da sala (apenas para o criador)
-  const leaveRoom = () => {
-    localStorage.removeItem('hasJoined');  // Remover o estado de entrada
-    navigate('/create-room');  // Voltar para a página de criação de salas
-  };
+  // Função para garantir que a mensagem de saída seja enviada apenas quando o usuário fechar o link, não ao recarregar a página
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      sessionStorage.setItem('isReloading', 'true'); // Indica que a página está recarregando
+    };
 
-  // Função para excluir a sala (apenas para o criador)
+    const handleUnload = () => {
+      const isReloading = sessionStorage.getItem('isReloading') === 'true';
+
+      // Só envia a mensagem se não for um reload
+      if (!isReloading) {
+        const messageRef = database.ref(`rooms/${roomId}/messages`).push();
+        messageRef.set({
+          text: `${userName} saiu da sala.`,
+          user: 'Sistema',
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      sessionStorage.removeItem('isReloading'); // Remove a flag de reload
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('unload', handleUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('unload', handleUnload);
+    };
+  }, [roomId, userName]);
+
+  // Função para excluir a sala e limpar todos os dados
   const deleteRoom = () => {
+    // Remove toda a referência da sala, incluindo mensagens e usuários
     database.ref(`rooms/${roomId}`).remove()
       .then(() => {
-        console.log("Sala excluída com sucesso");
-        localStorage.removeItem('hasJoined');  // Remover o estado de entrada ao excluir a sala
-        localStorage.removeItem('userName');  // Remover o nome do usuário ao excluir a sala
-        navigate('/create-room');
+        setStatusMessage("A sala e todos os dados foram excluídos com sucesso!");
+        setTimeout(() => {
+          localStorage.removeItem('hasJoined');
+          localStorage.removeItem('userName');
+          navigate('/');  // Redirecionar para a página de criação de salas após 2 segundos
+        }, 2000);
       })
       .catch((error) => {
         console.error("Erro ao excluir a sala:", error);
       });
   };
 
-  // Se o usuário ainda não entrou no chat, exibir a tela de entrada de nome
+  // Função para sair da sala
+  const leaveRoom = () => {
+    setStatusMessage("Você saiu da sala.");
+    setTimeout(() => {
+      localStorage.removeItem('hasJoined');
+      navigate('/');
+    }, 2000); 
+  };
+
   if (!hasJoined) {
     return (
       <div>
-        <h1>{roomName}</h1>
+        <h1>Bem-vindo à sala: {roomId}</h1>
         <p>Por favor, insira seu nome para entrar no chat:</p>
         <input
           type="text"
@@ -98,8 +130,8 @@ const Room = () => {
         <button
           onClick={() => {
             setHasJoined(true);
-            localStorage.setItem('hasJoined', 'true');  // Persistir estado de entrada no localStorage
-            localStorage.setItem('userName', userName);  // Armazenar o nome do usuário localmente
+            localStorage.setItem('hasJoined', 'true');
+            localStorage.setItem('userName', userName);
           }}
           disabled={!userName.trim()}
         >
@@ -111,7 +143,7 @@ const Room = () => {
 
   return (
     <div>
-      <h1>{roomName} - Chat</h1>
+      <h1>Sala de Chat</h1>
 
       <div style={{ height: '300px', overflowY: 'scroll', border: '1px solid #ccc', marginBottom: '10px' }}>
         {messages.map((msg) => (
@@ -133,19 +165,17 @@ const Room = () => {
 
       {isCreator ? (
         <div>
+          <h3>Compartilhar link do chat:</h3>
+          <p>Link: <a href={shareLink}>{shareLink}</a></p>
+          <QRCodeCanvas value={shareLink} size={128} />
           <button onClick={leaveRoom}>Sair</button>
           <button onClick={deleteRoom}>Excluir Sala</button>
-
-          {/* Mostrar o QR Code para compartilhar */}
-          <div>
-            <h3>Compartilhar link do chat:</h3>
-            <p>Link: <a href={shareLink}>{shareLink}</a></p>
-            <QRCodeCanvas value={shareLink} size={128} /> {/* Usar QRCodeCanvas */}
-          </div>
         </div>
       ) : (
-        <p>Bem-vindo(a) ao chat! Apenas o criador pode sair ou excluir a sala.</p>
+        <p>Você está no chat. Apenas o criador pode sair ou excluir a sala.</p>
       )}
+
+      {statusMessage && <p style={{ color: 'green' }}>{statusMessage}</p>}
     </div>
   );
 };

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import CreateRoom from './components/CreateRoom';
 import Room from './components/Room';
-import AuthExample from './components/AuthExample'; // Componente de autenticação
+import AuthExample from './components/AuthExample'; 
 import NotFound from './components/NotFound';
 import { auth } from './firebaseConfig';
 
@@ -24,7 +24,7 @@ function App() {
   }
 
   return (
-    <Router basename="/opensecurityroom">  {/* basename para subdiretório, se necessário */}
+    <Router basename="/opensecurityroom">
       <Routes>
         <Route path="/login" element={<AuthExample />} />  {/* Rota para a tela de login */}
         <Route
@@ -33,7 +33,7 @@ function App() {
         />
         <Route
           path="/room/:roomId"
-          element={user ? <Room /> : <Navigate to="/login" />} // Redireciona para login se não autenticado
+          element={<Room />}  // Permite acesso direto ao chat sem autenticação
         />
         <Route path="*" element={<NotFound />} />  {/* Página 404 */}
       </Routes>
