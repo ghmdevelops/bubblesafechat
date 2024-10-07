@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <script type="text/javascript">
       var redirectTo = window.location.pathname;
-      if (redirectTo !== "/opensecurityroom/") {
-        window.location.href = "/opensecurityroom" + window.location.pathname + window.location.search;
+      if (!redirectTo.startsWith("/opensecurityroom")) {
+        window.location.href = "/opensecurityroom" + redirectTo + window.location.search;
       }
     </script>
   </head>
