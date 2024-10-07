@@ -28,7 +28,6 @@ function App() {
       <Routes>
         <Route path="/login" element={<AuthExample />} />
         <Route path="/" element={user ? <CreateRoom /> : <Navigate to="/login" />} />
-        {/* Permitir acesso direto ao chat sem autenticação */}
         <Route path="/room/:roomId" element={<Room />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
