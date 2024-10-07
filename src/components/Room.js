@@ -10,11 +10,14 @@ const Room = () => {
   const [messages, setMessages] = useState([]);
   const [hasJoined, setHasJoined] = useState(!!localStorage.getItem('hasJoined'));
   const [isCreator, setIsCreator] = useState(false);
-  const [statusMessage, setStatusMessage] = useState(''); 
+  const [pendingRequests, setPendingRequests] = useState([]); // Solicitações pendentes de entrada
+  const [statusMessage, setStatusMessage] = useState('');
+  const [isRoomLoaded, setIsRoomLoaded] = useState(false); // Verificação se a sala foi carregada
   const navigate = useNavigate();
 
   const shareLink = `${window.location.origin}/opensecurityroom/room/${roomId}`;
 
+  // Verifica se o usuário é o criador da sala
   useEffect(() => {
     const currentUser = auth.currentUser;
 
@@ -24,13 +27,14 @@ const Room = () => {
         if (snapshot.exists() && snapshot.val().creator === currentUser.uid) {
           setIsCreator(true);
         }
+        setIsRoomLoaded(true); // Sala carregada
       });
     }
   }, [roomId]);
 
+  // Carrega as mensagens da sala
   useEffect(() => {
     const messagesRef = database.ref(`rooms/${roomId}/messages`);
-    
     messagesRef.on('value', (snapshot) => {
       const messagesData = snapshot.val();
       if (messagesData) {
@@ -38,7 +42,7 @@ const Room = () => {
           id: key,
           ...value
         }));
-        setMessages(parsedMessages); // Corrigido: Adicionado ponto e vírgula
+        setMessages(parsedMessages);
       }
     });
 
@@ -47,96 +51,123 @@ const Room = () => {
     };
   }, [roomId]);
 
+  // Carrega solicitações pendentes de entrada (somente criador)
+  useEffect(() => {
+    if (isCreator) {
+      const requestsRef = database.ref(`rooms/${roomId}/requests`);
+      requestsRef.on('value', (snapshot) => {
+        const requestsData = snapshot.val();
+        if (requestsData) {
+          const parsedRequests = Object.entries(requestsData).map(([key, value]) => ({
+            id: key,
+            ...value
+          }));
+          setPendingRequests(parsedRequests);
+        }
+      });
+    }
+  }, [isCreator, roomId]);
+
+  // Envia mensagem para o chat
   const sendMessage = () => {
     if (message.trim()) {
       const messageRef = database.ref(`rooms/${roomId}/messages`).push();
       messageRef.set({
         text: message,
         user: userName,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
       setMessage('');
     }
   };
 
-  // Função para garantir que a mensagem de saída seja enviada apenas quando o usuário fechar o link, não ao recarregar a página
-  useEffect(() => {
-    const handleBeforeUnload = (event) => {
-      sessionStorage.setItem('isReloading', 'true'); // Indica que a página está recarregando
-    };
-
-    const handleUnload = () => {
-      const isReloading = sessionStorage.getItem('isReloading') === 'true';
-
-      // Só envia a mensagem se não for um reload
-      if (!isReloading) {
-        const messageRef = database.ref(`rooms/${roomId}/messages`).push();
-        messageRef.set({
-          text: `${userName} saiu da sala.`,
-          user: 'Sistema',
-          timestamp: new Date().toISOString()
-        });
-      }
-
-      sessionStorage.removeItem('isReloading'); // Remove a flag de reload
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    window.addEventListener('unload', handleUnload);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('unload', handleUnload);
-    };
-  }, [roomId, userName]);
-
-  // Função para excluir a sala e limpar todos os dados
-  const deleteRoom = () => {
-    // Remove toda a referência da sala, incluindo mensagens e usuários
-    database.ref(`rooms/${roomId}`).remove()
-      .then(() => {
-        setStatusMessage("A sala e todos os dados foram excluídos com sucesso!");
-        setTimeout(() => {
-          localStorage.removeItem('hasJoined');
-          localStorage.removeItem('userName');
-          navigate('/');  // Redirecionar para a página de criação de salas após 2 segundos
-        }, 2000);
-      })
-      .catch((error) => {
-        console.error("Erro ao excluir a sala:", error);
-      });
-  };
-
   // Função para sair da sala
   const leaveRoom = () => {
-    setStatusMessage("Você saiu da sala.");
+    setStatusMessage('Você saiu da sala.');
     setTimeout(() => {
       localStorage.removeItem('hasJoined');
       navigate('/');
-    }, 2000); 
+    }, 2000);
   };
 
-  if (!hasJoined) {
+  // Função para permitir ou negar entrada
+  const handleRequest = (userId, decision) => {
+    const requestRef = database.ref(`rooms/${roomId}/requests/${userId}`);
+
+    if (decision === 'accept') {
+      // Permite a entrada do usuário (adiciona o nome na lista de permitidos)
+      requestRef.once('value', (snapshot) => {
+        const userData = snapshot.val();
+        if (userData) {
+          const allowedRef = database.ref(`rooms/${roomId}/allowedUsers/${userData.userName}`);
+          allowedRef.set(true); // Adiciona à lista de usuários permitidos
+        }
+      });
+    }
+
+    // Remove a solicitação do usuário após aceitação ou negação
+    requestRef.remove()
+      .then(() => {
+        setPendingRequests((prevRequests) => prevRequests.filter((req) => req.id !== userId));
+      })
+      .catch((error) => {
+        console.error('Erro ao processar a solicitação:', error);
+      });
+  };
+
+  // Solicita a entrada na sala (usuários convidados)
+  const requestAccess = () => {
+    const requestsRef = database.ref(`rooms/${roomId}/requests`).push();
+    requestsRef.set({
+      userName,
+      timestamp: new Date().toISOString(),
+    });
+    setStatusMessage('Solicitação de entrada enviada. Aguarde aprovação.');
+  };
+
+  // Verifica se o usuário foi autorizado (usuários convidados)
+  useEffect(() => {
+    if (!isCreator && userName) {
+      const allowedRef = database.ref(`rooms/${roomId}/allowedUsers/${userName}`);
+      allowedRef.on('value', (snapshot) => {
+        if (snapshot.exists()) {
+          setHasJoined(true);
+          localStorage.setItem('hasJoined', 'true');
+        }
+      });
+    }
+  }, [roomId, userName]);
+
+  // Função para excluir a sala e todos os dados do chat
+  const deleteChat = () => {
+    database.ref(`rooms/${roomId}`).remove() // Remove toda a sala, incluindo mensagens, solicitações, etc.
+      .then(() => {
+        setStatusMessage('Sala excluída com sucesso!');
+        setTimeout(() => {
+          navigate('/'); // Redireciona para a página de criação de salas após exclusão
+        }, 2000);
+      })
+      .catch((error) => {
+        console.error('Erro ao excluir a sala:', error);
+      });
+  };
+
+  // Mostra solicitação de entrada se o usuário não foi autorizado
+  if (!hasJoined && !isCreator) {
     return (
       <div>
-        <h1>Bem-vindo à sala: {roomId}</h1>
-        <p>Por favor, insira seu nome para entrar no chat:</p>
+        <h1>Solicitação de entrada</h1>
+        <p>Insira seu nome para solicitar acesso à sala:</p>
         <input
           type="text"
           value={userName}
           onChange={(e) => setUserName(e.target.value)}
           placeholder="Digite seu nome"
         />
-        <button
-          onClick={() => {
-            setHasJoined(true);
-            localStorage.setItem('hasJoined', 'true');
-            localStorage.setItem('userName', userName);
-          }}
-          disabled={!userName.trim()}
-        >
-          Entrar no chat
+        <button onClick={requestAccess} disabled={!userName.trim()}>
+          Solicitar acesso
         </button>
+        {statusMessage && <p>{statusMessage}</p>}
       </div>
     );
   }
@@ -144,6 +175,22 @@ const Room = () => {
   return (
     <div>
       <h1>Sala de Chat</h1>
+
+      {/* Exibe as solicitações de entrada pendentes para o criador da sala */}
+      {isCreator && pendingRequests.length > 0 && (
+        <div>
+          <h3>Solicitações de entrada:</h3>
+          <ul>
+            {pendingRequests.map((request) => (
+              <li key={request.id}>
+                {request.userName}
+                <button onClick={() => handleRequest(request.id, 'accept')}>Aceitar</button>
+                <button onClick={() => handleRequest(request.id, 'deny')}>Negar</button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div style={{ height: '300px', overflowY: 'scroll', border: '1px solid #ccc', marginBottom: '10px' }}>
         {messages.map((msg) => (
@@ -163,16 +210,14 @@ const Room = () => {
         Enviar
       </button>
 
-      {isCreator ? (
+      {isCreator && isRoomLoaded && ( // Verifica se a sala está carregada antes de mostrar o QR code
         <div>
           <h3>Compartilhar link do chat:</h3>
           <p>Link: <a href={shareLink}>{shareLink}</a></p>
           <QRCodeCanvas value={shareLink} size={128} />
           <button onClick={leaveRoom}>Sair</button>
-          <button onClick={deleteRoom}>Excluir Sala</button>
+          <button onClick={deleteChat}>Excluir Chat</button> {/* Novo botão para excluir chat */}
         </div>
-      ) : (
-        <p>Você está no chat. Apenas o criador pode sair ou excluir a sala.</p>
       )}
 
       {statusMessage && <p style={{ color: 'green' }}>{statusMessage}</p>}
