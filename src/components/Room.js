@@ -51,6 +51,16 @@ const Room = () => {
     };
   }, [roomId]);
 
+  useEffect(() => {
+    const storedUserName = localStorage.getItem('userName');
+    const storedHasJoined = localStorage.getItem('hasJoined') === 'true';
+    
+    if (storedUserName && storedHasJoined) {
+        setUserName(storedUserName);
+        setHasJoined(true); // Mantém o usuário no chat
+    }
+}, []);
+
   // Carrega solicitações pendentes de entrada (somente criador)
   useEffect(() => {
     if (isCreator) {
@@ -67,6 +77,7 @@ const Room = () => {
       });
     }
   }, [isCreator, roomId]);
+  
 
   // Envia mensagem para o chat
   const sendMessage = () => {
@@ -91,29 +102,37 @@ const Room = () => {
   };
 
   // Função para permitir ou negar entrada
-  const handleRequest = (userId, decision) => {
-    const requestRef = database.ref(`rooms/${roomId}/requests/${userId}`);
+ // Função para permitir ou negar entrada
+const handleRequest = (userId, decision) => {
+  const requestRef = database.ref(`rooms/${roomId}/requests/${userId}`);
 
-    if (decision === 'accept') {
-      // Permite a entrada do usuário (adiciona o nome na lista de permitidos)
-      requestRef.once('value', (snapshot) => {
-        const userData = snapshot.val();
-        if (userData) {
-          const allowedRef = database.ref(`rooms/${roomId}/allowedUsers/${userData.userName}`);
-          allowedRef.set(true); // Adiciona à lista de usuários permitidos
-        }
-      });
-    }
+  if (decision === 'accept') {
+    // Permite a entrada do usuário (adiciona o nome na lista de permitidos)
+    requestRef.once('value', (snapshot) => {
+      const userData = snapshot.val();
+      if (userData) {
+        const allowedRef = database.ref(`rooms/${roomId}/allowedUsers/${userData.userName}`);
+        allowedRef.set(true).then(() => {
+          // Envia uma mensagem de notificação para o usuário aprovado
+          database.ref(`rooms/${roomId}/messages`).push({
+            text: `${userData.userName} foi autorizado a entrar na sala.`,
+            user: 'Sistema',
+            timestamp: new Date().toISOString()
+          });
+        }); // Adiciona à lista de usuários permitidos
+      }
+    });
+  }
 
-    // Remove a solicitação do usuário após aceitação ou negação
-    requestRef.remove()
-      .then(() => {
-        setPendingRequests((prevRequests) => prevRequests.filter((req) => req.id !== userId));
-      })
-      .catch((error) => {
-        console.error('Erro ao processar a solicitação:', error);
-      });
-  };
+  // Remove a solicitação do usuário após aceitação ou negação
+  requestRef.remove()
+    .then(() => {
+      setPendingRequests((prevRequests) => prevRequests.filter((req) => req.id !== userId));
+    })
+    .catch((error) => {
+      console.error('Erro ao processar a solicitação:', error);
+    });
+};
 
   // Solicita a entrada na sala (usuários convidados)
   const requestAccess = () => {
@@ -126,31 +145,38 @@ const Room = () => {
   };
 
   // Verifica se o usuário foi autorizado (usuários convidados)
-  useEffect(() => {
-    if (!isCreator && userName) {
-      const allowedRef = database.ref(`rooms/${roomId}/allowedUsers/${userName}`);
-      allowedRef.on('value', (snapshot) => {
-        if (snapshot.exists()) {
+// Verifica se o usuário foi autorizado (usuários convidados)
+useEffect(() => {
+  const allowedRef = database.ref(`rooms/${roomId}/allowedUsers/${userName}`);
+  allowedRef.on('value', (snapshot) => {
+      if (snapshot.exists()) {
           setHasJoined(true);
-          localStorage.setItem('hasJoined', 'true');
-        }
-      });
-    }
-  }, [roomId, userName]);
+          localStorage.setItem('hasJoined', 'true'); // Certifique-se de que está sendo armazenado corretamente
+          localStorage.setItem('userName', userName); // Armazena o nome de usuário
+      }
+  });
+
+  return () => {
+      allowedRef.off();
+  };
+}, [roomId, userName]);
 
   // Função para excluir a sala e todos os dados do chat
-  const deleteChat = () => {
-    database.ref(`rooms/${roomId}`).remove() // Remove toda a sala, incluindo mensagens, solicitações, etc.
-      .then(() => {
-        setStatusMessage('Sala excluída com sucesso!');
-        setTimeout(() => {
-          navigate('/'); // Redireciona para a página de criação de salas após exclusão
-        }, 2000);
-      })
-      .catch((error) => {
-        console.error('Erro ao excluir a sala:', error);
-      });
-  };
+  // Função para excluir a sala e todos os dados do chat
+const deleteChat = () => {
+  database.ref(`rooms/${roomId}`).remove() // Remove toda a sala, incluindo mensagens, solicitações, etc.
+    .then(() => {
+      localStorage.removeItem('hasJoined'); // Remove estado local
+      localStorage.removeItem('userName');
+      setStatusMessage('Sala excluída com sucesso!');
+      setTimeout(() => {
+        navigate('/'); // Redireciona para a página de criação de salas após exclusão
+      }, 2000);
+    })
+    .catch((error) => {
+      console.error('Erro ao excluir a sala:', error);
+    });
+};
 
   // Mostra solicitação de entrada se o usuário não foi autorizado
   if (!hasJoined && !isCreator) {
