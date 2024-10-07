@@ -6,6 +6,7 @@ import { QRCodeCanvas } from 'qrcode.react';
 const Room = () => {
   const { roomId } = useParams();
   const [userName, setUserName] = useState('');
+  const [creatorName, setCreatorName] = useState(''); // Armazena o nome do criador
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
   const [typingUsers, setTypingUsers] = useState([]);
@@ -15,21 +16,24 @@ const Room = () => {
   const [statusMessage, setStatusMessage] = useState('');
   const [isRoomLoaded, setIsRoomLoaded] = useState(false);
   const [roomName, setRoomName] = useState('');
-  const [hasRequestedAccess, setHasRequestedAccess] = useState(false); // Novo estado para verificar se o usuário solicitou acesso
+  const [hasRequestedAccess, setHasRequestedAccess] = useState(false);
   const typingTimeoutRef = useRef(null);
   const navigate = useNavigate();
 
   const shareLink = `${window.location.origin}/opensecurityroom/room/${roomId}`;
 
+  // Carregar informações da sala
   useEffect(() => {
     const roomRef = database.ref(`rooms/${roomId}`);
     roomRef.once('value', (snapshot) => {
       if (snapshot.exists()) {
         const roomData = snapshot.val();
         setRoomName(roomData.name);
+        setCreatorName(roomData.creatorName || 'Moderador'); // Armazena o nome do criador
         const currentUser = auth.currentUser;
         if (currentUser && roomData.creator === currentUser.uid) {
           setIsCreator(true);
+          setUserName(roomData.creatorName || 'Moderador'); // Define o nome do criador para ele mesmo
         }
       }
       setIsRoomLoaded(true);
@@ -52,6 +56,19 @@ const Room = () => {
 
     return () => {
       messagesRef.off();
+    };
+  }, [roomId]);
+
+  // Carregar quem está digitando
+  useEffect(() => {
+    const typingRef = database.ref(`rooms/${roomId}/typing`);
+    typingRef.on('value', (snapshot) => {
+      const typingData = snapshot.val() || {};
+      setTypingUsers(Object.values(typingData).filter(Boolean));
+    });
+
+    return () => {
+      typingRef.off();
     };
   }, [roomId]);
 
@@ -100,12 +117,9 @@ const Room = () => {
         if (userData) {
           const denyRef = database.ref(`rooms/${roomId}/deniedRequests/${userData.userName}`);
           denyRef.set({
-            message: `Sua solicitação foi recusada. Você não tem permissão para entrar na sala.`,
+            message: `Sua solicitação foi recusada.`,
             timestamp: new Date().toISOString(),
           });
-
-          const userRef = database.ref(`users/${userId}`);
-          userRef.update({ redirectTo: '/' });
         }
       });
     }
@@ -133,7 +147,7 @@ const Room = () => {
         timestamp: new Date().toISOString(),
       })
       .then(() => {
-        setHasRequestedAccess(true); // Marca como solicitado
+        setHasRequestedAccess(true); 
         setStatusMessage('Solicitação de entrada enviada. Aguarde aprovação.');
       })
       .catch((error) => {
@@ -144,7 +158,7 @@ const Room = () => {
 
   // Verifica se o usuário foi autorizado ou recusado APÓS solicitar o acesso
   useEffect(() => {
-    if (!hasRequestedAccess) return; // Somente verifica após solicitar acesso
+    if (!hasRequestedAccess) return;
 
     const allowedRef = database.ref(`rooms/${roomId}/allowedUsers/${userName}`);
     const deniedRef = database.ref(`rooms/${roomId}/deniedRequests/${userName}`);
@@ -159,7 +173,7 @@ const Room = () => {
     });
 
     deniedRef.on('value', (snapshot) => {
-      if (snapshot.exists() && !isCreator) { // Verifica se não é o criador
+      if (snapshot.exists() && !isCreator) {
         setStatusMessage('Sua solicitação foi recusada. Redirecionando...');
         setTimeout(() => {
           navigate('/');
@@ -171,7 +185,7 @@ const Room = () => {
       allowedRef.off();
       deniedRef.off();
     };
-  }, [roomId, userName, navigate, isCreator, hasRequestedAccess]); // Adicionada dependência hasRequestedAccess
+  }, [roomId, userName, navigate, isCreator, hasRequestedAccess]);
 
   // Função para enviar mensagem
   const sendMessage = () => {
@@ -179,11 +193,28 @@ const Room = () => {
       const messageRef = database.ref(`rooms/${roomId}/messages`).push();
       messageRef.set({
         text: message,
-        user: userName,
+        user: userName || creatorName, // Garante que o criador seja identificado
         timestamp: new Date().toISOString(),
       });
       setMessage('');
+      setTyping(false); // Parar de mostrar que está digitando ao enviar a mensagem
     }
+  };
+
+  // Atualiza o status de digitação no Firebase
+  const setTyping = (isTyping) => {
+    const typingRef = database.ref(`rooms/${roomId}/typing/${userName}`);
+    typingRef.set(isTyping ? userName : null);
+
+    if (isTyping) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = setTimeout(() => setTyping(false), 3000); // 3 segundos de inatividade para parar de mostrar "digitando"
+    }
+  };
+
+  const handleTyping = (e) => {
+    setMessage(e.target.value);
+    setTyping(true); // Mostra que está digitando enquanto o usuário digita
   };
 
   // Função para sair da sala
@@ -257,10 +288,16 @@ const Room = () => {
         ))}
       </div>
 
+      {typingUsers.length > 0 && (
+        <div style={{ marginBottom: '10px' }}>
+          <em>{typingUsers.join(', ')} {typingUsers.length > 1 ? 'estão' : 'está'} digitando...</em>
+        </div>
+      )}
+
       <input
         type="text"
         value={message}
-        onChange={(e) => setMessage(e.target.value)}
+        onChange={handleTyping}
         placeholder="Escreva sua mensagem"
       />
       <button onClick={sendMessage} disabled={!message.trim()}>

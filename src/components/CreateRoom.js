@@ -33,15 +33,18 @@ const CreateRoom = () => {
     if (currentUser) {
       const encryptionKey = generateEncryptionKey();
       sessionStorage.setItem('encryptionKey', encryptionKey);
-      localStorage.setItem('userName', userName);
+      localStorage.setItem('userName', userName); // Salva o nome do usuário
 
+      // Cria uma nova sala no banco de dados
       const roomRef = database.ref('rooms').push({
         name: roomName,
         createdAt: new Date().toISOString(),
         creator: currentUser.uid,
+        creatorName: userName, // Adiciona o nome do criador junto com o ID
         encryptionKey: encryptionKey
       });
 
+      // Navega para a sala recém-criada
       navigate(`/room/${roomRef.key}`, { state: { roomName: roomName, encryptionKey } });
     } else {
       console.error('Usuário não autenticado!');
