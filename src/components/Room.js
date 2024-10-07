@@ -20,7 +20,7 @@ const Room = () => {
   const typingTimeoutRef = useRef(null);
   const navigate = useNavigate();
 
-  const shareLink = `${window.location.origin}/opensecurityroom/room/${roomId}`;
+  const shareLink = `${window.location.origin}/opensecurityroom/#/room/${roomId}`;
 
   // Carregar informações da sala
   useEffect(() => {
