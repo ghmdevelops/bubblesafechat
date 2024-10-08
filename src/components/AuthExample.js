@@ -285,7 +285,7 @@ const AuthExample = () => {
                     </label>
 
                     <ReCAPTCHA
-                        sitekey="6LddN1sqAAAAAEwinCM55jtXe9_zg9VEWkGgk2Q8" // Substitua pela sua chave do site
+                        sitekey="6Ld-GFsqAAAAAJJ2LrG7mdJTyxhGxz3oDG5mTa14" // Substitua pela sua chave do site
                         onChange={onCaptchaChange} // Função chamada ao completar o CAPTCHA
                     />
 
