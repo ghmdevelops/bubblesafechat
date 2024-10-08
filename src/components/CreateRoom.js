@@ -10,18 +10,48 @@ const CreateRoom = () => {
   const [isNameConfirmed, setIsNameConfirmed] = useState(false);
   const navigate = useNavigate();
 
+  const LOGOUT_TIMEOUT = 60 * 60 * 1000; // 1 hora em milissegundos
+
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
         const emailName = user.email.split('@')[0];
         setUserEmail(emailName);
+        checkLogout(); // Verifica se o logout é necessário
+        resetLastAccessTime(); // Atualiza o horário do último acesso
       } else {
         navigate('/');
       }
     });
 
-    return () => unsubscribe();
+    // Adiciona ouvintes de evento para atualizar o horário do último acesso
+    const events = ['mousemove', 'keydown', 'click'];
+    events.forEach((event) => {
+      window.addEventListener(event, resetLastAccessTime);
+    });
+
+    return () => {
+      unsubscribe();
+      // Remove os ouvintes de evento
+      events.forEach((event) => {
+        window.removeEventListener(event, resetLastAccessTime);
+      });
+    };
   }, [navigate]);
+
+  const resetLastAccessTime = () => {
+    localStorage.setItem('lastAccessTime', Date.now()); // Armazena o horário atual
+  };
+
+  const checkLogout = () => {
+    const lastAccessTime = localStorage.getItem('lastAccessTime');
+    if (lastAccessTime) {
+      const timeElapsed = Date.now() - lastAccessTime;
+      if (timeElapsed >= LOGOUT_TIMEOUT) {
+        handleLogout(); // Realiza o logout se o tempo limite for atingido
+      }
+    }
+  };
 
   const generateEncryptionKey = () => {
     return CryptoJS.lib.WordArray.random(16).toString();
@@ -54,6 +84,7 @@ const CreateRoom = () => {
   const handleLogout = () => {
     auth.signOut()
       .then(() => {
+        localStorage.removeItem('lastAccessTime'); // Limpa o horário do último acesso
         navigate('/');
       })
       .catch((error) => {

@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { auth } from '../firebaseConfig';
 import { useNavigate } from 'react-router-dom';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 
 const AuthExample = () => {
-    const [firstName, setFirstName] = useState('');  // Estado para o primeiro nome
+    const [firstName, setFirstName] = useState('');  
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');  
@@ -12,16 +13,72 @@ const AuthExample = () => {
     const [errorMessage, setErrorMessage] = useState('');  
     const [resetMessage, setResetMessage] = useState('');  
     const [isResetPassword, setIsResetPassword] = useState(false); 
-    const [registrationMessage, setRegistrationMessage] = useState('');  // Novo estado para a mensagem de registro
+    const [registrationMessage, setRegistrationMessage] = useState('');  
+    const [isLoading, setIsLoading] = useState(false);  
+    const [loginAttempts, setLoginAttempts] = useState(0); // Contador de tentativas de login
+    const [isLockedOut, setIsLockedOut] = useState(false); // Estado para controle de bloqueio
+    const [lockoutTime, setLockoutTime] = useState(null); // Tempo de bloqueio
+    const [remainingTime, setRemainingTime] = useState(0); // Tempo restante de bloqueio
     const navigate = useNavigate();
 
-    // Função para registrar o usuário
+    useEffect(() => {
+        // Verifica se o usuário está bloqueado
+        const storedLockoutTime = localStorage.getItem('lockoutTime');
+        const storedAttempts = localStorage.getItem('loginAttempts');
+
+        if (storedLockoutTime) {
+            const remainingTime = Math.ceil((parseInt(storedLockoutTime) - Date.now()) / 1000); // Tempo restante em segundos
+            if (remainingTime > 0) {
+                setIsLockedOut(true);
+                setLockoutTime(parseInt(storedLockoutTime));
+                setRemainingTime(remainingTime);
+            }
+        }
+
+        if (storedAttempts) {
+            setLoginAttempts(parseInt(storedAttempts));
+        }
+
+        // Se o usuário estiver bloqueado, verifica o tempo restante
+        if (isLockedOut && lockoutTime) {
+            const timer = setInterval(() => {
+                const newRemainingTime = Math.ceil((lockoutTime - Date.now()) / 1000); // Tempo restante em segundos
+                if (newRemainingTime <= 0) {
+                    setIsLockedOut(false); // Desbloqueia o usuário
+                    setLoginAttempts(0); // Reseta o contador de tentativas
+                    localStorage.removeItem('lockoutTime'); // Remove o lockout do localStorage
+                    localStorage.removeItem('loginAttempts'); // Reseta tentativas
+                    setErrorMessage('Você pode tentar fazer login novamente.');
+                    clearInterval(timer);
+                } else {
+                    setRemainingTime(newRemainingTime); // Atualiza o tempo restante
+                }
+            }, 1000); // Verifica a cada segundo
+
+            return () => clearInterval(timer); // Limpa o timer ao desmontar
+        }
+    }, [isLockedOut, lockoutTime]);
+
+    const handleGoogleLogin = async () => {
+        const provider = new GoogleAuthProvider();
+        setIsLoading(true);
+        
+        try {
+            await signInWithPopup(auth, provider);
+            navigate('/'); // Redireciona para a página principal após o login
+        } catch (error) {
+            console.error('Erro ao fazer login com Google:', error);
+            setErrorMessage('Erro ao fazer login com Google. Tente novamente.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const handleRegister = (e) => {
         e.preventDefault();
         setErrorMessage('');
-        setRegistrationMessage('');  // Limpa a mensagem de registro anterior
+        setRegistrationMessage('');  
 
-        // Validação de e-mail, senha, confirmação de senha e nome antes de enviar para o Firebase
         if (!firstName.trim()) {
             setErrorMessage('Por favor, insira seu primeiro nome.');
             return;
@@ -39,24 +96,23 @@ const AuthExample = () => {
             return;
         }
 
+        setIsLoading(true);
         auth.createUserWithEmailAndPassword(email, password)
             .then(userCredential => {
                 const user = userCredential.user;
 
-                // Enviar e-mail de verificação
                 user.sendEmailVerification()
                     .then(() => {
                         setRegistrationMessage('Cadastro realizado com sucesso! Verifique seu e-mail para confirmar sua conta antes de fazer login.');
                         setTimeout(() => {
-                            setIsLogin(true);  // Alterna para a página de login após 5 segundos
-                            setRegistrationMessage('');  // Limpa a mensagem de registro após exibir
-                        }, 5000);  // Após 5 segundos, redireciona para login
+                            setIsLogin(true); 
+                            setRegistrationMessage('');
+                        }, 5000);
                     })
                     .catch(error => {
                         setErrorMessage('Erro ao enviar e-mail de verificação.');
                     });
 
-                // Desloga automaticamente após o registro até a verificação do e-mail
                 auth.signOut();
             })
             .catch(error => {
@@ -69,14 +125,23 @@ const AuthExample = () => {
                 } else {
                     setErrorMessage('Erro ao registrar. Verifique as informações e tente novamente.');
                 }
+            })
+            .finally(() => {
+                setIsLoading(false);
             });
     };
 
-    // Função para fazer login do usuário
     const handleLogin = (e) => {
         e.preventDefault();
         setErrorMessage('');
 
+        // Verifica se o usuário está bloqueado
+        if (isLockedOut) {
+            setErrorMessage(`Você foi bloqueado após muitas tentativas. Por favor, redefina sua senha.`);
+            return;
+        }
+
+        setIsLoading(true);
         auth.signInWithEmailAndPassword(email, password)
             .then(userCredential => {
                 const user = userCredential.user;
@@ -89,15 +154,30 @@ const AuthExample = () => {
                 }
             })
             .catch(error => {
-                if (error.code === 'auth/wrong-password') {
-                    setErrorMessage('Senha incorreta. Tente novamente.');
-                } else if (error.code === 'auth/user-not-found') {
-                    setErrorMessage('E-mail não encontrado. Verifique se o e-mail está correto.');
-                } else if (error.code === 'auth/invalid-email') {
-                    setErrorMessage('E-mail inválido. Verifique o formato.');
+                const attemptsLeft = 4 - loginAttempts; // 5 tentativas no total (0 a 4)
+                setLoginAttempts(prev => prev + 1); // Incrementa tentativas de login
+                localStorage.setItem('loginAttempts', loginAttempts + 1); // Armazena o número de tentativas
+
+                if (loginAttempts + 1 >= 5) { // Se já excedeu 5 tentativas
+                    setIsLockedOut(true);
+                    const lockoutEndTime = Date.now() + 5 * 60 * 1000; // Bloqueio por 5 minutos
+                    setLockoutTime(lockoutEndTime); // Define o tempo de bloqueio
+                    localStorage.setItem('lockoutTime', lockoutEndTime); // Armazena o tempo de bloqueio
+                    setErrorMessage('Você excedeu o número de tentativas de login. Por favor, redefina sua senha.');
                 } else {
-                    setErrorMessage('Erro ao fazer login. Verifique as credenciais e tente novamente.');
+                    if (error.code === 'auth/wrong-password') {
+                        setErrorMessage(`Senha incorreta. Você tem ${attemptsLeft} tentativas restantes.`);
+                    } else if (error.code === 'auth/user-not-found') {
+                        setErrorMessage('E-mail não encontrado. Verifique se o e-mail está correto.');
+                    } else if (error.code === 'auth/invalid-email') {
+                        setErrorMessage('E-mail inválido. Verifique o formato.');
+                    } else {
+                        setErrorMessage('Erro ao fazer login. Verifique as credenciais e tente novamente.');
+                    }
                 }
+            })
+            .finally(() => {
+                setIsLoading(false);
             });
     };
 
@@ -111,6 +191,14 @@ const AuthExample = () => {
             .then(() => {
                 setResetMessage('E-mail de recuperação de senha enviado. Verifique sua caixa de entrada ou lixo eletrônico.');
                 setErrorMessage('');
+
+                // Redireciona para a tela de login após 5 segundos
+                setTimeout(() => {
+                    setIsResetPassword(false); // Volta para a tela de login
+                    setEmail(''); // Limpa o campo de e-mail
+                    // Avisar sobre o bloqueio
+                    setErrorMessage('Você foi bloqueado após muitas tentativas. O bloqueio continuará por 5 minutos. Tente novamente após esse período.');
+                }, 5000);
             })
             .catch(error => {
                 if (error.code === 'auth/user-not-found') {
@@ -151,7 +239,9 @@ const AuthExample = () => {
                     <input
                         type={showPassword ? 'text' : 'password'}
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={(e) => {
+                            setPassword(e.target.value);
+                        }}
                         placeholder="Senha"
                         required
                         autoComplete={isLogin ? "current-password" : "new-password"}
@@ -177,9 +267,15 @@ const AuthExample = () => {
                         Mostrar senha
                     </label>
 
-                    <button type="submit">
-                        {isLogin ? 'Login' : 'Registrar'}
+                    <button type="submit" disabled={isLoading || isLockedOut}>
+                        {isLoading ? 'Carregando...' : (isLogin ? 'Login' : 'Registrar')}
                     </button>
+
+                    {isLogin && (
+                        <button type="button" onClick={handleGoogleLogin} disabled={isLoading || isLockedOut}>
+                            {isLoading ? 'Carregando...' : 'Login com Google'}
+                        </button>
+                    )}
                 </form>
             ) : (
                 <form onSubmit={handlePasswordReset}>
