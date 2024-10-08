@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; 
 import { useParams, useNavigate } from 'react-router-dom';
-import { database, auth } from '../firebaseConfig';
+import { database, auth, storage } from '../firebaseConfig';
 import { QRCodeCanvas } from 'qrcode.react';
 
 const Room = () => {
@@ -17,8 +17,12 @@ const Room = () => {
   const [isRoomLoaded, setIsRoomLoaded] = useState(false);
   const [roomName, setRoomName] = useState('');
   const [hasRequestedAccess, setHasRequestedAccess] = useState(false);
-  const [destructionTime, setDestructionTime] = useState(10); // Tempo de destruição em segundos
-  const [isDestructionActive, setIsDestructionActive] = useState(false); // Controle para ativar/desativar a destruição
+  const [destructionTime, setDestructionTime] = useState(10);
+  const [isDestructionActive, setIsDestructionActive] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [audioFile, setAudioFile] = useState(null);
+  const mediaRecorderRef = useRef(null);
+  const streamRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const navigate = useNavigate();
 
@@ -41,7 +45,6 @@ const Room = () => {
     });
   }, [roomId]);
 
-  // Carregar as mensagens do chat
   useEffect(() => {
     const messagesRef = database.ref(`rooms/${roomId}/messages`);
     messagesRef.on('value', (snapshot) => {
@@ -60,7 +63,6 @@ const Room = () => {
     };
   }, [roomId]);
 
-  // Função para marcar mensagens como lidas
   const markMessageAsRead = (messageId) => {
     const readByRef = database.ref(`rooms/${roomId}/messages/${messageId}/readBy`);
     readByRef.once('value', (snapshot) => {
@@ -71,27 +73,33 @@ const Room = () => {
     });
   };
 
-  // Função que marca todas as mensagens visíveis como lidas
   const markAllMessagesAsRead = () => {
     messages.forEach((msg) => {
       markMessageAsRead(msg.id);
     });
   };
 
-  // Função para autodestruir as mensagens após o tempo definido
   const autoDestructMessages = () => {
     if (isDestructionActive) {
       messages.forEach((msg) => {
         const timeSinceCreation = (Date.now() - new Date(msg.timestamp).getTime()) / 1000;
         if (timeSinceCreation >= destructionTime) {
           const messageRef = database.ref(`rooms/${roomId}/messages/${msg.id}`);
-          messageRef.remove();
+          messageRef.once('value', (snapshot) => {
+            const messageData = snapshot.val();
+            if (messageData && messageData.audioUrl) {
+              const audioRef = storage.refFromURL(messageData.audioUrl);
+              audioRef.delete().catch((error) => {
+                console.error('Erro ao deletar áudio:', error);
+              });
+            }
+            messageRef.remove();
+          });
         }
       });
     }
   };
 
-  // Iniciar o temporizador de autodestruição
   useEffect(() => {
     const interval = setInterval(() => {
       autoDestructMessages();
@@ -100,7 +108,6 @@ const Room = () => {
     return () => clearInterval(interval);
   }, [messages, destructionTime, isDestructionActive]);
 
-  // Carregar quem está digitando
   useEffect(() => {
     const typingRef = database.ref(`rooms/${roomId}/typing`);
     typingRef.on('value', (snapshot) => {
@@ -113,7 +120,6 @@ const Room = () => {
     };
   }, [roomId]);
 
-  // Carregar solicitações pendentes de entrada (somente criador)
   useEffect(() => {
     if (isCreator) {
       const requestsRef = database.ref(`rooms/${roomId}/requests`);
@@ -236,7 +242,6 @@ const Room = () => {
     };
   }, [roomId, userName, navigate, isCreator, hasRequestedAccess]);
 
-  // Função para expulsar um usuário
   const expelUser = (userName) => {
     const expelledRef = database.ref(`rooms/${roomId}/expelledUsers/${userName}`);
     expelledRef.set(true).then(() => {
@@ -248,7 +253,6 @@ const Room = () => {
     });
   };
 
-  // Manter controle dos usuários já listados para evitar botões repetidos, excluindo o criador e "Sistema"
   const usersWithExpelButton = new Set(messages
     .map((msg) => msg.user)
     .filter((user) => user !== creatorName && user !== 'Sistema'));
@@ -290,19 +294,112 @@ const Room = () => {
   };
 
   const deleteChat = () => {
-    database.ref(`rooms/${roomId}`).remove().then(() => {
-      setHasJoined(false);
-      setUserName('');
-      setStatusMessage('Sala excluída com sucesso!');
-      setTimeout(() => {
-        navigate('/');
-      }, 2000);
+    // Mensagem informando que a sala foi encerrada pelo moderador
+    database.ref(`rooms/${roomId}/messages`).push({
+      text: `A sala foi encerrada pelo moderador.`,
+      user: 'Sistema',
+      timestamp: new Date().toISOString(),
+    });
+
+    // Deletar todos os áudios antes de excluir a sala
+    const deleteMessagesPromises = messages.map((msg) => {
+      return new Promise((resolve) => {
+        const messageRef = database.ref(`rooms/${roomId}/messages/${msg.id}`);
+        messageRef.once('value', (snapshot) => {
+          const messageData = snapshot.val();
+          if (messageData && messageData.audioUrl) {
+            const audioRef = storage.refFromURL(messageData.audioUrl);
+            audioRef.delete().catch((error) => {
+              console.error('Erro ao deletar áudio:', error);
+            });
+          }
+          messageRef.remove().then(resolve);
+        });
+      });
+    });
+
+    Promise.all(deleteMessagesPromises).then(() => {
+      database.ref(`rooms/${roomId}`).remove().then(() => {
+        setHasJoined(false);
+        setUserName('');
+        setStatusMessage('Sala excluída com sucesso!');
+        setTimeout(() => {
+          navigate('/');
+        }, 2000);
+      });
     });
   };
 
-  // Função para alternar a ativação/desativação das mensagens autodestrutivas
   const toggleDestruction = () => {
     setIsDestructionActive((prevState) => !prevState);
+  };
+
+  // Função para gravar áudio
+  const startRecording = () => {
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then((stream) => {
+        const mediaRecorder = new MediaRecorder(stream);
+        mediaRecorderRef.current = mediaRecorder;
+        streamRef.current = stream; // Armazenar o stream para fechamento posterior
+        setRecording(true);
+
+        mediaRecorder.ondataavailable = (event) => {
+          const audioBlob = new Blob([event.data], { type: 'audio/mp3' });
+          setAudioFile(audioBlob);
+        };
+
+        mediaRecorder.start();
+      })
+      .catch((error) => {
+        console.error('Erro ao acessar o microfone:', error);
+      });
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      // Liberar o microfone
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+      setRecording(false);
+    }
+  };
+
+  const sendAudioMessage = () => {
+    if (audioFile) {
+      // Enviar o arquivo de áudio para o Firebase Storage
+      const storageRef = storage.ref();
+      const audioRef = storageRef.child(`rooms/${roomId}/audio_${Date.now()}.mp3`);
+      const uploadTask = audioRef.put(audioFile);
+
+      uploadTask.on(
+        'state_changed',
+        null,
+        (error) => {
+          console.error('Erro ao enviar áudio:', error);
+        },
+        () => {
+          uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+            // Enviar a URL do áudio para o Firebase Realtime Database
+            const messageRef = database.ref(`rooms/${roomId}/messages`).push();
+            const audioMessage = {
+              audioUrl: downloadURL,
+              user: userName || creatorName,
+              timestamp: new Date().toISOString(),
+            };
+            messageRef.set(audioMessage);
+            setAudioFile(null); // Limpar o arquivo de áudio após o envio
+          });
+        }
+      );
+    }
+  };
+
+  // Função para reproduzir o áudio
+  const playAudio = (audioUrl) => {
+    const audio = new Audio(audioUrl);
+    audio.play();
   };
 
   if (!hasJoined && !isCreator) {
@@ -379,7 +476,7 @@ const Room = () => {
 
           return (
             <div key={msg.id} style={{ padding: '5px', borderBottom: '1px solid #eee' }}>
-              <strong>{msg.user}:</strong> {msg.text}
+              <strong>{msg.user}:</strong> {msg.text ? msg.text : <button onClick={() => playAudio(msg.audioUrl)}>Reproduzir Áudio</button>}
               {msg.readBy && (
                 <div>
                   <small>Lido por: {msg.readBy.join(', ')}</small>
@@ -411,6 +508,20 @@ const Room = () => {
       <button onClick={sendMessage} disabled={!message.trim()}>
         Enviar
       </button>
+
+      <div>
+        <button onClick={startRecording} disabled={recording}>
+          Gravar Áudio
+        </button>
+        <button onClick={stopRecording} disabled={!recording}>
+          Parar Gravação
+        </button>
+        {audioFile && (
+          <div>
+            <button onClick={sendAudioMessage}>Enviar Áudio</button>
+          </div>
+        )}
+      </div>
 
       {isCreator && (
         <div>

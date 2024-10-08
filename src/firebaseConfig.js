@@ -2,6 +2,9 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 import 'firebase/compat/database';  // Para Realtime Database
+import 'firebase/compat/storage'; // Adicione isso para importar o Firebase Storage
+import { getMessaging } from "firebase/messaging";
+
 
 const firebaseConfig = {
     apiKey: "AIzaSyCtmAj7m8Lg4oyOazOBfKSE4e8C82-uEes",
@@ -18,3 +21,6 @@ firebase.initializeApp(firebaseConfig);
 export const db = firebase.firestore();  // Para Firestore
 export const auth = firebase.auth();  // Para autenticação
 export const database = firebase.database();  // Para Realtime Database
+export const storage = firebase.storage(); // Adicione essa linha para exportar o Firebase Storage
+export const messaging = getMessaging(firebase.app()); // Inicializa o Messaging com a app do Firebase
+
