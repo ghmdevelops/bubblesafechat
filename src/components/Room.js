@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'; 
+import React, { useState, useEffect, useRef } from 'react';  
 import { useParams, useNavigate } from 'react-router-dom';
 import { database, auth, storage } from '../firebaseConfig';
 import { QRCodeCanvas } from 'qrcode.react';
@@ -25,6 +25,7 @@ const Room = () => {
   const streamRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const navigate = useNavigate();
+  const messagesEndRef = useRef(null); // Ref para o final do container de mensagens
 
   const shareLink = `${window.location.origin}/opensecurityroom/#/room/${roomId}`;
 
@@ -62,6 +63,13 @@ const Room = () => {
       messagesRef.off();
     };
   }, [roomId]);
+
+  // Função para fazer scroll para a última mensagem
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' }); // Scroll suave até a última mensagem
+    }
+  }, [messages]); // Executa sempre que as mensagens mudam
 
   const markMessageAsRead = (messageId) => {
     const readByRef = database.ref(`rooms/${roomId}/messages/${messageId}/readBy`);
@@ -490,6 +498,9 @@ const Room = () => {
             </div>
           );
         })}
+
+        {/* Ref para o final do container de mensagens */}
+        <div ref={messagesEndRef} />
       </div>
 
       {typingUsers.length > 0 && (

@@ -8,6 +8,9 @@ const CreateRoom = () => {
   const [userEmail, setUserEmail] = useState(null);
   const [userName, setUserName] = useState('');
   const [isNameConfirmed, setIsNameConfirmed] = useState(false);
+  const [loading, setLoading] = useState(false); // Estado para controle de carregamento
+  const [successMessage, setSuccessMessage] = useState(''); // Mensagem de sucesso
+  const [errorMessage, setErrorMessage] = useState(''); // Mensagem de erro
   const navigate = useNavigate();
 
   const LOGOUT_TIMEOUT = 60 * 60 * 1000; // 1 hora em milissegundos
@@ -17,14 +20,12 @@ const CreateRoom = () => {
       if (user) {
         const emailName = user.email.split('@')[0];
         setUserEmail(emailName);
-        checkLogout(); // Verifica se o logout é necessário
         resetLastAccessTime(); // Atualiza o horário do último acesso
       } else {
         navigate('/');
       }
     });
 
-    // Adiciona ouvintes de evento para atualizar o horário do último acesso
     const events = ['mousemove', 'keydown', 'click'];
     events.forEach((event) => {
       window.addEventListener(event, resetLastAccessTime);
@@ -32,7 +33,6 @@ const CreateRoom = () => {
 
     return () => {
       unsubscribe();
-      // Remove os ouvintes de evento
       events.forEach((event) => {
         window.removeEventListener(event, resetLastAccessTime);
       });
@@ -43,16 +43,6 @@ const CreateRoom = () => {
     localStorage.setItem('lastAccessTime', Date.now()); // Armazena o horário atual
   };
 
-  const checkLogout = () => {
-    const lastAccessTime = localStorage.getItem('lastAccessTime');
-    if (lastAccessTime) {
-      const timeElapsed = Date.now() - lastAccessTime;
-      if (timeElapsed >= LOGOUT_TIMEOUT) {
-        handleLogout(); // Realiza o logout se o tempo limite for atingido
-      }
-    }
-  };
-
   const generateEncryptionKey = () => {
     return CryptoJS.lib.WordArray.random(16).toString();
   };
@@ -61,6 +51,7 @@ const CreateRoom = () => {
     const currentUser = auth.currentUser;
 
     if (currentUser) {
+      setLoading(true); // Inicia o carregamento
       const encryptionKey = generateEncryptionKey();
       sessionStorage.setItem('encryptionKey', encryptionKey);
       localStorage.setItem('userName', userName); // Salva o nome do usuário
@@ -76,6 +67,8 @@ const CreateRoom = () => {
 
       // Navega para a sala recém-criada
       navigate(`/room/${roomRef.key}`, { state: { roomName: roomName, encryptionKey } });
+      setSuccessMessage('Sala criada com sucesso!'); // Mensagem de sucesso
+      setErrorMessage(''); // Limpa mensagens de erro
     } else {
       console.error('Usuário não autenticado!');
     }
@@ -100,10 +93,16 @@ const CreateRoom = () => {
     }
   };
 
+  // Função para cancelar a confirmação do nome
+  const handleCancelName = () => {
+    setIsNameConfirmed(false);
+    setUserName(''); // Limpa o campo de nome
+  };
+
   return (
     <div>
       <h2>Bem-vindo, {userEmail}</h2>
-      <button onClick={handleLogout}>Logout</button>
+      {!isNameConfirmed && <button onClick={handleLogout}>Logout</button>} {/* Logout apenas quando o nome não estiver confirmado */}
       <h1>Criar uma Sala</h1>
 
       {!isNameConfirmed ? (
@@ -115,19 +114,25 @@ const CreateRoom = () => {
             onChange={(e) => setUserName(e.target.value)}
             placeholder="Digite seu novo nome de usuário"
           />
-          <button onClick={handleConfirmName}>Confirmar Nome</button>
+          <button onClick={handleConfirmName} disabled={!userName.trim()}>Confirmar Nome</button>
         </div>
       ) : (
         <>
           <input
             type="text"
             value={roomName}
-            onChange={(e) => setRoomName(e.target.value)}
+            onChange={(e) => setRoomName(e.target.value)} // Atualiza o nome da sala
             placeholder="Nome da Sala"
           />
-          <button onClick={createRoom}>Criar Sala</button>
+          <button onClick={createRoom} disabled={!roomName.trim() || loading}>
+            {loading ? 'Criando...' : 'Criar Sala'}
+          </button> {/* Habilita apenas se o nome da sala não estiver vazio */}
+          <button onClick={handleCancelName}>Cancelar</button> {/* Botão de Cancelar na seção de nome da sala */}
         </>
       )}
+
+      {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>} {/* Mensagem de sucesso */}
+      {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>} {/* Mensagem de erro */}
     </div>
   );
 };

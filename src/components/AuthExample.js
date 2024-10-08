@@ -2,26 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { auth } from '../firebaseConfig';
 import { useNavigate } from 'react-router-dom';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import ReCAPTCHA from 'react-google-recaptcha';
 
 const AuthExample = () => {
-    const [firstName, setFirstName] = useState('');
+    const [firstName, setFirstName] = useState('');  
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [isLogin, setIsLogin] = useState(true);
-    const [showPassword, setShowPassword] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
-    const [resetMessage, setResetMessage] = useState('');
-    const [isResetPassword, setIsResetPassword] = useState(false);
-    const [registrationMessage, setRegistrationMessage] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const [loginAttempts, setLoginAttempts] = useState(0);
-    const [isLockedOut, setIsLockedOut] = useState(false);
-    const [lockoutTime, setLockoutTime] = useState(null);
-    const [remainingTime, setRemainingTime] = useState(0);
-    const [captchaValue, setCaptchaValue] = useState(null); // Estado para o valor do reCAPTCHA
-    const [isCaptchaValidated, setIsCaptchaValidated] = useState(false); // Estado para controle do CAPTCHA
+    const [confirmPassword, setConfirmPassword] = useState('');  
+    const [isLogin, setIsLogin] = useState(true);  
+    const [showPassword, setShowPassword] = useState(false);  
+    const [errorMessage, setErrorMessage] = useState('');  
+    const [resetMessage, setResetMessage] = useState('');  
+    const [isResetPassword, setIsResetPassword] = useState(false); 
+    const [registrationMessage, setRegistrationMessage] = useState('');  
+    const [isLoading, setIsLoading] = useState(false);  
+    const [loginAttempts, setLoginAttempts] = useState(0); // Contador de tentativas de login
+    const [isLockedOut, setIsLockedOut] = useState(false); // Estado para controle de bloqueio
+    const [lockoutTime, setLockoutTime] = useState(null); // Tempo de bloqueio
+    const [remainingTime, setRemainingTime] = useState(0); // Tempo restante de bloqueio
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -30,7 +27,7 @@ const AuthExample = () => {
         const storedAttempts = localStorage.getItem('loginAttempts');
 
         if (storedLockoutTime) {
-            const remainingTime = Math.ceil((parseInt(storedLockoutTime) - Date.now()) / 1000);
+            const remainingTime = Math.ceil((parseInt(storedLockoutTime) - Date.now()) / 1000); // Tempo restante em segundos
             if (remainingTime > 0) {
                 setIsLockedOut(true);
                 setLockoutTime(parseInt(storedLockoutTime));
@@ -42,32 +39,33 @@ const AuthExample = () => {
             setLoginAttempts(parseInt(storedAttempts));
         }
 
+        // Se o usuário estiver bloqueado, verifica o tempo restante
         if (isLockedOut && lockoutTime) {
             const timer = setInterval(() => {
-                const newRemainingTime = Math.ceil((lockoutTime - Date.now()) / 1000);
+                const newRemainingTime = Math.ceil((lockoutTime - Date.now()) / 1000); // Tempo restante em segundos
                 if (newRemainingTime <= 0) {
-                    setIsLockedOut(false);
-                    setLoginAttempts(0);
-                    localStorage.removeItem('lockoutTime');
-                    localStorage.removeItem('loginAttempts');
+                    setIsLockedOut(false); // Desbloqueia o usuário
+                    setLoginAttempts(0); // Reseta o contador de tentativas
+                    localStorage.removeItem('lockoutTime'); // Remove o lockout do localStorage
+                    localStorage.removeItem('loginAttempts'); // Reseta tentativas
                     setErrorMessage('Você pode tentar fazer login novamente.');
                     clearInterval(timer);
                 } else {
-                    setRemainingTime(newRemainingTime);
+                    setRemainingTime(newRemainingTime); // Atualiza o tempo restante
                 }
-            }, 1000);
+            }, 1000); // Verifica a cada segundo
 
-            return () => clearInterval(timer);
+            return () => clearInterval(timer); // Limpa o timer ao desmontar
         }
     }, [isLockedOut, lockoutTime]);
 
     const handleGoogleLogin = async () => {
         const provider = new GoogleAuthProvider();
         setIsLoading(true);
-
+        
         try {
             await signInWithPopup(auth, provider);
-            navigate('/');
+            navigate('/'); // Redireciona para a página principal após o login
         } catch (error) {
             console.error('Erro ao fazer login com Google:', error);
             setErrorMessage('Erro ao fazer login com Google. Tente novamente.');
@@ -79,7 +77,7 @@ const AuthExample = () => {
     const handleRegister = (e) => {
         e.preventDefault();
         setErrorMessage('');
-        setRegistrationMessage('');
+        setRegistrationMessage('');  
 
         if (!firstName.trim()) {
             setErrorMessage('Por favor, insira seu primeiro nome.');
@@ -98,11 +96,6 @@ const AuthExample = () => {
             return;
         }
 
-        if (!isCaptchaValidated) {
-            setErrorMessage('Por favor, complete o CAPTCHA.');
-            return;
-        }
-
         setIsLoading(true);
         auth.createUserWithEmailAndPassword(email, password)
             .then(userCredential => {
@@ -112,7 +105,7 @@ const AuthExample = () => {
                     .then(() => {
                         setRegistrationMessage('Cadastro realizado com sucesso! Verifique seu e-mail para confirmar sua conta antes de fazer login.');
                         setTimeout(() => {
-                            setIsLogin(true);
+                            setIsLogin(true); 
                             setRegistrationMessage('');
                         }, 5000);
                     })
@@ -142,13 +135,9 @@ const AuthExample = () => {
         e.preventDefault();
         setErrorMessage('');
 
+        // Verifica se o usuário está bloqueado
         if (isLockedOut) {
             setErrorMessage(`Você foi bloqueado após muitas tentativas. Por favor, redefina sua senha.`);
-            return;
-        }
-
-        if (!isCaptchaValidated) {
-            setErrorMessage('Por favor, complete o CAPTCHA.');
             return;
         }
 
@@ -158,22 +147,22 @@ const AuthExample = () => {
                 const user = userCredential.user;
 
                 if (user.emailVerified) {
-                    navigate('/');
+                    navigate('/');  
                 } else {
                     setErrorMessage('Por favor, verifique seu e-mail antes de fazer login.');
                     auth.signOut();
                 }
             })
             .catch(error => {
-                const attemptsLeft = 4 - loginAttempts;
-                setLoginAttempts(prev => prev + 1);
-                localStorage.setItem('loginAttempts', loginAttempts + 1);
+                const attemptsLeft = 4 - loginAttempts; // 5 tentativas no total (0 a 4)
+                setLoginAttempts(prev => prev + 1); // Incrementa tentativas de login
+                localStorage.setItem('loginAttempts', loginAttempts + 1); // Armazena o número de tentativas
 
-                if (loginAttempts + 1 >= 5) {
+                if (loginAttempts + 1 >= 5) { // Se já excedeu 5 tentativas
                     setIsLockedOut(true);
                     const lockoutEndTime = Date.now() + 5 * 60 * 1000; // Bloqueio por 5 minutos
-                    setLockoutTime(lockoutEndTime);
-                    localStorage.setItem('lockoutTime', lockoutEndTime);
+                    setLockoutTime(lockoutEndTime); // Define o tempo de bloqueio
+                    localStorage.setItem('lockoutTime', lockoutEndTime); // Armazena o tempo de bloqueio
                     setErrorMessage('Você excedeu o número de tentativas de login. Por favor, redefina sua senha.');
                 } else {
                     if (error.code === 'auth/wrong-password') {
@@ -205,8 +194,9 @@ const AuthExample = () => {
 
                 // Redireciona para a tela de login após 5 segundos
                 setTimeout(() => {
-                    setIsResetPassword(false);
-                    setEmail('');
+                    setIsResetPassword(false); // Volta para a tela de login
+                    setEmail(''); // Limpa o campo de e-mail
+                    // Avisar sobre o bloqueio
                     setErrorMessage('Você foi bloqueado após muitas tentativas. O bloqueio continuará por 5 minutos. Tente novamente após esse período.');
                 }, 5000);
             })
@@ -219,13 +209,6 @@ const AuthExample = () => {
                     setErrorMessage('Erro ao enviar o e-mail de recuperação. Tente novamente mais tarde.');
                 }
             });
-    };
-
-    const onCaptchaChange = (value) => {
-        if (value) {
-            setCaptchaValue(value); // Armazena o valor do reCAPTCHA
-            setIsCaptchaValidated(true); // Habilita o botão
-        }
     };
 
     return (
@@ -284,12 +267,7 @@ const AuthExample = () => {
                         Mostrar senha
                     </label>
 
-                    <ReCAPTCHA
-                        sitekey="6Ld-GFsqAAAAAJJ2LrG7mdJTyxhGxz3oDG5mTa14" // Substitua pela sua chave do site
-                        onChange={onCaptchaChange} // Função chamada ao completar o CAPTCHA
-                    />
-
-                    <button type="submit" disabled={isLoading || isLockedOut || !isCaptchaValidated}>
+                    <button type="submit" disabled={isLoading || isLockedOut}>
                         {isLoading ? 'Carregando...' : (isLogin ? 'Login' : 'Registrar')}
                     </button>
 

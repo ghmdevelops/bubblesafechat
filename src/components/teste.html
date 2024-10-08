@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Áudio</title>
+</head>
+<body>
+    <h1>Teste de Reprodução de Áudio</h1>
+    <audio id="notificationAudio" controls>
+        <source src="./notification.mp3" type="audio/mpeg">
+        Seu navegador não suporta o elemento de áudio.
+    </audio>
+    <script>
+        const audio = document.getElementById('notificationAudio');
+        audio.play().catch((error) => {
+            console.error('Erro ao tentar reproduzir o áudio:', error);
+        });
+    </script>
+</body>
+</html>
