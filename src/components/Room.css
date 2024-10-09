@@ -1,0 +1,63 @@
+.room-container {
+    background-color: #16202b; /* Cor de fundo */
+    color: #fff; /* Cor do texto */
+    padding: 20px;
+    border-radius: 10px; /* Arredondar os cantos do container */
+  }
+  
+  .room-title {
+    text-align: center; /* Centraliza o título da sala */
+    margin-bottom: 20px; /* Espaçamento abaixo do título */
+  }
+  
+  .message-container {
+    height: 300px; /* Altura fixa para o container de mensagens */
+    overflow-y: auto; /* Permite rolagem vertical */
+    border: 1px solid #ccc; /* Borda do container */
+    margin-bottom: 10px; /* Espaçamento abaixo do container */
+    padding: 10px; /* Espaçamento interno */
+  }
+  
+  .message {
+    padding: 5px;
+    border-bottom: 1px solid #eee; /* Borda abaixo de cada mensagem */
+  }
+  
+  .typing-indicator {
+    margin-bottom: 10px; /* Espaçamento abaixo do indicador de digitação */
+  }
+  
+  .status-message {
+    color: green; /* Cor para mensagens de status */
+    text-align: center; /* Centraliza a mensagem */
+  }
+  
+  button {
+    margin: 5px; /* Espaçamento entre os botões */
+  }
+  
+  h3 {
+    margin-top: 20px; /* Espaço acima dos títulos secundários */
+  }
+  .input-audio-container {
+    position: relative; /* Para que o áudio e os botões possam ser posicionados em relação ao input */
+  }
+  
+  .input-audio-container input {
+    flex: 1; /* Para que o input ocupe o máximo de espaço disponível */
+    border-radius: 5px; /* Bordas arredondadas para um visual mais suave */
+  }
+  
+  .input-audio-container audio {
+    position: absolute; /* Posiciona o controle de áudio dentro do input */
+    top: 0;
+    right: 0;
+    height: 100%; /* Faz com que o áudio ocupe toda a altura do input */
+    margin: 0 10px; /* Margem para separar do texto do input */
+    display: none; /* Escondido inicialmente, será exibido quando um áudio for gravado */
+  }
+  
+  .input-audio-container.audio-active audio {
+    display: block; /* Exibe o áudio se houver um arquivo de áudio */
+  }
+  

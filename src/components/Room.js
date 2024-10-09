@@ -2,6 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { database, auth, storage } from '../firebaseConfig';
 import { QRCodeCanvas } from 'qrcode.react';
+import './Room.css';
+import ReactDOM from 'react-dom';
+import Swal from 'sweetalert2';
+import '@sweetalert2/theme-dark/dark.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPaperPlane, faMicrophone, faStopCircle, faTrashAlt, faPlayCircle } from '@fortawesome/free-solid-svg-icons';
+import { Helmet } from 'react-helmet';
 
 const Room = () => {
   const { roomId } = useParams();
@@ -26,25 +33,53 @@ const Room = () => {
   const typingTimeoutRef = useRef(null);
   const navigate = useNavigate();
   const messagesEndRef = useRef(null); // Ref para o final do container de mensagens
+  const [shareMethod, setShareMethod] = useState('');
 
   const shareLink = `${window.location.origin}/opensecurityroom/#/room/${roomId}`;
 
   useEffect(() => {
     const roomRef = database.ref(`rooms/${roomId}`);
-    roomRef.once('value', (snapshot) => {
-      if (snapshot.exists()) {
-        const roomData = snapshot.val();
-        setRoomName(roomData.name);
-        setCreatorName(roomData.creatorName || 'Moderador');
-        const currentUser = auth.currentUser;
-        if (currentUser && roomData.creator === currentUser.uid) {
-          setIsCreator(true);
-          setUserName(roomData.creatorName || 'Moderador');
+    const allowedRef = roomRef.child('allowedUsers');
+
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const sanitizedUserName = sanitizeUserName(currentUser.displayName || currentUser.email);
+      allowedRef.child(sanitizedUserName).once('value', (snapshot) => {
+        if (snapshot.exists()) {
+          setHasJoined(true); // O usuário já está na lista de permitidos
         }
+      });
+    }
+
+    roomRef.once('value', (snapshot) => {
+    if (snapshot.exists()) {
+      const roomData = snapshot.val();
+      setRoomName(roomData.name);
+      setCreatorName(roomData.creatorName || 'Moderador');
+      if (currentUser && roomData.creator === currentUser.uid) {
+        setIsCreator(true);
+        setUserName(roomData.creatorName || 'Moderador');
       }
-      setIsRoomLoaded(true);
-    });
-  }, [roomId]);
+    }
+    setIsRoomLoaded(true);
+  });
+}, [roomId]);
+
+useEffect(() => {
+  const handleBeforeUnload = (event) => {
+    if (!isCreator) { // Apenas para usuários
+      const message = "Você tem certeza que deseja sair da sala? Todas as mensagens não enviadas serão perdidas.";
+      event.returnValue = message; 
+      return message; // Para navegadores antigos
+    }
+  };
+
+  window.addEventListener('beforeunload', handleBeforeUnload);
+
+  return () => {
+    window.removeEventListener('beforeunload', handleBeforeUnload);
+  };
+}, [isCreator]);
 
   useEffect(() => {
     const messagesRef = database.ref(`rooms/${roomId}/messages`);
@@ -192,7 +227,7 @@ const Room = () => {
       setStatusMessage('Nome de usuário é obrigatório.');
       return;
     }
-
+  
     const requestsRef = database.ref(`rooms/${roomId}/requests`).push();
     requestsRef
       .set({
@@ -200,7 +235,7 @@ const Room = () => {
         timestamp: new Date().toISOString(),
       })
       .then(() => {
-        setHasRequestedAccess(true); 
+        setHasRequestedAccess(true);
         setStatusMessage('Solicitação de entrada enviada. Aguarde aprovação.');
       })
       .catch((error) => {
@@ -211,11 +246,11 @@ const Room = () => {
 
   useEffect(() => {
     if (!hasRequestedAccess) return;
-
+  
     const allowedRef = database.ref(`rooms/${roomId}/allowedUsers/${userName}`);
     const deniedRef = database.ref(`rooms/${roomId}/deniedRequests/${userName}`);
     const expelledRef = database.ref(`rooms/${roomId}/expelledUsers/${userName}`);
-
+  
     allowedRef.on('value', (snapshot) => {
       if (snapshot.exists()) {
         setHasJoined(true);
@@ -224,7 +259,7 @@ const Room = () => {
         navigate(`/room/${roomId}`);
       }
     });
-
+  
     deniedRef.on('value', (snapshot) => {
       if (snapshot.exists() && !isCreator) {
         setStatusMessage('Sua solicitação foi recusada. Redirecionando...');
@@ -233,7 +268,7 @@ const Room = () => {
         }, 2000);
       }
     });
-
+  
     expelledRef.on('value', (snapshot) => {
       if (snapshot.exists() && !isCreator) {
         setStatusMessage('Você foi expulso da sala. Redirecionando...');
@@ -242,13 +277,17 @@ const Room = () => {
         }, 2000);
       }
     });
-
+  
     return () => {
       allowedRef.off();
       deniedRef.off();
       expelledRef.off();
     };
   }, [roomId, userName, navigate, isCreator, hasRequestedAccess]);
+
+  const sanitizeUserName = (userName) => {
+    return userName.replace(/[.#$[\]]/g, '_'); // Substitui caracteres inválidos por "_"
+  };  
 
   const expelUser = (userName) => {
     const expelledRef = database.ref(`rooms/${roomId}/expelledUsers/${userName}`);
@@ -302,14 +341,12 @@ const Room = () => {
   };
 
   const deleteChat = () => {
-    // Mensagem informando que a sala foi encerrada pelo moderador
     database.ref(`rooms/${roomId}/messages`).push({
       text: `A sala foi encerrada pelo moderador.`,
       user: 'Sistema',
       timestamp: new Date().toISOString(),
     });
 
-    // Deletar todos os áudios antes de excluir a sala
     const deleteMessagesPromises = messages.map((msg) => {
       return new Promise((resolve) => {
         const messageRef = database.ref(`rooms/${roomId}/messages/${msg.id}`);
@@ -338,8 +375,53 @@ const Room = () => {
     });
   };
 
-  const toggleDestruction = () => {
-    setIsDestructionActive((prevState) => !prevState);
+  const toggleDestruction = async () => {
+    if (!isDestructionActive) {
+      const { value: destructionTime } = await Swal.fire({
+        title: 'Escolha o tempo de destruição (segundos):',
+        input: 'number',
+        inputAttributes: {
+          min: 1,
+          max: 300, // Limite máximo, ajuste conforme necessário
+        },
+        showCancelButton: true,
+        confirmButtonText: 'OK',
+        cancelButtonText: 'Cancelar',
+        inputValidator: (value) => {
+          if (!value) {
+            return 'Você deve inserir um número!';
+          }
+          if (value < 1 || value > 300) {
+            return 'O tempo deve ser entre 1 e 300 segundos!';
+          }
+        }
+      });
+
+      if (destructionTime) {
+        setDestructionTime(destructionTime); // Atualiza o tempo de destruição
+        setIsDestructionActive(true); // Ativa a destruição
+      }
+    } else {
+      setIsDestructionActive(false); // Desativa a destruição
+    }
+  };
+
+  const handleShare = (method) => {
+    if (method === 'copy') {
+      navigator.clipboard.writeText(shareLink)
+        .then(() => {
+          alert('Link copiado para a área de transferência!');
+        })
+        .catch(err => {
+          console.error('Erro ao copiar: ', err);
+        });
+    } else if (method === 'email') {
+      window.open(`mailto:?subject=Compartilhe este link&body=Confira este link do chat: ${shareLink}`, '_blank');
+    } else if (method === 'whatsapp') {
+      window.open(`https://api.whatsapp.com/send?text=Confira este link do chat: ${shareLink}`, '_blank');
+    } else if (method === 'telegram') {
+      window.open(`https://t.me/share/url?url=${shareLink}`, '_blank');
+    }
   };
 
   // Função para gravar áudio
@@ -410,6 +492,25 @@ const Room = () => {
     audio.play();
   };
 
+  const QRCodeModal = ({ shareLink }) => (
+    <div style={{borderRadius: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <QRCodeCanvas value={shareLink} size={190} style={{ borderRadius: '10px', overflow: 'hidden' }} />
+      <p className="d-none">Link: {shareLink}</p>
+    </div>
+  );
+
+  const showQRCode = () => {
+    const modalContent = document.createElement('div');
+    ReactDOM.render(<QRCodeModal shareLink={shareLink} />, modalContent);
+
+    Swal.fire({
+      title: 'QR Code',
+      html: modalContent,
+      showCloseButton: true,
+      confirmButtonText: 'Fechar',
+    });
+  };
+
   if (!hasJoined && !isCreator) {
     return (
       <div>
@@ -436,55 +537,64 @@ const Room = () => {
   return (
     <div>
       <h1>Sala de Chat - {roomName}</h1>
+     
 
       {isCreator && (
-        <div>
-          <label>
-            <strong>Mensagens Autodestrutivas: </strong>
-            <input
-              type="checkbox"
-              checked={isDestructionActive}
-              onChange={toggleDestruction}
-            />
-            {isDestructionActive ? 'Ativado' : 'Desativado'}
-          </label>
-          <div>
-            <label>
-              <strong>Tempo de destruição (segundos): </strong>
-              <input
-                type="number"
-                value={destructionTime}
-                onChange={(e) => setDestructionTime(Number(e.target.value))}
-                disabled={!isDestructionActive}
-              />
-            </label>
-          </div>
-        </div>
+       <div className="mb-3 mt-4">
+       <div className="d-flex align-items-center">
+         <div className="form-check form-switch me-3">
+           <input
+             type="checkbox"
+             checked={isDestructionActive}
+             onChange={toggleDestruction}
+             id="destructionSwitch"
+             className="form-check-input visually-hidden"
+           />
+           <label className="form-check-label" htmlFor="destructionSwitch">
+             <strong>Mensagens Autodestrutivas:</strong> {isDestructionActive ? ' Ativado' : ' Desativado'}
+           </label>
+         </div>
+ 
+         <div>
+           <label className="d-none">
+             <strong>Tempo de destruição (segundos):</strong>
+             <input
+               type="number"
+               value={destructionTime}
+               onChange={(e) => setDestructionTime(Number(e.target.value))}
+               disabled={!isDestructionActive}
+             />
+           </label>
+         </div>
+       </div>
+     </div>
       )}
 
       {isCreator && pendingRequests.length > 0 && (
-        <div>
-          <h3>Solicitações de entrada:</h3>
-          <ul>
-            {pendingRequests.map((request) => (
-              <li key={request.id}>
+      <div className="mb-3">
+          <h5>Solicitações de entradas no chat</h5>
+          <ul className="list-group">
+          {pendingRequests.map((request) => (
+              <li key={request.id} className="list-group-item d-flex justify-content-between align-items-center">
                 {request.userName}
-                <button onClick={() => handleRequest(request.id, 'accept')}>Aceitar</button>
-                <button onClick={() => handleRequest(request.id, 'deny')}>Negar</button>
+                <div>
+                <button className="btn btn-success btn-sm" onClick={() => handleRequest(request.id, 'accept')}>Aceitar</button>
+                <button className="btn btn-danger btn-sm" onClick={() => handleRequest(request.id, 'deny')}>Negar</button>
+              </div>
               </li>
             ))}
           </ul>
         </div>
       )}
 
-      <div style={{ height: '300px', overflowY: 'scroll', border: '1px solid #ccc', marginBottom: '10px' }}>
+<div className="message-container mb-3" style={{ height: '300px', overflowY: 'scroll', border: '1px solid #ccc' }}>
         {messages.map((msg) => {
           const timeSinceCreation = (Date.now() - new Date(msg.timestamp).getTime()) / 1000;
           const timeRemaining = destructionTime - timeSinceCreation;
 
           return (
             <div key={msg.id} style={{ padding: '5px', borderBottom: '1px solid #eee' }}>
-              <strong>{msg.user}:</strong> {msg.text ? msg.text : <button onClick={() => playAudio(msg.audioUrl)}>Reproduzir Áudio</button>}
+              <strong>{msg.user}:</strong> {msg.text ? msg.text : <button onClick={() => playAudio(msg.audioUrl)}><FontAwesomeIcon icon={faPlayCircle} /></button>}
               {msg.readBy && (
                 <div>
                   <small>Lido por: {msg.readBy.join(', ')}</small>
@@ -498,8 +608,6 @@ const Room = () => {
             </div>
           );
         })}
-
-        {/* Ref para o final do container de mensagens */}
         <div ref={messagesEndRef} />
       </div>
 
@@ -509,39 +617,75 @@ const Room = () => {
         </div>
       )}
 
+<div className="d-flex align-items-center">
+  {recording ? ( // Verifica se a gravação está ativa
+    <>
       <input
         type="text"
         value={message}
         onChange={handleTyping}
         placeholder="Escreva sua mensagem"
         onFocus={markAllMessagesAsRead}
+        className="form-control me-2"
+        disabled // Desabilita o input enquanto grava
       />
-      <button onClick={sendMessage} disabled={!message.trim()}>
-        Enviar
+      <button onClick={stopRecording} className="btn btn-warning me-2">
+        <FontAwesomeIcon icon={faStopCircle} /> {/* Ícone para Parar Gravação */}
       </button>
-
-      <div>
-        <button onClick={startRecording} disabled={recording}>
-          Gravar Áudio
-        </button>
-        <button onClick={stopRecording} disabled={!recording}>
-          Parar Gravação
-        </button>
-        {audioFile && (
-          <div>
-            <button onClick={sendAudioMessage}>Enviar Áudio</button>
-          </div>
-        )}
-      </div>
+      <span className="text-warning ms-2">Gravando...</span> {/* Span de gravação */}
+    </>
+  ) : audioFile ? ( // Verifica se há um arquivo de áudio
+    <div className="d-flex align-items-center">
+      <audio controls src={URL.createObjectURL(audioFile)} style={{ width: '200px', marginRight: '10px' }} />
+      <button onClick={sendAudioMessage} disabled={!audioFile} className="btn btn-primary me-2">
+        <FontAwesomeIcon icon={faPaperPlane} /> {/* Ícone para Enviar Áudio */}
+      </button>
+      <button onClick={() => setAudioFile(null)} className="btn btn-danger">
+        <FontAwesomeIcon icon={faTrashAlt} /> {/* Ícone para Cancelar */}
+      </button>
+    </div>
+  ) : (
+    <>
+      <input
+        type="text"
+        value={message}
+        onChange={handleTyping}
+        placeholder="Escreva sua mensagem"
+        onFocus={markAllMessagesAsRead}
+        className="form-control me-2"
+      />
+      <button onClick={sendMessage} disabled={!message.trim()} className="btn btn-primary me-2">
+        <FontAwesomeIcon icon={faPaperPlane} /> {/* Ícone para Enviar */}
+      </button>
+      <button onClick={startRecording} disabled={recording} className="btn btn-secondary me-2">
+        <FontAwesomeIcon icon={faMicrophone} /> {/* Ícone para Gravar Áudio */}
+      </button>
+    </>
+  )}
+</div>
 
       {isCreator && (
         <div>
-          <h3>Compartilhar link do chat:</h3>
-          <p>Link: <a href={shareLink}>{shareLink}</a></p>
-          <QRCodeCanvas value={shareLink} size={128} />
-          <button onClick={leaveRoom}>Sair</button>
-          <button onClick={deleteChat}>Excluir Chat</button>
+        <h3>Compartilhar link do chat:</h3>
+        <p>Link: <a href={shareLink}>{shareLink}</a></p>
+  
+        <div className="mb-3">
+          <button className="btn btn-secondary" onClick={() => setShareMethod('copy')}>Copiar Link</button>
+          <button className="btn btn-secondary" onClick={() => setShareMethod('email')}>Enviar por E-mail</button>
+          <button className="btn btn-secondary" onClick={() => setShareMethod('whatsapp')}>Compartilhar no WhatsApp</button>
+          <button className="btn btn-secondary" onClick={() => setShareMethod('telegram')}>Compartilhar no Telegram</button>
+          <button className="btn btn-danger" onClick={leaveRoom}>Sair</button>
+      <button className="btn btn-danger" onClick={deleteChat}>Excluir Chat</button>
+      <button className="btn btn-primary" onClick={showQRCode}>QR Code do chat</button>
         </div>
+  
+        {shareMethod && (
+          <div>
+            <h4>Você escolheu compartilhar via: {shareMethod === 'copy' ? 'Copiar Link' : shareMethod === 'email' ? 'Enviar por E-mail' : shareMethod === 'whatsapp' ? 'Compartilhar no WhatsApp' : 'Compartilhar no Telegram'}</h4>
+            <button className="btn btn-primary" onClick={() => handleShare(shareMethod)}>Confirmar Compartilhamento</button>
+          </div>
+        )}
+      </div>
       )}
 
       {isCreator && (
