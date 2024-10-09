@@ -6,6 +6,8 @@ import { Helmet } from 'react-helmet';
 import 'bootstrap/dist/css/bootstrap.min.css'; // Importa o CSS do Bootstrap
 import Swal from 'sweetalert2'; // Importa o SweetAlert
 import './CreateRoom.css'; // Importe o CSS personalizado
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPowerOff } from '@fortawesome/free-solid-svg-icons'; 
 
 const CreateRoom = () => {
   const [roomName, setRoomName] = useState('');
@@ -134,39 +136,26 @@ const CreateRoom = () => {
         <meta name="keywords" content="criar sala, chat, Open Security Room" />
         <meta name="author" content="Open Security Room" />
       </Helmet>
-  
+
       <header>
         <nav className="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
           <div className="container-fluid">
             <a className="navbar-brand" href="#">Open Security Room</a>
-            <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
-              aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-              <span className="navbar-toggler-icon"></span>
+            <div id="navbarCollapse">
+            <button className="logout-button btn btn-danger" onClick={handleLogout}>
+              <FontAwesomeIcon icon={faPowerOff} />{/* Adiciona o ícone */}
             </button>
-            <div className="collapse navbar-collapse" id="navbarCollapse">
-              <ul className="navbar-nav me-auto mb-2 mb-md-0">
-                <li className="nav-item active">
-                  <a className="nav-link" aria-current="page" href="#">Home</a>
-                </li>
-                <li className="nav-item">
-                  <a className="nav-link" href="#">Link</a>
-                </li>
-                <li className="nav-item">
-                  <a className="nav-link disabled" href="#" tabIndex="-1" aria-disabled="true">Disabled</a>
-                </li>
-              </ul>
-              <button className="logout-button btn btn-danger" onClick={handleLogout}>Logout</button>
             </div>
           </div>
         </nav>
       </header>
-  
+
       <div className="container" style={{ marginTop: '70px' }}> {/* Espaço para a navbar fixa */}
         {/* Condição para exibir a mensagem de boas-vindas apenas se o nome não estiver confirmado */}
         {!isNameConfirmed && <h2>Bem-vindo, {userEmail}</h2>}
-  
+
         <h1>Criar uma Sala</h1>
-  
+
         {!isNameConfirmed ? (
           <div>
             <label>
@@ -183,15 +172,15 @@ const CreateRoom = () => {
           </div>
         ) : (
           <>
-          <label>
-          Insira o nome da sala
-            <input
-              type="text"
-              value={roomName}
-              onChange={(e) => setRoomName(e.target.value)} // Atualiza o nome da sala
-              placeholder="Nome da Sala"
-              className="form-control mb-3" // Adiciona a classe do Bootstrap
-            />
+            <label>
+              Insira o nome da sala
+              <input
+                type="text"
+                value={roomName}
+                onChange={(e) => setRoomName(e.target.value)} // Atualiza o nome da sala
+                placeholder="Nome da Sala"
+                className="form-control mb-3" // Adiciona a classe do Bootstrap
+              />
             </label>
             <button className="btn btn-primary mx-2" onClick={createRoom} disabled={!roomName.trim() || loading}>
               {loading ? 'Criando...' : 'Criar Sala'}
@@ -199,8 +188,8 @@ const CreateRoom = () => {
             <button className="btn btn-secondary" onClick={handleCancelName}>Cancelar</button> {/* Botão de Cancelar */}
           </>
         )}
-  
-  {successMessage && <p className="success-message">{successMessage}</p>} {/* Mensagem de sucesso */}
+
+        {successMessage && <p className="success-message">{successMessage}</p>} {/* Mensagem de sucesso */}
         {errorMessage && <p className="error-message">{errorMessage}</p>} {/* Mensagem de erro */}
       </div>
     </div>

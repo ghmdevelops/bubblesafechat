@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';  
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { database, auth, storage } from '../firebaseConfig';
 import { QRCodeCanvas } from 'qrcode.react';
@@ -34,6 +34,8 @@ const Room = () => {
   const navigate = useNavigate();
   const messagesEndRef = useRef(null); // Ref para o final do container de mensagens
   const [shareMethod, setShareMethod] = useState('');
+  const [expelledUsers, setExpelledUsers] = useState([]); // Estado para armazenar os usuários expulsos
+
 
   const shareLink = `${window.location.origin}/opensecurityroom/#/room/${roomId}`;
 
@@ -52,34 +54,52 @@ const Room = () => {
     }
 
     roomRef.once('value', (snapshot) => {
-    if (snapshot.exists()) {
-      const roomData = snapshot.val();
-      setRoomName(roomData.name);
-      setCreatorName(roomData.creatorName || 'Moderador');
-      if (currentUser && roomData.creator === currentUser.uid) {
-        setIsCreator(true);
-        setUserName(roomData.creatorName || 'Moderador');
+      if (snapshot.exists()) {
+        const roomData = snapshot.val();
+        setRoomName(roomData.name);
+        setCreatorName(roomData.creatorName || 'Moderador');
+        if (currentUser && roomData.creator === currentUser.uid) {
+          setIsCreator(true);
+          setUserName(roomData.creatorName || 'Moderador');
+        }
       }
-    }
-    setIsRoomLoaded(true);
-  });
-}, [roomId]);
+      setIsRoomLoaded(true);
+    });
+  }, [roomId]);
 
-useEffect(() => {
-  const handleBeforeUnload = (event) => {
-    if (!isCreator) { // Apenas para usuários
-      const message = "Você tem certeza que deseja sair da sala? Todas as mensagens não enviadas serão perdidas.";
-      event.returnValue = message; 
-      return message; // Para navegadores antigos
-    }
-  };
+  useEffect(() => {
+    const expelledRef = database.ref(`rooms/${roomId}/expelledUsers`);
+    expelledRef.on('value', (snapshot) => {
+      const expelledData = snapshot.val() || {};
+      setExpelledUsers(Object.keys(expelledData));
+    });
 
-  window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      expelledRef.off();
+    };
+  }, [roomId]);
 
-  return () => {
-    window.removeEventListener('beforeunload', handleBeforeUnload);
-  };
-}, [isCreator]);
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      if (!isCreator) { // Apenas para usuários que não são criadores
+        database.ref(`rooms/${roomId}/messages`).push({
+          text: `${userName} saiu da sala.`,
+          user: 'Sistema',
+          timestamp: new Date().toISOString(),
+        });
+
+        const message = "Você tem certeza que deseja sair da sala?";
+        event.returnValue = message;
+        return message; 
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [userName, roomId, isCreator]);
 
   useEffect(() => {
     const messagesRef = database.ref(`rooms/${roomId}/messages`);
@@ -227,7 +247,7 @@ useEffect(() => {
       setStatusMessage('Nome de usuário é obrigatório.');
       return;
     }
-  
+
     const requestsRef = database.ref(`rooms/${roomId}/requests`).push();
     requestsRef
       .set({
@@ -246,11 +266,11 @@ useEffect(() => {
 
   useEffect(() => {
     if (!hasRequestedAccess) return;
-  
+
     const allowedRef = database.ref(`rooms/${roomId}/allowedUsers/${userName}`);
     const deniedRef = database.ref(`rooms/${roomId}/deniedRequests/${userName}`);
     const expelledRef = database.ref(`rooms/${roomId}/expelledUsers/${userName}`);
-  
+
     allowedRef.on('value', (snapshot) => {
       if (snapshot.exists()) {
         setHasJoined(true);
@@ -259,7 +279,7 @@ useEffect(() => {
         navigate(`/room/${roomId}`);
       }
     });
-  
+
     deniedRef.on('value', (snapshot) => {
       if (snapshot.exists() && !isCreator) {
         setStatusMessage('Sua solicitação foi recusada. Redirecionando...');
@@ -268,7 +288,7 @@ useEffect(() => {
         }, 2000);
       }
     });
-  
+
     expelledRef.on('value', (snapshot) => {
       if (snapshot.exists() && !isCreator) {
         setStatusMessage('Você foi expulso da sala. Redirecionando...');
@@ -277,7 +297,7 @@ useEffect(() => {
         }, 2000);
       }
     });
-  
+
     return () => {
       allowedRef.off();
       deniedRef.off();
@@ -287,7 +307,7 @@ useEffect(() => {
 
   const sanitizeUserName = (userName) => {
     return userName.replace(/[.#$[\]]/g, '_'); // Substitui caracteres inválidos por "_"
-  };  
+  };
 
   const expelUser = (userName) => {
     const expelledRef = database.ref(`rooms/${roomId}/expelledUsers/${userName}`);
@@ -302,7 +322,7 @@ useEffect(() => {
 
   const usersWithExpelButton = new Set(messages
     .map((msg) => msg.user)
-    .filter((user) => user !== creatorName && user !== 'Sistema'));
+    .filter((user) => user !== creatorName && user !== 'Sistema' && !expelledUsers.includes(user))); // Filtra usuários expulsos
 
   const sendMessage = () => {
     if (message.trim()) {
@@ -493,7 +513,7 @@ useEffect(() => {
   };
 
   const QRCodeModal = ({ shareLink }) => (
-    <div style={{borderRadius: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <div style={{ borderRadius: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <QRCodeCanvas value={shareLink} size={190} style={{ borderRadius: '10px', overflow: 'hidden' }} />
       <p className="d-none">Link: {shareLink}</p>
     </div>
@@ -537,57 +557,57 @@ useEffect(() => {
   return (
     <div>
       <h1>Sala de Chat - {roomName}</h1>
-     
+
 
       {isCreator && (
-       <div className="mb-3 mt-4">
-       <div className="d-flex align-items-center">
-         <div className="form-check form-switch me-3">
-           <input
-             type="checkbox"
-             checked={isDestructionActive}
-             onChange={toggleDestruction}
-             id="destructionSwitch"
-             className="form-check-input visually-hidden"
-           />
-           <label className="form-check-label" htmlFor="destructionSwitch">
-             <strong>Mensagens Autodestrutivas:</strong> {isDestructionActive ? ' Ativado' : ' Desativado'}
-           </label>
-         </div>
- 
-         <div>
-           <label className="d-none">
-             <strong>Tempo de destruição (segundos):</strong>
-             <input
-               type="number"
-               value={destructionTime}
-               onChange={(e) => setDestructionTime(Number(e.target.value))}
-               disabled={!isDestructionActive}
-             />
-           </label>
-         </div>
-       </div>
-     </div>
+        <div className="mb-3 mt-4">
+          <div className="d-flex align-items-center">
+            <div className="form-check form-switch me-3">
+              <input
+                type="checkbox"
+                checked={isDestructionActive}
+                onChange={toggleDestruction}
+                id="destructionSwitch"
+                className="form-check-input visually-hidden"
+              />
+              <label className="form-check-label" htmlFor="destructionSwitch">
+                <strong>Mensagens Autodestrutivas:</strong> {isDestructionActive ? ' Ativado' : ' Desativado'}
+              </label>
+            </div>
+
+            <div>
+              <label className="d-none">
+                <strong>Tempo de destruição (segundos):</strong>
+                <input
+                  type="number"
+                  value={destructionTime}
+                  onChange={(e) => setDestructionTime(Number(e.target.value))}
+                  disabled={!isDestructionActive}
+                />
+              </label>
+            </div>
+          </div>
+        </div>
       )}
 
       {isCreator && pendingRequests.length > 0 && (
-      <div className="mb-3">
+        <div className="mb-3">
           <h5>Solicitações de entradas no chat</h5>
           <ul className="list-group">
-          {pendingRequests.map((request) => (
+            {pendingRequests.map((request) => (
               <li key={request.id} className="list-group-item d-flex justify-content-between align-items-center">
                 {request.userName}
                 <div>
-                <button className="btn btn-success btn-sm" onClick={() => handleRequest(request.id, 'accept')}>Aceitar</button>
-                <button className="btn btn-danger btn-sm" onClick={() => handleRequest(request.id, 'deny')}>Negar</button>
-              </div>
+                  <button className="btn btn-success btn-sm" onClick={() => handleRequest(request.id, 'accept')}>Aceitar</button>
+                  <button className="btn btn-danger btn-sm" onClick={() => handleRequest(request.id, 'deny')}>Negar</button>
+                </div>
               </li>
             ))}
           </ul>
         </div>
       )}
 
-<div className="message-container mb-3" style={{ height: '300px', overflowY: 'scroll', border: '1px solid #ccc' }}>
+      <div className="message-container mb-3" style={{ height: '300px', overflowY: 'scroll', border: '1px solid #ccc' }}>
         {messages.map((msg) => {
           const timeSinceCreation = (Date.now() - new Date(msg.timestamp).getTime()) / 1000;
           const timeRemaining = destructionTime - timeSinceCreation;
@@ -617,75 +637,81 @@ useEffect(() => {
         </div>
       )}
 
-<div className="d-flex align-items-center">
-  {recording ? ( // Verifica se a gravação está ativa
-    <>
-      <input
-        type="text"
-        value={message}
-        onChange={handleTyping}
-        placeholder="Escreva sua mensagem"
-        onFocus={markAllMessagesAsRead}
-        className="form-control me-2"
-        disabled // Desabilita o input enquanto grava
-      />
-      <button onClick={stopRecording} className="btn btn-warning me-2">
-        <FontAwesomeIcon icon={faStopCircle} /> {/* Ícone para Parar Gravação */}
-      </button>
-      <span className="text-warning ms-2">Gravando...</span> {/* Span de gravação */}
-    </>
-  ) : audioFile ? ( // Verifica se há um arquivo de áudio
-    <div className="d-flex align-items-center">
-      <audio controls src={URL.createObjectURL(audioFile)} style={{ width: '200px', marginRight: '10px' }} />
-      <button onClick={sendAudioMessage} disabled={!audioFile} className="btn btn-primary me-2">
-        <FontAwesomeIcon icon={faPaperPlane} /> {/* Ícone para Enviar Áudio */}
-      </button>
-      <button onClick={() => setAudioFile(null)} className="btn btn-danger">
-        <FontAwesomeIcon icon={faTrashAlt} /> {/* Ícone para Cancelar */}
-      </button>
-    </div>
-  ) : (
-    <>
-      <input
-        type="text"
-        value={message}
-        onChange={handleTyping}
-        placeholder="Escreva sua mensagem"
-        onFocus={markAllMessagesAsRead}
-        className="form-control me-2"
-      />
-      <button onClick={sendMessage} disabled={!message.trim()} className="btn btn-primary me-2">
-        <FontAwesomeIcon icon={faPaperPlane} /> {/* Ícone para Enviar */}
-      </button>
-      <button onClick={startRecording} disabled={recording} className="btn btn-secondary me-2">
-        <FontAwesomeIcon icon={faMicrophone} /> {/* Ícone para Gravar Áudio */}
-      </button>
-    </>
-  )}
-</div>
+      <div className="d-flex align-items-center">
+        {recording ? (
+          <>
+            <input
+              type="text"
+              value={message}
+              onChange={handleTyping}
+              placeholder="Escreva sua mensagem"
+              onFocus={markAllMessagesAsRead}
+              className="form-control me-2"
+              disabled // Desabilita o input enquanto grava
+            />
+            <button onClick={stopRecording} className="btn btn-warning me-2">
+              <FontAwesomeIcon icon={faStopCircle} /> {/* Ícone para Parar Gravação */}
+            </button>
+            <span className="text-warning ms-2">Gravando...</span> {/* Span de gravação */}
+          </>
+        ) : audioFile ? ( // Verifica se há um arquivo de áudio
+          <div className="d-flex align-items-center">
+            <audio controls src={URL.createObjectURL(audioFile)} style={{ width: '200px', marginRight: '10px' }} />
+            <button onClick={sendAudioMessage} disabled={!audioFile} className="btn btn-primary me-2">
+              <FontAwesomeIcon icon={faPaperPlane} /> {/* Ícone para Enviar Áudio */}
+            </button>
+            <button onClick={() => setAudioFile(null)} className="btn btn-danger">
+              <FontAwesomeIcon icon={faTrashAlt} /> {/* Ícone para Cancelar */}
+            </button>
+          </div>
+        ) : (
+          <>
+            <input
+              type="text"
+              value={message}
+              onChange={handleTyping}
+              placeholder="Escreva sua mensagem"
+              onFocus={markAllMessagesAsRead}
+              className="form-control me-2"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && message.trim()) {
+                  e.preventDefault(); // Previne a quebra de linha
+                  sendMessage(); // Chama a função para enviar a mensagem
+                }
+              }}
+            />
+            <button onClick={sendMessage} disabled={!message.trim()} className="btn btn-primary me-2">
+              <FontAwesomeIcon icon={faPaperPlane} /> {/* Ícone para Enviar */}
+            </button>
+            <button onClick={startRecording} disabled={recording} className="btn btn-secondary me-2">
+              <FontAwesomeIcon icon={faMicrophone} /> {/* Ícone para Gravar Áudio */}
+            </button>
+          </>
+        )}
+      </div>
 
       {isCreator && (
         <div>
-        <h3>Compartilhar link do chat:</h3>
-        <p>Link: <a href={shareLink}>{shareLink}</a></p>
-  
-        <div className="mb-3">
-          <button className="btn btn-secondary" onClick={() => setShareMethod('copy')}>Copiar Link</button>
-          <button className="btn btn-secondary" onClick={() => setShareMethod('email')}>Enviar por E-mail</button>
-          <button className="btn btn-secondary" onClick={() => setShareMethod('whatsapp')}>Compartilhar no WhatsApp</button>
-          <button className="btn btn-secondary" onClick={() => setShareMethod('telegram')}>Compartilhar no Telegram</button>
-          <button className="btn btn-danger" onClick={leaveRoom}>Sair</button>
-      <button className="btn btn-danger" onClick={deleteChat}>Excluir Chat</button>
-      <button className="btn btn-primary" onClick={showQRCode}>QR Code do chat</button>
-        </div>
-  
-        {shareMethod && (
-          <div>
-            <h4>Você escolheu compartilhar via: {shareMethod === 'copy' ? 'Copiar Link' : shareMethod === 'email' ? 'Enviar por E-mail' : shareMethod === 'whatsapp' ? 'Compartilhar no WhatsApp' : 'Compartilhar no Telegram'}</h4>
-            <button className="btn btn-primary" onClick={() => handleShare(shareMethod)}>Confirmar Compartilhamento</button>
+          <h3>Compartilhar link do chat:</h3>
+          <p>Link: <a href={shareLink}>{shareLink}</a></p>
+
+          <div className="mb-3">
+            <button className="btn btn-secondary" onClick={() => setShareMethod('copy')}>Copiar Link</button>
+            <button className="btn btn-secondary" onClick={() => setShareMethod('email')}>Enviar por E-mail</button>
+            <button className="btn btn-secondary" onClick={() => setShareMethod('whatsapp')}>Compartilhar no WhatsApp</button>
+            <button className="btn btn-secondary" onClick={() => setShareMethod('telegram')}>Compartilhar no Telegram</button>
+            <button className="btn btn-danger" onClick={leaveRoom}>Sair</button>
+            <button className="btn btn-danger" onClick={deleteChat}>Excluir Chat</button>
+            <button className="btn btn-primary" onClick={showQRCode}>QR Code do chat</button>
           </div>
-        )}
-      </div>
+
+          {shareMethod && (
+            <div>
+              <h4>Você escolheu compartilhar via: {shareMethod === 'copy' ? 'Copiar Link' : shareMethod === 'email' ? 'Enviar por E-mail' : shareMethod === 'whatsapp' ? 'Compartilhar no WhatsApp' : 'Compartilhar no Telegram'}</h4>
+              <button className="btn btn-primary" onClick={() => handleShare(shareMethod)}>Confirmar Compartilhamento</button>
+            </div>
+          )}
+        </div>
       )}
 
       {isCreator && (
