@@ -1,68 +1,56 @@
 import React, { useState, useEffect } from 'react';
 import { auth } from '../firebaseConfig';
+import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import '@fortawesome/fontawesome-svg-core/styles.css';
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faGoogle } from '@fortawesome/free-brands-svg-icons';
+import logo from './img/name.png';
+import icon from './img/icon-page.png';
+import googleIcon from './img/icon-google.png';
+import './AuthExample.css';
+
+library.add(faGoogle);
 
 const AuthExample = () => {
-    const [firstName, setFirstName] = useState('');  
+    const [firstName, setFirstName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');  
-    const [isLogin, setIsLogin] = useState(true);  
-    const [showPassword, setShowPassword] = useState(false);  
-    const [errorMessage, setErrorMessage] = useState('');  
-    const [resetMessage, setResetMessage] = useState('');  
-    const [isResetPassword, setIsResetPassword] = useState(false); 
-    const [registrationMessage, setRegistrationMessage] = useState('');  
-    const [isLoading, setIsLoading] = useState(false);  
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [isLogin, setIsLogin] = useState(true);
+    const [showPassword, setShowPassword] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [resetMessage, setResetMessage] = useState('');
+    const [isResetPassword, setIsResetPassword] = useState(false);
+    const [registrationMessage, setRegistrationMessage] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const [loginAttempts, setLoginAttempts] = useState(0); // Contador de tentativas de login
     const [isLockedOut, setIsLockedOut] = useState(false); // Estado para controle de bloqueio
-    const [lockoutTime, setLockoutTime] = useState(null); // Tempo de bloqueio
-    const [remainingTime, setRemainingTime] = useState(0); // Tempo restante de bloqueio
+    const [lockoutMessage, setLockoutMessage] = useState(''); // Mensagem de bloqueio
+    const [passwordResetRequested, setPasswordResetRequested] = useState(false); // Estado para controle de solicitação de redefinição de senha
     const navigate = useNavigate();
 
     useEffect(() => {
         // Verifica se o usuário está bloqueado
-        const storedLockoutTime = localStorage.getItem('lockoutTime');
-        const storedAttempts = localStorage.getItem('loginAttempts');
+        const storedLockout = localStorage.getItem('isLockedOut');
 
-        if (storedLockoutTime) {
-            const remainingTime = Math.ceil((parseInt(storedLockoutTime) - Date.now()) / 1000); // Tempo restante em segundos
-            if (remainingTime > 0) {
-                setIsLockedOut(true);
-                setLockoutTime(parseInt(storedLockoutTime));
-                setRemainingTime(remainingTime);
-            }
+        if (storedLockout === 'true') {
+            setIsLockedOut(true);
+            setLockoutMessage('Sua conta está bloqueada. Redefina sua senha para acessar novamente.');
         }
 
+        const storedAttempts = localStorage.getItem('loginAttempts');
         if (storedAttempts) {
             setLoginAttempts(parseInt(storedAttempts));
         }
-
-        // Se o usuário estiver bloqueado, verifica o tempo restante
-        if (isLockedOut && lockoutTime) {
-            const timer = setInterval(() => {
-                const newRemainingTime = Math.ceil((lockoutTime - Date.now()) / 1000); // Tempo restante em segundos
-                if (newRemainingTime <= 0) {
-                    setIsLockedOut(false); // Desbloqueia o usuário
-                    setLoginAttempts(0); // Reseta o contador de tentativas
-                    localStorage.removeItem('lockoutTime'); // Remove o lockout do localStorage
-                    localStorage.removeItem('loginAttempts'); // Reseta tentativas
-                    setErrorMessage('Você pode tentar fazer login novamente.');
-                    clearInterval(timer);
-                } else {
-                    setRemainingTime(newRemainingTime); // Atualiza o tempo restante
-                }
-            }, 1000); // Verifica a cada segundo
-
-            return () => clearInterval(timer); // Limpa o timer ao desmontar
-        }
-    }, [isLockedOut, lockoutTime]);
+    }, []);
 
     const handleGoogleLogin = async () => {
         const provider = new GoogleAuthProvider();
         setIsLoading(true);
-        
+
         try {
             await signInWithPopup(auth, provider);
             navigate('/'); // Redireciona para a página principal após o login
@@ -77,7 +65,7 @@ const AuthExample = () => {
     const handleRegister = (e) => {
         e.preventDefault();
         setErrorMessage('');
-        setRegistrationMessage('');  
+        setRegistrationMessage('');
 
         if (!firstName.trim()) {
             setErrorMessage('Por favor, insira seu primeiro nome.');
@@ -105,7 +93,7 @@ const AuthExample = () => {
                     .then(() => {
                         setRegistrationMessage('Cadastro realizado com sucesso! Verifique seu e-mail para confirmar sua conta antes de fazer login.');
                         setTimeout(() => {
-                            setIsLogin(true); 
+                            setIsLogin(true);
                             setRegistrationMessage('');
                         }, 5000);
                     })
@@ -135,10 +123,10 @@ const AuthExample = () => {
         e.preventDefault();
         setErrorMessage('');
 
-        // Verifica se o usuário está bloqueado
-        if (isLockedOut) {
-            setErrorMessage(`Você foi bloqueado após muitas tentativas. Por favor, redefina sua senha.`);
-            return;
+        // Verifica se a conta está bloqueada
+        if (isLockedOut || passwordResetRequested) {
+            setErrorMessage('Você deve redefinir sua senha antes de tentar fazer login.');
+            return; // Não permite o login se a conta estiver bloqueada ou se a senha foi solicitada para redefinição
         }
 
         setIsLoading(true);
@@ -147,7 +135,7 @@ const AuthExample = () => {
                 const user = userCredential.user;
 
                 if (user.emailVerified) {
-                    navigate('/');  
+                    navigate('/');
                 } else {
                     setErrorMessage('Por favor, verifique seu e-mail antes de fazer login.');
                     auth.signOut();
@@ -160,13 +148,11 @@ const AuthExample = () => {
 
                 if (loginAttempts + 1 >= 5) { // Se já excedeu 5 tentativas
                     setIsLockedOut(true);
-                    const lockoutEndTime = Date.now() + 5 * 60 * 1000; // Bloqueio por 5 minutos
-                    setLockoutTime(lockoutEndTime); // Define o tempo de bloqueio
-                    localStorage.setItem('lockoutTime', lockoutEndTime); // Armazena o tempo de bloqueio
-                    setErrorMessage('Você excedeu o número de tentativas de login. Por favor, redefina sua senha.');
+                    localStorage.setItem('isLockedOut', 'true'); // Armazena que a conta está bloqueada
+                    setErrorMessage('Você excedeu o número de tentativas de login. Redefina sua senha.');
                 } else {
                     if (error.code === 'auth/wrong-password') {
-                        setErrorMessage(`Senha incorreta. Você tem ${attemptsLeft} tentativas restantes.`);
+                        setErrorMessage(`Senha incorreta. Você tem ${attemptsLeft} tentativas restantes. Considere redefinir sua senha.`);
                     } else if (error.code === 'auth/user-not-found') {
                         setErrorMessage('E-mail não encontrado. Verifique se o e-mail está correto.');
                     } else if (error.code === 'auth/invalid-email') {
@@ -191,14 +177,12 @@ const AuthExample = () => {
             .then(() => {
                 setResetMessage('E-mail de recuperação de senha enviado. Verifique sua caixa de entrada ou lixo eletrônico.');
                 setErrorMessage('');
+                setPasswordResetRequested(true); // Indica que o pedido de redefinição de senha foi feito
 
-                // Redireciona para a tela de login após 5 segundos
-                setTimeout(() => {
-                    setIsResetPassword(false); // Volta para a tela de login
-                    setEmail(''); // Limpa o campo de e-mail
-                    // Avisar sobre o bloqueio
-                    setErrorMessage('Você foi bloqueado após muitas tentativas. O bloqueio continuará por 5 minutos. Tente novamente após esse período.');
-                }, 5000);
+                // Redefinir estado de bloqueio após o envio do e-mail
+                setIsLockedOut(false);
+                localStorage.removeItem('isLockedOut'); // Remove o bloqueio
+                localStorage.removeItem('loginAttempts'); // Reseta tentativas
             })
             .catch(error => {
                 if (error.code === 'auth/user-not-found') {
@@ -212,7 +196,26 @@ const AuthExample = () => {
     };
 
     return (
-        <div>
+        <div className="auth-container">
+            <Helmet>
+                <title>{isLogin ? 'Open Security Room - Login' : 'Open Security Room - Registro'}</title>
+                <meta name="description" content="Faça login para acessar suas salas de chat na Open Security Room ou crie uma nova conta para se juntar à comunidade." />
+                <meta name="keywords" content="login, registro, chat, segurança, comunidade" />
+                <meta name="author" content="Open Security Room" />
+                <meta property="og:title" content={isLogin ? 'Open Security Room - Login' : 'Open Security Room - Registro'} />
+                <meta property="og:description" content="Acesse suas salas de chat ou crie uma nova conta na Open Security Room." />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content={window.location.href} />
+                <meta property="og:image" content="URL_da_imagem_de_visualização" />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={isLogin ? 'Open Security Room - Login' : 'Open Security Room - Registro'} />
+                <meta name="twitter:description" content="Acesse suas salas de chat ou crie uma nova conta na Open Security Room." />
+                <meta name="twitter:image" content="URL_da_imagem_de_visualização" />
+                <link rel="canonical" href={window.location.href} />
+            </Helmet>
+
+            <img id="icon-img" src={icon} alt="OpenSecurityRoom" />
+            <img src={logo} alt="OpenSecurityRoom" />
             <h1>{isResetPassword ? 'Redefinir Senha' : (isLogin ? 'Login' : 'Registrar')}</h1>
 
             {!isResetPassword ? (
@@ -258,7 +261,7 @@ const AuthExample = () => {
                         />
                     )}
 
-                    <label>
+                    <label id='check'>
                         <input
                             type="checkbox"
                             checked={showPassword}
@@ -273,7 +276,7 @@ const AuthExample = () => {
 
                     {isLogin && (
                         <button type="button" onClick={handleGoogleLogin} disabled={isLoading || isLockedOut}>
-                            {isLoading ? 'Carregando...' : 'Login com Google'}
+                            {isLoading ? ' Carregando...' : <><img src={googleIcon} alt="Google" style={{ width: '20px', marginRight: '5px' }} /> Cadastre-se com o Google</>}
                         </button>
                     )}
                 </form>
@@ -286,31 +289,36 @@ const AuthExample = () => {
                         placeholder="Email para recuperação"
                         required
                     />
-                    <button type="submit">Enviar e-mail de recuperação</button>
+                    <button type="submit">
+                        Enviar e-mail de recuperação
+                    </button>
+                    <button type="button" onClick={() => setIsResetPassword(false)}>Voltar</button>
                 </form>
             )}
 
+            {lockoutMessage && <p className="error-message">{lockoutMessage}</p>} {/* Exibe a mensagem de bloqueio */}
+
             {isLogin && !isResetPassword && (
-                <p>
+                <p class="btn-redpass" >
                     Esqueceu sua senha?{' '}
-                    <span onClick={() => setIsResetPassword(true)} style={{ color: 'blue', cursor: 'pointer' }}>
+                    <span onClick={() => setIsResetPassword(true)}>
                         Redefinir senha
                     </span>
                 </p>
             )}
 
             {!isResetPassword && (
-                <p>
+                <p class="btn-redpass">
                     {isLogin ? 'Não tem uma conta?' : 'Já tem uma conta?'}{' '}
-                    <span onClick={() => setIsLogin(!isLogin)} style={{ color: 'blue', cursor: 'pointer' }}>
+                    <span onClick={() => setIsLogin(!isLogin)}>
                         {isLogin ? 'Registrar' : 'Login'}
                     </span>
                 </p>
             )}
 
-            {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
-            {resetMessage && <p style={{ color: 'green' }}>{resetMessage}</p>}
-            {registrationMessage && <p style={{ color: 'green' }}>{registrationMessage}</p>}
+            {errorMessage && <p className="error-message">{errorMessage}</p>}
+            {resetMessage && <p className="success-message">{resetMessage}</p>}
+            {registrationMessage && <p className="success-message">{registrationMessage}</p>}
         </div>
     );
 };

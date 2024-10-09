@@ -1,0 +1,91 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap");
+
+body {
+  background-color: #16202b;
+  font-family: "Roboto", sans-serif;
+  color: #fff;
+}
+
+img#icon-img {
+  width: 7rem;
+}
+
+img {
+  width: 15rem;
+}
+
+label#check {
+  cursor: pointer;
+}
+
+label#check:hover {
+  color: #d6eaff;
+}
+
+.btn-redpass span {
+  color: #007bff;
+  cursor: pointer;
+}
+
+.btn-redpass span:hover {
+  color: #9ccbfd;
+  cursor: pointer;
+}
+
+.auth-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.auth-container h1 {
+  margin-bottom: 20px;
+}
+
+.auth-container form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 400px;
+}
+
+.auth-container input {
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.auth-container button {
+  margin-bottom: 10px;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+}
+
+.auth-container button:disabled {
+  background-color: #ccc;
+}
+
+.auth-container button i {
+  margin-right: 5px; /* Espaçamento entre o ícone e o texto */
+}
+
+.auth-container p {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.error-message {
+  color: red;
+}
+
+.success-message {
+  color: green;
+}

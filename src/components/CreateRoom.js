@@ -2,27 +2,40 @@ import React, { useState, useEffect } from 'react';
 import { auth, database } from '../firebaseConfig';
 import { useNavigate } from 'react-router-dom';
 import CryptoJS from 'crypto-js';
+import { Helmet } from 'react-helmet';
+import 'bootstrap/dist/css/bootstrap.min.css'; // Importa o CSS do Bootstrap
+import Swal from 'sweetalert2'; // Importa o SweetAlert
+import './CreateRoom.css'; // Importe o CSS personalizado
 
 const CreateRoom = () => {
   const [roomName, setRoomName] = useState('');
   const [userEmail, setUserEmail] = useState(null);
   const [userName, setUserName] = useState('');
   const [isNameConfirmed, setIsNameConfirmed] = useState(false);
-  const [loading, setLoading] = useState(false); // Estado para controle de carregamento
-  const [successMessage, setSuccessMessage] = useState(''); // Mensagem de sucesso
-  const [errorMessage, setErrorMessage] = useState(''); // Mensagem de erro
+  const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
 
   const LOGOUT_TIMEOUT = 60 * 60 * 1000; // 1 hora em milissegundos
+  let logoutTimer; // Timer para controle de logout
 
   useEffect(() => {
+    // Alerta ao abrir ou recarregar a página
+    Swal.fire({
+      title: 'Informações Importantes!',
+      text: 'Certifique-se de que seu nome de usuário é apropriado antes de criar uma sala.',
+      icon: 'info',
+      confirmButtonText: 'Ok'
+    });
+
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
         const emailName = user.email.split('@')[0];
         setUserEmail(emailName);
         resetLastAccessTime(); // Atualiza o horário do último acesso
       } else {
-        navigate('/');
+        navigate('/'); // Redireciona para o login se não estiver autenticado
       }
     });
 
@@ -31,16 +44,28 @@ const CreateRoom = () => {
       window.addEventListener(event, resetLastAccessTime);
     });
 
+    // Inicia o timer de logout
+    startLogoutTimer();
+
     return () => {
       unsubscribe();
       events.forEach((event) => {
         window.removeEventListener(event, resetLastAccessTime);
       });
+      clearTimeout(logoutTimer); // Limpa o timer ao desmontar
     };
   }, [navigate]);
 
   const resetLastAccessTime = () => {
     localStorage.setItem('lastAccessTime', Date.now()); // Armazena o horário atual
+    startLogoutTimer(); // Reinicia o timer de logout
+  };
+
+  const startLogoutTimer = () => {
+    clearTimeout(logoutTimer); // Limpa o timer anterior
+    logoutTimer = setTimeout(() => {
+      handleLogout(); // Chama a função de logout após o tempo limite
+    }, LOGOUT_TIMEOUT);
   };
 
   const generateEncryptionKey = () => {
@@ -75,14 +100,16 @@ const CreateRoom = () => {
   };
 
   const handleLogout = () => {
-    auth.signOut()
-      .then(() => {
-        localStorage.removeItem('lastAccessTime'); // Limpa o horário do último acesso
-        navigate('/');
-      })
-      .catch((error) => {
-        console.error('Erro ao deslogar:', error.message);
-      });
+    if (window.confirm('Você tem certeza que deseja sair?')) { // Confirmação antes de sair
+      auth.signOut()
+        .then(() => {
+          localStorage.removeItem('lastAccessTime'); // Limpa o horário do último acesso
+          navigate('/'); // Redireciona para a página de login
+        })
+        .catch((error) => {
+          console.error('Erro ao deslogar:', error.message);
+        });
+    }
   };
 
   const handleConfirmName = () => {
@@ -100,39 +127,82 @@ const CreateRoom = () => {
   };
 
   return (
-    <div>
-      <h2>Bem-vindo, {userEmail}</h2>
-      {!isNameConfirmed && <button onClick={handleLogout}>Logout</button>} {/* Logout apenas quando o nome não estiver confirmado */}
-      <h1>Criar uma Sala</h1>
-
-      {!isNameConfirmed ? (
-        <div>
-          <p>Por favor, insira o seu novo nome de usuário para continuar:</p>
-          <input
-            type="text"
-            value={userName}
-            onChange={(e) => setUserName(e.target.value)}
-            placeholder="Digite seu novo nome de usuário"
-          />
-          <button onClick={handleConfirmName} disabled={!userName.trim()}>Confirmar Nome</button>
-        </div>
-      ) : (
-        <>
-          <input
-            type="text"
-            value={roomName}
-            onChange={(e) => setRoomName(e.target.value)} // Atualiza o nome da sala
-            placeholder="Nome da Sala"
-          />
-          <button onClick={createRoom} disabled={!roomName.trim() || loading}>
-            {loading ? 'Criando...' : 'Criar Sala'}
-          </button> {/* Habilita apenas se o nome da sala não estiver vazio */}
-          <button onClick={handleCancelName}>Cancelar</button> {/* Botão de Cancelar na seção de nome da sala */}
-        </>
-      )}
-
-      {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>} {/* Mensagem de sucesso */}
-      {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>} {/* Mensagem de erro */}
+    <div className="auth-container">
+      <Helmet>
+        <title>Criar Sala - Open Security Room</title>
+        <meta name="description" content="Crie uma nova sala de chat na Open Security Room." />
+        <meta name="keywords" content="criar sala, chat, Open Security Room" />
+        <meta name="author" content="Open Security Room" />
+      </Helmet>
+  
+      <header>
+        <nav className="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+          <div className="container-fluid">
+            <a className="navbar-brand" href="#">Open Security Room</a>
+            <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
+              aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+              <span className="navbar-toggler-icon"></span>
+            </button>
+            <div className="collapse navbar-collapse" id="navbarCollapse">
+              <ul className="navbar-nav me-auto mb-2 mb-md-0">
+                <li className="nav-item active">
+                  <a className="nav-link" aria-current="page" href="#">Home</a>
+                </li>
+                <li className="nav-item">
+                  <a className="nav-link" href="#">Link</a>
+                </li>
+                <li className="nav-item">
+                  <a className="nav-link disabled" href="#" tabIndex="-1" aria-disabled="true">Disabled</a>
+                </li>
+              </ul>
+              <button className="logout-button btn btn-danger" onClick={handleLogout}>Logout</button>
+            </div>
+          </div>
+        </nav>
+      </header>
+  
+      <div className="container" style={{ marginTop: '70px' }}> {/* Espaço para a navbar fixa */}
+        {/* Condição para exibir a mensagem de boas-vindas apenas se o nome não estiver confirmado */}
+        {!isNameConfirmed && <h2>Bem-vindo, {userEmail}</h2>}
+  
+        <h1>Criar uma Sala</h1>
+  
+        {!isNameConfirmed ? (
+          <div>
+            <label>
+              Insira o seu nome de usuário para continuar
+              <input
+                type="text"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                placeholder="Digite seu novo nome de usuário"
+                className="form-control mb-3" // Adiciona a classe do Bootstrap
+              />
+            </label>
+            <button className="btn btn-primary mx-2" onClick={handleConfirmName} disabled={!userName.trim()}>Confirmar Nome</button>
+          </div>
+        ) : (
+          <>
+          <label>
+          Insira o nome da sala
+            <input
+              type="text"
+              value={roomName}
+              onChange={(e) => setRoomName(e.target.value)} // Atualiza o nome da sala
+              placeholder="Nome da Sala"
+              className="form-control mb-3" // Adiciona a classe do Bootstrap
+            />
+            </label>
+            <button className="btn btn-primary mx-2" onClick={createRoom} disabled={!roomName.trim() || loading}>
+              {loading ? 'Criando...' : 'Criar Sala'}
+            </button>
+            <button className="btn btn-secondary" onClick={handleCancelName}>Cancelar</button> {/* Botão de Cancelar */}
+          </>
+        )}
+  
+  {successMessage && <p className="success-message">{successMessage}</p>} {/* Mensagem de sucesso */}
+        {errorMessage && <p className="error-message">{errorMessage}</p>} {/* Mensagem de erro */}
+      </div>
     </div>
   );
 };
