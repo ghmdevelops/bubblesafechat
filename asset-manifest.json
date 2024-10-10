@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/opensecurityroom/static/css/main.770a9ba9.css",
-    "main.js": "/opensecurityroom/static/js/main.9c3aed77.js",
+    "main.css": "/opensecurityroom/static/css/main.feb9c12c.css",
+    "main.js": "/opensecurityroom/static/js/main.1f35018a.js",
     "static/media/name.png": "/opensecurityroom/static/media/name.911a3ddcfd4335e9d577.png",
     "static/media/icon-page.png": "/opensecurityroom/static/media/icon-page.262e307ee0001b18f84e.png",
     "index.html": "/opensecurityroom/index.html",
-    "main.770a9ba9.css.map": "/opensecurityroom/static/css/main.770a9ba9.css.map",
-    "main.9c3aed77.js.map": "/opensecurityroom/static/js/main.9c3aed77.js.map"
+    "main.feb9c12c.css.map": "/opensecurityroom/static/css/main.feb9c12c.css.map",
+    "main.1f35018a.js.map": "/opensecurityroom/static/js/main.1f35018a.js.map"
   },
   "entrypoints": [
-    "static/css/main.770a9ba9.css",
-    "static/js/main.9c3aed77.js"
+    "static/css/main.feb9c12c.css",
+    "static/js/main.1f35018a.js"
   ]
 }
