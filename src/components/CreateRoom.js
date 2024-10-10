@@ -8,8 +8,9 @@ import Swal from 'sweetalert2';
 import '@sweetalert2/theme-dark/dark.css';
 import './CreateRoom.css'; // Importe o CSS personalizado
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPowerOff } from '@fortawesome/free-solid-svg-icons'; 
+import { faPowerOff, faUserCircle, } from '@fortawesome/free-solid-svg-icons';
 import googleIcon from './img/icon-page.png';
+import { EmailAuthProvider } from 'firebase/auth'; // Importa o provedor de autenticação de email
 
 const CreateRoom = () => {
   const [roomName, setRoomName] = useState('');
@@ -21,18 +22,16 @@ const CreateRoom = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
 
-  const LOGOUT_TIMEOUT = 60 * 60 * 1000; // 1 hora em milissegundos
-  let logoutTimer; // Timer para controle de logout
+  const LOGOUT_TIMEOUT = 60 * 60 * 1000;
+  let logoutTimer;
 
   useEffect(() => {
-    // Alerta ao abrir ou recarregar a página
     Swal.fire({
       title: 'Informações Importantes!',
       text: 'Certifique-se de que seu nome de usuário é apropriado antes de criar uma sala.',
       icon: 'info',
       confirmButtonText: 'Ok'
     });
-
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
         const emailName = user.email.split('@')[0];
@@ -63,6 +62,63 @@ const CreateRoom = () => {
   const resetLastAccessTime = () => {
     localStorage.setItem('lastAccessTime', Date.now()); // Armazena o horário atual
     startLogoutTimer(); // Reinicia o timer de logout
+  };
+
+  const reauthenticateUser = async () => {
+    const currentUser = auth.currentUser;
+    const credential = EmailAuthProvider.credential(currentUser.email, prompt('Digite sua senha para confirmar:'));
+
+    try {
+      await currentUser.reauthenticateWithCredential(credential);
+      return true;
+    } catch (error) {
+      Swal.fire('Erro de autenticação', 'Reautenticação falhou, tente novamente.', 'error');
+      return false;
+    }
+  };
+
+  const deleteAccount = async () => {
+    const currentUser = auth.currentUser;
+
+    // Verifica se o e-mail foi verificado
+    if (!currentUser.emailVerified) {
+      Swal.fire({
+        title: 'Verifique seu e-mail',
+        text: 'Você precisa verificar o seu e-mail antes de excluir a conta. Um e-mail de verificação foi enviado.',
+        icon: 'warning',
+        confirmButtonText: 'Ok'
+      });
+
+      // Envia um e-mail de verificação
+      currentUser.sendEmailVerification()
+        .then(() => {
+          Swal.fire('E-mail enviado', 'Por favor, verifique seu e-mail e tente novamente.', 'info');
+        })
+        .catch((error) => {
+          Swal.fire('Erro ao enviar e-mail', error.message, 'error');
+        });
+      return; // Para a função se o e-mail não foi verificado
+    }
+
+    if (window.confirm('Tem certeza que deseja excluir sua conta e todos os seus dados?')) {
+      try {
+        const reauthenticated = await reauthenticateUser(); // Primeiro reautentica o usuário
+        if (!reauthenticated) return; // Se a reautenticação falhar, aborta a operação
+
+        // Exclui os dados do usuário no banco de dados (Realtime Database ou Firestore)
+        const userRef = database.ref(`users/${currentUser.uid}`);
+        await userRef.remove(); // Remove os dados
+
+        // Exclui a conta do Firebase Authentication
+        await currentUser.delete();
+
+        Swal.fire('Conta excluída com sucesso!', '', 'success');
+        navigate('/'); // Redireciona para a página inicial após exclusão
+      } catch (error) {
+        console.error('Erro ao excluir a conta:', error);
+        Swal.fire('Erro ao excluir a conta', error.message, 'error');
+      }
+    }
   };
 
   const startLogoutTimer = () => {
@@ -142,18 +198,20 @@ const CreateRoom = () => {
       <header>
         <nav className="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
           <div className="container-fluid">
-            <a className="navbar-brand" href="#"><img src={googleIcon} alt="OpenSecurityRoom"/>Open Security Room</a>
+            <a className="navbar-brand" href="#"><img src={googleIcon} alt="OpenSecurityRoom" />Open Security Room</a>
             <div id="navbarCollapse">
-            <button className="logout-button btn btn-danger" onClick={handleLogout}>
-              <FontAwesomeIcon icon={faPowerOff} />{/* Adiciona o ícone */}
-            </button>
+              <button className="btn btn-danger mt-3" onClick={deleteAccount}>
+                Excluir Conta e Todos os Dados
+              </button>
+              <button className="logout-button btn btn-danger" onClick={handleLogout}>
+                <FontAwesomeIcon icon={faPowerOff} />{/* Adiciona o ícone */}
+              </button>
             </div>
           </div>
         </nav>
       </header>
 
-      <div className="container" style={{ marginTop: '70px' }}> {/* Espaço para a navbar fixa */}
-        {/* Condição para exibir a mensagem de boas-vindas apenas se o nome não estiver confirmado */}
+      <div className="container" style={{ marginTop: '70px' }}>
         {!isNameConfirmed && <h2>Bem-vindo, {userEmail}</h2>}
 
         <h1>Criar uma Sala</h1>
@@ -161,14 +219,19 @@ const CreateRoom = () => {
         {!isNameConfirmed ? (
           <div>
             <label>
-              Insira o seu nome de usuário para continuar
-              <input
-                type="text"
-                value={userName}
-                onChange={(e) => setUserName(e.target.value)}
-                placeholder="Digite seu novo nome de usuário"
-                className="form-control mb-3" // Adiciona a classe do Bootstrap
-              />
+              <span>
+                <FontAwesomeIcon icon={faUserCircle} />
+                Insira o seu nick ex: Joao9302
+              </span>
+              <div className="input-group mb-3">
+                <input
+                  type="text"
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                  placeholder="Digite seu novo nome de usuário"
+                  className="form-control" // Adiciona a classe do Bootstrap
+                />
+              </div>
             </label>
             <button className="btn btn-primary mx-2" onClick={handleConfirmName} disabled={!userName.trim()}>Confirmar Nome</button>
           </div>

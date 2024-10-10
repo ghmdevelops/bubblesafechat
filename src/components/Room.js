@@ -9,7 +9,7 @@ import Swal from 'sweetalert2';
 import '@sweetalert2/theme-dark/dark.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPaperPlane, faMicrophone, faCheckCircle, faStopCircle, faTrashAlt, faPlayCircle, faClipboard, faQrcode, faShareAlt, faTrash, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faUserCircle, faPaperPlane, faMicrophone, faCheckCircle, faStopCircle, faTrashAlt, faPlayCircle, faClipboard, faQrcode, faShareAlt, faTrash, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp, faTelegram } from '@fortawesome/free-brands-svg-icons';
 import { Helmet } from 'react-helmet';
 
@@ -756,7 +756,7 @@ const Room = () => {
         <link rel="canonical" href={window.location.href} />
       </Helmet>
 
-      <h1 className="text-center mt-2">Chat {roomName}</h1>
+      <h1 className="text-center mb-5 mt-4">Chat {roomName}</h1>
 
       {isDestructionActive && (
         <div className="alert alert-warning text-center" role="alert">
@@ -776,7 +776,7 @@ const Room = () => {
                 className="form-check-input visually-hidden"
               />
               <label className="form-check-label label-checks" htmlFor="destructionSwitch">
-                <div className="mb-3 mt-3">
+                <div className="mb-5 mt-3">
                   <strong>Mensagens Autodestrutivas</strong>
                   <span className={isDestructionActive ? 'text-success' : 'text-danger'}>
                     {isDestructionActive ? ' Ativado' : ' Desativado'}
@@ -844,7 +844,7 @@ const Room = () => {
         </div>
       )}
 
-      <div className="message-container mb-3" style={{ height: '300px', overflowY: 'scroll', border: '1px solid transparent', borderRadius: '8px', padding: '10px' }}>
+      <div className="message-container mb-1" style={{ height: '300px', overflowY: 'scroll', border: '1px solid transparent', borderRadius: '8px', padding: '10px' }}>
         {messages.map((msg) => {
           const timeSinceCreation = (Date.now() - new Date(msg.timestamp).getTime()) / 1000;
           const timeRemaining = destructionTime - timeSinceCreation;
@@ -865,7 +865,7 @@ const Room = () => {
                 color: '#000',
               }}
             >
-              <strong style={{ display: 'block', fontSize: '0.85em', color: '#555' }}>{msg.user}</strong>
+              <strong style={{ display: 'block', fontSize: '0.85em', color: '#555' }}><FontAwesomeIcon icon={faUserCircle} /> {msg.user}</strong>
               <span>
                 {msg.text ? msg.text : <button onClick={() => playAudio(msg.audioUrl)}><FontAwesomeIcon icon={faPlayCircle} /></button>}
               </span>
@@ -888,7 +888,7 @@ const Room = () => {
 
 
       {typingUsers.length > 0 && (
-        <div style={{ marginBottom: '10px' }}>
+        <div className='ms-2' style={{ fontSize: '10px' }}>
           <em>{typingUsers.join(', ')} {typingUsers.length > 1 ? 'estão' : 'está'} digitando...</em>
         </div>
       )}
