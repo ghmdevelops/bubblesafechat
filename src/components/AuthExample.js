@@ -12,7 +12,9 @@ import logo from './img/name.png';
 import icon from './img/icon-page.png';
 import googleIcon from './img/icon-google.png';
 import './AuthExample.css';
-import 'bootstrap/dist/css/bootstrap.min.css'; 
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { faSignInAlt, faUserPlus, faSpinner, faUser, faEnvelope, faLock, faEye, faEyeSlash, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 library.add(faGoogle);
 
@@ -28,14 +30,36 @@ const AuthExample = () => {
     const [isResetPassword, setIsResetPassword] = useState(false);
     const [registrationMessage, setRegistrationMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [loginAttempts, setLoginAttempts] = useState(0); // Contador de tentativas de login
-    const [isLockedOut, setIsLockedOut] = useState(false); // Estado para controle de bloqueio
-    const [lockoutMessage, setLockoutMessage] = useState(''); // Mensagem de bloqueio
-    const [passwordResetRequested, setPasswordResetRequested] = useState(false); // Estado para controle de solicitação de redefinição de senha
+    const [loginAttempts, setLoginAttempts] = useState(0);
+    const [isLockedOut, setIsLockedOut] = useState(false);
+    const [lockoutMessage, setLockoutMessage] = useState('');
+    const [passwordResetRequested, setPasswordResetRequested] = useState(false);
     const navigate = useNavigate();
 
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
+
+    const checkPasswordStrength = (password) => {
+        const hasUpperCase = /[A-Z]/.test(password);
+        const hasLowerCase = /[a-z]/.test(password);
+        const hasNumber = /[0-9]/.test(password);
+        const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+        const isLongEnough = password.length >= 8;
+
+        if (!isLongEnough) {
+            return 'Fraca';
+        } else if (hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar) {
+            return 'Forte';
+        } else {
+            return 'Média';
+        }
+    };
+
     useEffect(() => {
-        // Verifica se o usuário está bloqueado
+        setEmail('');
+        setPassword('');
+
         const storedLockout = localStorage.getItem('isLockedOut');
 
         if (storedLockout === 'true') {
@@ -55,10 +79,44 @@ const AuthExample = () => {
 
         try {
             await signInWithPopup(auth, provider);
-            navigate('/'); // Redireciona para a página principal após o login
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Login com Google bem-sucedido',
+                text: 'Você foi logado com sucesso usando sua conta Google.',
+                confirmButtonText: 'Ok',
+                customClass: {
+                    confirmButton: 'btn btn-primary',
+                },
+                buttonsStyling: false,
+            }).then(() => {
+                navigate('/');
+            });
         } catch (error) {
-            console.error('Erro ao fazer login com Google:', error);
-            setErrorMessage('Erro ao fazer login com Google. Tente novamente.');
+            if (error.code === 'auth/popup-closed-by-user') {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Autenticação interrompida',
+                    text: 'A janela de autenticação foi fechada. Tente novamente.',
+                    confirmButtonText: 'Ok',
+                    customClass: {
+                        confirmButton: 'btn btn-primary',
+                    },
+                    buttonsStyling: false,
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro no login com Google',
+                    text: 'Erro ao fazer login com Google. Tente novamente.',
+                    confirmButtonText: 'Ok',
+                    customClass: {
+                        confirmButton: 'btn btn-primary',
+                    },
+                    buttonsStyling: false,
+                });
+                console.error('Erro ao fazer login com Google:', error);
+            }
         } finally {
             setIsLoading(false);
         }
@@ -73,14 +131,31 @@ const AuthExample = () => {
             setErrorMessage('Por favor, insira seu primeiro nome.');
             return;
         }
+
         if (!email.includes('@') || !email.includes('.')) {
             setErrorMessage('Por favor, insira um e-mail válido.');
             return;
         }
+
+        if (checkPasswordStrength(password) === 'fraca') {
+            Swal.fire({
+                icon: 'error',
+                title: 'Senha Fraca',
+                text: 'A senha inserida é muito fraca. Por favor, escolha uma senha com pelo menos 8 caracteres, incluindo letras maiúsculas, minúsculas, números e caracteres especiais.',
+                confirmButtonText: 'Ok',
+                customClass: {
+                    confirmButton: 'btn btn-primary',
+                },
+                buttonsStyling: false,
+            });
+            return;
+        }
+
         if (password.length < 6) {
             setErrorMessage('A senha deve ter no mínimo 6 caracteres.');
             return;
         }
+
         if (password !== confirmPassword) {
             setErrorMessage('As senhas não correspondem. Tente novamente.');
             return;
@@ -93,10 +168,19 @@ const AuthExample = () => {
 
                 user.sendEmailVerification()
                     .then(() => {
-                        setRegistrationMessage('Cadastro realizado com sucesso! Verifique seu e-mail para confirmar sua conta antes de fazer login.');
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Cadastro realizado!',
+                            text: 'Verifique seu e-mail para confirmar sua conta antes de fazer login.',
+                            confirmButtonText: 'Ok',
+                            customClass: {
+                                confirmButton: 'btn btn-primary',
+                            },
+                            buttonsStyling: false,
+                        });
+
                         setTimeout(() => {
                             setIsLogin(true);
-                            setRegistrationMessage('');
                         }, 5000);
                     })
                     .catch(error => {
@@ -125,10 +209,18 @@ const AuthExample = () => {
         e.preventDefault();
         setErrorMessage('');
 
-        // Verifica se a conta está bloqueada
         if (isLockedOut || passwordResetRequested) {
-            setErrorMessage('Você deve redefinir sua senha antes de tentar fazer login.');
-            return; // Não permite o login se a conta estiver bloqueada ou se a senha foi solicitada para redefinição
+            Swal.fire({
+                icon: 'warning',
+                title: 'Conta bloqueada',
+                text: 'Você deve redefinir sua senha antes de tentar fazer login.',
+                confirmButtonText: 'Ok',
+                customClass: {
+                    confirmButton: 'btn btn-primary',
+                },
+                buttonsStyling: false,
+            });
+            return;
         }
 
         setIsLoading(true);
@@ -137,30 +229,96 @@ const AuthExample = () => {
                 const user = userCredential.user;
 
                 if (user.emailVerified) {
-                    navigate('/');
+                    // Login bem-sucedido
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Login bem-sucedido',
+                        text: 'Você foi logado com sucesso.',
+                        confirmButtonText: 'Ok',
+                        customClass: {
+                            confirmButton: 'btn btn-primary',
+                        },
+                        buttonsStyling: false,
+                    }).then(() => {
+                        navigate('/');
+                    });
                 } else {
-                    setErrorMessage('Por favor, verifique seu e-mail antes de fazer login.');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'E-mail não verificado',
+                        text: 'Por favor, verifique seu e-mail antes de fazer login.',
+                        confirmButtonText: 'Ok',
+                        customClass: {
+                            confirmButton: 'btn btn-primary',
+                        },
+                        buttonsStyling: false,
+                    });
                     auth.signOut();
                 }
             })
             .catch(error => {
-                const attemptsLeft = 4 - loginAttempts; // 5 tentativas no total (0 a 4)
-                setLoginAttempts(prev => prev + 1); // Incrementa tentativas de login
-                localStorage.setItem('loginAttempts', loginAttempts + 1); // Armazena o número de tentativas
+                const attemptsLeft = 4 - loginAttempts;
+                setLoginAttempts(prev => prev + 1);
+                localStorage.setItem('loginAttempts', loginAttempts + 1);
 
-                if (loginAttempts + 1 >= 5) { // Se já excedeu 5 tentativas
+                if (loginAttempts + 1 >= 5) {
                     setIsLockedOut(true);
-                    localStorage.setItem('isLockedOut', 'true'); // Armazena que a conta está bloqueada
-                    setErrorMessage('Você excedeu o número de tentativas de login. Redefina sua senha.');
+                    localStorage.setItem('isLockedOut', 'true');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Conta bloqueada',
+                        text: 'Você excedeu o número de tentativas de login. Redefina sua senha.',
+                        confirmButtonText: 'Ok',
+                        customClass: {
+                            confirmButton: 'btn btn-primary',
+                        },
+                        buttonsStyling: false,
+                    });
                 } else {
                     if (error.code === 'auth/wrong-password') {
-                        setErrorMessage(`Senha incorreta. Você tem ${attemptsLeft} tentativas restantes. Considere redefinir sua senha.`);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Senha incorreta',
+                            text: `Senha incorreta. Você tem ${attemptsLeft} tentativas restantes. Considere redefinir sua senha.`,
+                            confirmButtonText: 'Ok',
+                            customClass: {
+                                confirmButton: 'btn btn-primary',
+                            },
+                            buttonsStyling: false,
+                        });
                     } else if (error.code === 'auth/user-not-found') {
-                        setErrorMessage('E-mail não encontrado. Verifique se o e-mail está correto.');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'E-mail não encontrado',
+                            text: 'E-mail não encontrado. Verifique se o e-mail está correto.',
+                            confirmButtonText: 'Ok',
+                            customClass: {
+                                confirmButton: 'btn btn-primary',
+                            },
+                            buttonsStyling: false,
+                        });
                     } else if (error.code === 'auth/invalid-email') {
-                        setErrorMessage('E-mail inválido. Verifique o formato.');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'E-mail inválido',
+                            text: 'E-mail inválido. Verifique o formato.',
+                            confirmButtonText: 'Ok',
+                            customClass: {
+                                confirmButton: 'btn btn-primary',
+                            },
+                            buttonsStyling: false,
+                        });
                     } else {
-                        setErrorMessage('Erro ao fazer login. Verifique as credenciais e tente novamente.');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Erro ao fazer login',
+                            text: 'Erro ao fazer login. Verifique as credenciais e tente novamente.',
+                            confirmButtonText: 'Ok',
+                            customClass: {
+                                confirmButton: 'btn btn-primary',
+                            },
+                            buttonsStyling: false,
+                        });
                     }
                 }
             })
@@ -179,12 +337,11 @@ const AuthExample = () => {
             .then(() => {
                 setResetMessage('E-mail de recuperação de senha enviado. Verifique sua caixa de entrada ou lixo eletrônico.');
                 setErrorMessage('');
-                setPasswordResetRequested(true); // Indica que o pedido de redefinição de senha foi feito
-
-                // Redefinir estado de bloqueio após o envio do e-mail
+                setPasswordResetRequested(true);
                 setIsLockedOut(false);
-                localStorage.removeItem('isLockedOut'); // Remove o bloqueio
-                localStorage.removeItem('loginAttempts'); // Reseta tentativas
+
+                localStorage.removeItem('isLockedOut');
+                localStorage.removeItem('loginAttempts');
             })
             .catch(error => {
                 if (error.code === 'auth/user-not-found') {
@@ -223,57 +380,97 @@ const AuthExample = () => {
             {!isResetPassword ? (
                 <form onSubmit={isLogin ? handleLogin : handleRegister}>
                     {!isLogin && (
-                        <input
-                            type="text"
-                            value={firstName}
-                            onChange={(e) => setFirstName(e.target.value)}
-                            placeholder="Primeiro Nome"
-                            required
-                        />
+                        <div className="input-icon-container">
+                            <div className="icon-background">
+                                <FontAwesomeIcon icon={faUser} className="input-icon" />
+                            </div>
+                            <input
+                                type="text"
+                                value={firstName}
+                                onChange={(e) => setFirstName(e.target.value)}
+                                placeholder="Primeiro Nome"
+                                required
+                            />
+                        </div>
                     )}
 
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Email"
-                        required
-                        autoComplete="email"
-                    />
+                    <div className="input-icon-container">
+                        <div className="icon-background">
+                            <FontAwesomeIcon icon={faEnvelope} className="input-icon" />
+                        </div>
+                        <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="Email"
+                            required
+                            autoComplete="email"
+                        />
+                    </div>
 
-                    <input
-                        type={showPassword ? 'text' : 'password'}
-                        value={password}
-                        onChange={(e) => {
-                            setPassword(e.target.value);
-                        }}
-                        placeholder="Senha"
-                        required
-                        autoComplete={isLogin ? "current-password" : "new-password"}
-                    />
-
-                    {!isLogin && (
+                    <div className="input-icon-container">
+                        <div className="icon-background">
+                            <FontAwesomeIcon icon={faLock} className="input-icon" />
+                        </div>
                         <input
                             type={showPassword ? 'text' : 'password'}
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            placeholder="Confirmar Senha"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="Senha"
                             required
-                            autoComplete="new-password"
+                            autoComplete={isLogin ? "current-password" : "new-password"}
                         />
+                        <span onClick={togglePasswordVisibility} className="eye-icon">
+                            <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                        </span>
+                    </div>
+
+                    {!isLogin && (
+                        <div className="input-icon-container">
+                            <div className="icon-background">
+                                <FontAwesomeIcon icon={faLock} className="input-icon" />
+                            </div>
+                            <input
+                                type={showPassword ? 'text' : 'password'}
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                placeholder="Confirmar Senha"
+                                required
+                                autoComplete="new-password"
+                            />
+                            <span onClick={togglePasswordVisibility} className="eye-icon">
+                                <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                            </span>
+                        </div>
                     )}
-<label id="check" className="d-flex align-items-center">
-    <input
-        type="checkbox"
-        checked={showPassword}
-        onChange={() => setShowPassword(!showPassword)}
-        className="me-3 d-none mt-2" // Margem à direita do checkbox
-    />
-    Mostrar senha
-</label>
+
+                    {password && (
+                        <p className={`password-strength ${checkPasswordStrength(password)}`}>
+                            <FontAwesomeIcon icon={faInfoCircle} className="me-2" />
+                            Senha {checkPasswordStrength(password)}
+                        </p>
+                    )}
 
                     <button type="submit" disabled={isLoading || isLockedOut}>
-                        {isLoading ? 'Carregando...' : (isLogin ? 'Login' : 'Registrar')}
+                        {isLoading ? (
+                            <div className="spinner-container">
+                                <FontAwesomeIcon icon={faSpinner} spin className="spinner" />
+                            </div>
+                        ) : (
+                            <>
+                                {isLogin ? (
+                                    <>
+                                        <FontAwesomeIcon icon={faSignInAlt} className="me-2" />
+                                        Login
+                                    </>
+                                ) : (
+                                    <>
+                                        <FontAwesomeIcon icon={faUserPlus} className="me-2" />
+                                        Registrar
+                                    </>
+                                )}
+                            </>
+                        )}
                     </button>
 
                     {isLogin && (
@@ -298,7 +495,7 @@ const AuthExample = () => {
                 </form>
             )}
 
-            {lockoutMessage && <p className="error-message">{lockoutMessage}</p>} {/* Exibe a mensagem de bloqueio */}
+            {lockoutMessage && <p className="error-message">{lockoutMessage}</p>}
 
             {isLogin && !isResetPassword && (
                 <p class="btn-redpass" >

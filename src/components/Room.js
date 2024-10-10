@@ -4,12 +4,12 @@ import { database, auth, storage } from '../firebaseConfig';
 import { QRCodeCanvas } from 'qrcode.react';
 import './Room.css';
 import ReactDOM from 'react-dom';
-import ReactDOMServer from 'react-dom/server'; // Adicione esta importação
+import ReactDOMServer from 'react-dom/server';
 import Swal from 'sweetalert2';
 import '@sweetalert2/theme-dark/dark.css';
-import 'bootstrap/dist/css/bootstrap.min.css'; 
+import 'bootstrap/dist/css/bootstrap.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPaperPlane, faMicrophone, faCheckCircle, faStopCircle, faTrashAlt, faPlayCircle, faClipboard, faQrcode, faShareAlt, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faPaperPlane, faMicrophone, faCheckCircle, faStopCircle, faTrashAlt, faPlayCircle, faClipboard, faQrcode, faShareAlt, faTrash, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp, faTelegram } from '@fortawesome/free-brands-svg-icons';
 import { Helmet } from 'react-helmet';
 
@@ -35,12 +35,14 @@ const Room = () => {
   const streamRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const navigate = useNavigate();
-  const messagesEndRef = useRef(null); // Ref para o final do container de mensagens
+  const messagesEndRef = useRef(null);
   const [shareMethod, setShareMethod] = useState('');
-  const [expelledUsers, setExpelledUsers] = useState([]); // Estado para armazenar os usuários expulsos
-
+  const [expelledUsers, setExpelledUsers] = useState([]);
+  const [timeLeft, setTimeLeft] = useState({});
+  const [usersWithExpelButton, setUsersWithExpelButton] = useState(new Set());
 
   const shareLink = `${window.location.origin}/opensecurityroom/#/room/${roomId}`;
+
 
   useEffect(() => {
     const roomRef = database.ref(`rooms/${roomId}`);
@@ -51,7 +53,7 @@ const Room = () => {
       const sanitizedUserName = sanitizeUserName(currentUser.displayName || currentUser.email);
       allowedRef.child(sanitizedUserName).once('value', (snapshot) => {
         if (snapshot.exists()) {
-          setHasJoined(true); // O usuário já está na lista de permitidos
+          setHasJoined(true);
         }
       });
     }
@@ -83,24 +85,15 @@ const Room = () => {
   }, [roomId]);
 
   useEffect(() => {
-    const handleBeforeUnload = (event) => {
-      if (!isCreator) { // Apenas para usuários que não são criadores
-        database.ref(`rooms/${roomId}/messages`).push({
-          text: `${userName} saiu da sala.`,
-          user: 'Sistema',
-          timestamp: new Date().toISOString(),
-        });
-
-        const message = "Você tem certeza que deseja sair da sala?";
-        event.returnValue = message;
-        return message;
+    const handleUserExit = () => {
+      if (!isCreator) {
+        const chatMessage = document.createElement('div');
+        chatMessage.textContent = `${userName} saiu da sala.`;
+        chatMessage.style.color = 'red';
+        document.getElementById('chat-container').appendChild(chatMessage);
       }
     };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [userName, roomId, isCreator]);
 
@@ -122,12 +115,11 @@ const Room = () => {
     };
   }, [roomId]);
 
-  // Função para fazer scroll para a última mensagem
   useEffect(() => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' }); // Scroll suave até a última mensagem
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages]); // Executa sempre que as mensagens mudam
+  }, [messages]);
 
   const markMessageAsRead = (messageId) => {
     const readByRef = database.ref(`rooms/${roomId}/messages/${messageId}/readBy`);
@@ -187,6 +179,27 @@ const Room = () => {
   }, [roomId]);
 
   useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeLeft((prevTimes) => {
+        const newTimes = {};
+        messages.forEach((msg) => {
+          if (msg.deletionTime) {
+            const timeRemaining = (msg.deletionTime - Date.now()) / 1000;
+            if (timeRemaining > 0) {
+              newTimes[msg.id] = timeRemaining.toFixed(0);
+            } else {
+              newTimes[msg.id] = 0;
+            }
+          }
+        });
+        return newTimes;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [messages]);
+
+  useEffect(() => {
     if (isCreator) {
       const requestsRef = database.ref(`rooms/${roomId}/requests`);
       requestsRef.on('value', (snapshot) => {
@@ -220,6 +233,7 @@ const Room = () => {
               user: 'Sistema',
               timestamp: new Date().toISOString(),
             });
+            setUsersWithExpelButton((prevUsers) => new Set([...prevUsers, userData.userName]));
           });
         }
       });
@@ -268,35 +282,70 @@ const Room = () => {
   };
 
   useEffect(() => {
-    if (!hasRequestedAccess) return;
+    const roomRef = database.ref(`rooms/${roomId}`);
 
+    roomRef.on('value', (snapshot) => {
+      const roomData = snapshot.val();
+
+      if (roomData && roomData.isDestructionActive !== undefined) {
+        setIsDestructionActive(roomData.isDestructionActive);
+        setDestructionTime(roomData.destructionTime || 10);
+      } else {
+        setIsDestructionActive(false);
+        setDestructionTime(10);
+      }
+    });
+
+    return () => roomRef.off();
+  }, [roomId]);
+
+  useEffect(() => {
+    const storedRoomAccess = localStorage.getItem(`hasJoined_${roomId}`);
+    const storedUserName = localStorage.getItem('userName');
+
+    if (storedRoomAccess === 'true' && storedUserName === userName) {
+      setHasJoined(true);
+    }
+
+    if (!hasRequestedAccess && storedRoomAccess !== 'true') return;
     const allowedRef = database.ref(`rooms/${roomId}/allowedUsers/${userName}`);
     const deniedRef = database.ref(`rooms/${roomId}/deniedRequests/${userName}`);
     const expelledRef = database.ref(`rooms/${roomId}/expelledUsers/${userName}`);
 
+    expelledRef.on('value', (snapshot) => {
+      if (snapshot.exists() && !isCreator) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Acesso Negado',
+          text: 'Você foi expulso da sala e não pode solicitar acesso novamente.',
+          confirmButtonText: 'Ok',
+        }).then(() => {
+          navigate('/login');
+        });
+      }
+    });
+
     allowedRef.on('value', (snapshot) => {
       if (snapshot.exists()) {
         setHasJoined(true);
-        localStorage.setItem('hasJoined', 'true');
+        localStorage.setItem(`hasJoined_${roomId}`, 'true');
         localStorage.setItem('userName', userName);
-        navigate(`/room/${roomId}`);
+
+        setStatusMessage('Você foi aceito na sala. Redirecionando...');
+
+        setTimeout(() => {
+          setStatusMessage('');
+          navigate(`/room/${roomId}`);
+        }, 2000);
       }
     });
 
     deniedRef.on('value', (snapshot) => {
       if (snapshot.exists() && !isCreator) {
         setStatusMessage('Sua solicitação foi recusada. Redirecionando...');
+
         setTimeout(() => {
           navigate('/');
-        }, 2000);
-      }
-    });
-
-    expelledRef.on('value', (snapshot) => {
-      if (snapshot.exists() && !isCreator) {
-        setStatusMessage('Você foi expulso da sala. Redirecionando...');
-        setTimeout(() => {
-          navigate('/login');
         }, 2000);
       }
     });
@@ -309,7 +358,7 @@ const Room = () => {
   }, [roomId, userName, navigate, isCreator, hasRequestedAccess]);
 
   const sanitizeUserName = (userName) => {
-    return userName.replace(/[.#$[\]]/g, '_'); // Substitui caracteres inválidos por "_"
+    return userName.replace(/[.#$[\]]/g, '_');
   };
 
   const expelUser = (userName) => {
@@ -320,20 +369,21 @@ const Room = () => {
         user: 'Sistema',
         timestamp: new Date().toISOString(),
       });
+
+      setUsersWithExpelButton((prevUsers) => new Set([...prevUsers].filter((user) => user !== userName)));
     });
   };
 
-  const usersWithExpelButton = new Set(messages
-    .map((msg) => msg.user)
-    .filter((user) => user !== creatorName && user !== 'Sistema' && !expelledUsers.includes(user))); // Filtra usuários expulsos
-
   const sendMessage = () => {
     if (message.trim()) {
+      const deletionTime = Date.now() + destructionTime * 1000;
       const messageRef = database.ref(`rooms/${roomId}/messages`).push();
+
       messageRef.set({
         text: message,
         user: userName || creatorName,
         timestamp: new Date().toISOString(),
+        deletionTime: isDestructionActive ? deletionTime : null,
       });
       setMessage('');
       setTyping(false);
@@ -363,39 +413,48 @@ const Room = () => {
     }, 2000);
   };
 
-  const deleteChat = () => {
-    database.ref(`rooms/${roomId}/messages`).push({
-      text: `A sala foi encerrada pelo moderador.`,
-      user: 'Sistema',
-      timestamp: new Date().toISOString(),
-    });
+  const deleteChat = async () => {
+    try {
+      await database.ref(`rooms/${roomId}/messages`).push({
+        text: `A sala foi encerrada pelo moderador.`,
+        user: 'Sistema',
+        timestamp: new Date().toISOString(),
+      });
 
-    const deleteMessagesPromises = messages.map((msg) => {
-      return new Promise((resolve) => {
-        const messageRef = database.ref(`rooms/${roomId}/messages/${msg.id}`);
-        messageRef.once('value', (snapshot) => {
-          const messageData = snapshot.val();
-          if (messageData && messageData.audioUrl) {
-            const audioRef = storage.refFromURL(messageData.audioUrl);
-            audioRef.delete().catch((error) => {
-              console.error('Erro ao deletar áudio:', error);
-            });
+      const messagesSnapshot = await database.ref(`rooms/${roomId}/messages`).once('value');
+      const messages = messagesSnapshot.val();
+
+      if (messages) {
+        const deletePromises = Object.keys(messages).map(async (msgId) => {
+          const msg = messages[msgId];
+
+          if (msg.audioUrl) {
+            const audioRef = storage.refFromURL(msg.audioUrl);
+            try {
+              await audioRef.delete();
+              console.log(`Arquivo de áudio ${msg.audioUrl} deletado com sucesso.`);
+            } catch (error) {
+              console.error(`Erro ao deletar o arquivo de áudio ${msg.audioUrl}:`, error);
+            }
           }
-          messageRef.remove().then(resolve);
+          await database.ref(`rooms/${roomId}/messages/${msgId}`).remove();
         });
-      });
-    });
 
-    Promise.all(deleteMessagesPromises).then(() => {
-      database.ref(`rooms/${roomId}`).remove().then(() => {
-        setHasJoined(false);
-        setUserName('');
-        setStatusMessage('Sala excluída com sucesso!');
-        setTimeout(() => {
-          navigate('/');
-        }, 2000);
-      });
-    });
+        await Promise.all(deletePromises);
+      }
+      await database.ref(`rooms/${roomId}`).remove();
+
+      setHasJoined(false);
+      setUserName('');
+      setStatusMessage('Sala e arquivos excluídos com sucesso!');
+
+      setTimeout(() => {
+        navigate('/');
+      }, 2000);
+    } catch (error) {
+      console.error('Erro ao excluir a sala e arquivos:', error);
+      setStatusMessage('Erro ao excluir a sala. Tente novamente.');
+    }
   };
 
   const toggleDestruction = async () => {
@@ -405,7 +464,7 @@ const Room = () => {
         input: 'number',
         inputAttributes: {
           min: 1,
-          max: 300, // Limite máximo, ajuste conforme necessário
+          max: 300,
         },
         showCancelButton: true,
         confirmButtonText: 'OK',
@@ -421,39 +480,41 @@ const Room = () => {
       });
 
       if (destructionTime) {
-        setDestructionTime(destructionTime); // Atualiza o tempo de destruição
-        setIsDestructionActive(true); // Ativa a destruição
+        setDestructionTime(destructionTime);
+        setIsDestructionActive(true);
+
+        database.ref(`rooms/${roomId}`).update({
+          isDestructionActive: true,
+          destructionTime,
+        });
+
+        database.ref(`rooms/${roomId}/messages`).push({
+          text: 'O criador ativou as mensagens autodestrutivas.',
+          user: 'Sistema',
+          timestamp: new Date().toISOString(),
+        });
       }
     } else {
-      setIsDestructionActive(false); // Desativa a destruição
+      setIsDestructionActive(false);
+
+      database.ref(`rooms/${roomId}`).update({
+        isDestructionActive: false,
+      });
+
+      database.ref(`rooms/${roomId}/messages`).push({
+        text: 'O criador desativou as mensagens autodestrutivas.',
+        user: 'Sistema',
+        timestamp: new Date().toISOString(),
+      });
     }
   };
 
-  const handleShare = (method) => {
-    if (method === 'copy') {
-      navigator.clipboard.writeText(shareLink)
-        .then(() => {
-          alert('Link copiado para a área de transferência!');
-        })
-        .catch(err => {
-          console.error('Erro ao copiar: ', err);
-        });
-    } else if (method === 'email') {
-      window.open(`mailto:?subject=Compartilhe este link&body=Confira este link do chat: ${shareLink}`, '_blank');
-    } else if (method === 'whatsapp') {
-      window.open(`https://api.whatsapp.com/send?text=Confira este link do chat: ${shareLink}`, '_blank');
-    } else if (method === 'telegram') {
-      window.open(`https://t.me/share/url?url=${shareLink}`, '_blank');
-    }
-  };
-
-  // Função para gravar áudio
   const startRecording = () => {
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then((stream) => {
         const mediaRecorder = new MediaRecorder(stream);
         mediaRecorderRef.current = mediaRecorder;
-        streamRef.current = stream; // Armazenar o stream para fechamento posterior
+        streamRef.current = stream;
         setRecording(true);
 
         mediaRecorder.ondataavailable = (event) => {
@@ -471,7 +532,6 @@ const Room = () => {
   const stopRecording = () => {
     if (mediaRecorderRef.current) {
       mediaRecorderRef.current.stop();
-      // Liberar o microfone
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
@@ -481,7 +541,6 @@ const Room = () => {
 
   const sendAudioMessage = () => {
     if (audioFile) {
-      // Enviar o arquivo de áudio para o Firebase Storage
       const storageRef = storage.ref();
       const audioRef = storageRef.child(`rooms/${roomId}/audio_${Date.now()}.mp3`);
       const uploadTask = audioRef.put(audioFile);
@@ -494,7 +553,6 @@ const Room = () => {
         },
         () => {
           uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-            // Enviar a URL do áudio para o Firebase Realtime Database
             const messageRef = database.ref(`rooms/${roomId}/messages`).push();
             const audioMessage = {
               audioUrl: downloadURL,
@@ -502,14 +560,13 @@ const Room = () => {
               timestamp: new Date().toISOString(),
             };
             messageRef.set(audioMessage);
-            setAudioFile(null); // Limpar o arquivo de áudio após o envio
+            setAudioFile(null);
           });
         }
       );
     }
   };
 
-  // Função para reproduzir o áudio
   const playAudio = (audioUrl) => {
     const audio = new Audio(audioUrl);
     audio.play();
@@ -519,23 +576,22 @@ const Room = () => {
     const content = (
       <div>
         <div className="mb-3">
-          <button className="btn btn-primary w-100 mb-2" onClick={() => { handleShare('copy'); Swal.close(); }}>
+          <button id="copyLink" className="btn btn-primary w-100 mb-2">
             <FontAwesomeIcon icon={faClipboard} className="me-2" /> Copiar Link
           </button>
-          <button className="btn btn-primary w-100 mb-2" onClick={() => { handleShare('email'); Swal.close(); }}>
+          <button id="emailLink" className="btn btn-primary w-100 mb-2">
             <FontAwesomeIcon icon={faPaperPlane} className="me-2" /> Enviar por E-mail
           </button>
-          <button className="btn btn-primary w-100 mb-2" onClick={() => { handleShare('whatsapp'); Swal.close(); }}>
+          <button id="whatsappLink" className="btn btn-primary w-100 mb-2">
             <FontAwesomeIcon icon={faWhatsapp} className="me-2" /> Compartilhar no WhatsApp
           </button>
-          <button className="btn btn-primary w-100" onClick={() => { handleShare('telegram'); Swal.close(); }}>
+          <button id="telegramLink" className="btn btn-primary w-100">
             <FontAwesomeIcon icon={faTelegram} className="me-2" /> Compartilhar no Telegram
           </button>
         </div>
       </div>
     );
 
-    // Converte o conteúdo para uma string HTML
     const contentString = ReactDOMServer.renderToString(content);
 
     Swal.fire({
@@ -543,28 +599,51 @@ const Room = () => {
       html: contentString,
       showCloseButton: true,
       confirmButtonText: 'Fechar',
+      didOpen: () => {
+        // Adiciona eventos de clique quando o modal estiver pronto
+        document.getElementById('copyLink').addEventListener('click', () => {
+          navigator.clipboard.writeText(shareLink)
+            .then(() => { alert('Link copiado para a área de transferência!'); })
+            .catch(err => { console.error('Erro ao copiar: ', err); });
+          Swal.close();
+        });
+
+        document.getElementById('emailLink').addEventListener('click', () => {
+          window.open(`mailto:?subject=Compartilhe este link&body=Confira este link do chat: ${shareLink}`, '_blank', 'noopener,noreferrer');
+          Swal.close();
+        });
+
+        document.getElementById('whatsappLink').addEventListener('click', () => {
+          window.open(`https://api.whatsapp.com/send?text=Confira este link do chat: ${shareLink}`, '_blank', 'noopener,noreferrer');
+          Swal.close();
+        });
+
+        document.getElementById('telegramLink').addEventListener('click', () => {
+          window.open(`https://t.me/share/url?url=${shareLink}`, '_blank', 'noopener,noreferrer');
+          Swal.close();
+        });
+      },
     });
   };
 
   const confirmAction = (actionType) => {
     let title, text, onConfirm;
 
-    // Define o título, texto e ação de acordo com o botão clicado
     switch (actionType) {
       case 'share':
         title = 'Compartilhar';
         text = 'Você deseja compartilhar o link?';
-        onConfirm = showShareModal; // Ação ao confirmar
+        onConfirm = showShareModal;
         break;
       case 'delete':
         title = 'Excluir Chat';
         text = 'Você tem certeza que deseja excluir o chat? Esta ação não pode ser desfeita.';
-        onConfirm = deleteChat; // Ação ao confirmar
+        onConfirm = deleteChat;
         break;
       case 'qr':
         title = 'QR Code';
         text = 'Você deseja visualizar o QR Code do chat?';
-        onConfirm = showQRCode; // Ação ao confirmar
+        onConfirm = showQRCode;
         break;
       default:
         return;
@@ -579,7 +658,7 @@ const Room = () => {
       cancelButtonText: 'Não',
     }).then((result) => {
       if (result.isConfirmed) {
-        onConfirm(); // Chama a ação correspondente se confirmado
+        onConfirm();
       }
     });
   };
@@ -590,17 +669,17 @@ const Room = () => {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      maxWidth: '100%', /* Garante que o contêiner não exceda a largura da tela */
-      padding: '10px' /* Adiciona um pouco de espaçamento */
+      maxWidth: '100%',
+      padding: '10px'
     }}>
       <QRCodeCanvas
         value={shareLink}
-        size={Math.min(window.innerWidth * 0.8, 190)} // Ajusta o tamanho com base na largura da tela, máximo de 190px
+        size={Math.min(window.innerWidth * 0.8, 190)}
         style={{
           borderRadius: '10px',
           overflow: 'hidden',
-          width: '100%', // Faz com que o QR Code ocupe 100% da largura disponível
-          height: 'auto' // Mantém a proporção ao ajustar a largura
+          width: '100%',
+          height: 'auto'
         }}
       />
       <p className="d-none">Link: {shareLink}</p>
@@ -621,19 +700,35 @@ const Room = () => {
 
   if (!hasJoined && !isCreator) {
     return (
-      <div>
-        <h1>Solicitação de entrada</h1>
-        <p>Insira seu nome para solicitar acesso à sala:</p>
-        <input
-          type="text"
-          value={userName}
-          onChange={(e) => setUserName(e.target.value)}
-          placeholder="Digite seu nome"
-        />
-        <button onClick={requestAccess} disabled={!userName.trim()}>
-          Solicitar acesso
-        </button>
-        {statusMessage && <p>{statusMessage}</p>}
+      <div className="container mt-5 d-flex justify-content-center">
+        <div className="card p-4 shadow bg-dark text-light" style={{ width: '100%', maxWidth: '600px' }}>
+          <h1 className="text-center mb-4">Solicitação de Entrada</h1>
+          <p className="text-center">Insira seu nome para solicitar acesso à sala:</p>
+          <div className="d-flex justify-content-center">
+            <input
+              type="text"
+              value={userName}
+              onChange={(e) => setUserName(e.target.value)}
+              placeholder="Digite seu nome"
+              className="form-control"
+              style={{ maxWidth: '100%', width: '100%' }}
+            />
+          </div>
+          <div className="d-grid gap-2 mt-3">
+            <button
+              onClick={requestAccess}
+              disabled={!userName.trim()}
+              className="btn btn-primary w-100"
+            >
+              Solicitar Acesso
+            </button>
+          </div>
+          {statusMessage && (
+            <div className="alert alert-info text-center mt-3" role="alert">
+              {statusMessage}
+            </div>
+          )}
+        </div>
       </div>
     );
   }
@@ -662,6 +757,12 @@ const Room = () => {
       </Helmet>
 
       <h1 className="text-center mt-2">Chat {roomName}</h1>
+
+      {isDestructionActive && (
+        <div className="alert alert-warning text-center" role="alert">
+          O criador ativou as mensagens autodestrutivas. Todas as mensagens serão excluídas a cada {destructionTime} segundos.
+        </div>
+      )}
 
       {isCreator && (
         <div className="mb-3 mt-4">
@@ -713,14 +814,29 @@ const Room = () => {
 
       {isCreator && pendingRequests.length > 0 && (
         <div className="mb-3">
-          <h5>Solicitações de entradas no chat</h5>
-          <ul className="list-group">
+          <h5 className="text-light text-center">Solicitações de entradas no chat</h5>
+          <ul className="list-group bg-dark">
             {pendingRequests.map((request) => (
-              <li key={request.id} className="list-group-item d-flex justify-content-between align-items-center">
+              <li
+                key={request.id}
+                className="list-group-item d-flex justify-content-between align-items-center bg-dark text-light border-dark"
+              >
                 {request.userName}
                 <div>
-                  <button className="btn btn-success btn-sm" onClick={() => handleRequest(request.id, 'accept')}>Aceitar</button>
-                  <button className="btn btn-danger btn-sm" onClick={() => handleRequest(request.id, 'deny')}>Negar</button>
+                  <button
+                    className="btn btn-primary btn-sm me-2"
+                    onClick={() => handleRequest(request.id, 'accept')}
+                  >
+                    <FontAwesomeIcon icon={faCheck} className="me-1" />
+                    Aceitar
+                  </button>
+                  <button
+                    className="btn btn-danger btn-sm"
+                    onClick={() => handleRequest(request.id, 'deny')}
+                  >
+                    <FontAwesomeIcon icon={faTimes} className="me-1" />
+                    Negar
+                  </button>
                 </div>
               </li>
             ))}
@@ -732,7 +848,8 @@ const Room = () => {
         {messages.map((msg) => {
           const timeSinceCreation = (Date.now() - new Date(msg.timestamp).getTime()) / 1000;
           const timeRemaining = destructionTime - timeSinceCreation;
-          const isSentByUser = msg.user === userName; // Verifica se a mensagem é do usuário atual
+          const isSentByUser = msg.user === userName;
+          const remainingTime = timeLeft[msg.id];
 
           return (
             <div
@@ -757,6 +874,7 @@ const Room = () => {
                   <small>lido por: {msg.readBy.join(', ')}</small>
                 </div>
               )}
+
               {isDestructionActive && timeRemaining > 0 && (
                 <div>
                   <small>Destrói em: {Math.max(timeRemaining.toFixed(0), 0)}s</small>
@@ -785,21 +903,21 @@ const Room = () => {
               placeholder="Escreva sua mensagem"
               onFocus={markAllMessagesAsRead}
               className="form-control me-2"
-              disabled // Desabilita o input enquanto grava
+              disabled
             />
             <button onClick={stopRecording} className="btn btn-warning me-2">
-              <FontAwesomeIcon icon={faStopCircle} /> {/* Ícone para Parar Gravação */}
+              <FontAwesomeIcon icon={faStopCircle} />
             </button>
-            <span className="text-warning ms-2">Gravando...</span> {/* Span de gravação */}
+            <span className="text-warning ms-2">Gravando...</span>
           </>
-        ) : audioFile ? ( // Verifica se há um arquivo de áudio
+        ) : audioFile ? (
           <div className="d-flex align-items-center">
             <audio controls src={URL.createObjectURL(audioFile)} style={{ width: '200px', marginRight: '10px' }} />
             <button onClick={sendAudioMessage} disabled={!audioFile} className="btn btn-primary me-2">
-              <FontAwesomeIcon icon={faPaperPlane} /> {/* Ícone para Enviar Áudio */}
+              <FontAwesomeIcon icon={faPaperPlane} />
             </button>
             <button onClick={() => setAudioFile(null)} className="btn btn-danger">
-              <FontAwesomeIcon icon={faTrashAlt} /> {/* Ícone para Cancelar */}
+              <FontAwesomeIcon icon={faTrashAlt} />
             </button>
           </div>
         ) : (
@@ -813,16 +931,16 @@ const Room = () => {
               className="form-control me-2"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && message.trim()) {
-                  e.preventDefault(); // Previne a quebra de linha
-                  sendMessage(); // Chama a função para enviar a mensagem
+                  e.preventDefault();
+                  sendMessage();
                 }
               }}
             />
             <button onClick={sendMessage} disabled={!message.trim()} className="btn btn-primary me-2">
-              <FontAwesomeIcon icon={faPaperPlane} /> {/* Ícone para Enviar */}
+              <FontAwesomeIcon icon={faPaperPlane} />
             </button>
             <button onClick={startRecording} disabled={recording} className="btn btn-secondary me-2">
-              <FontAwesomeIcon icon={faMicrophone} /> {/* Ícone para Gravar Áudio */}
+              <FontAwesomeIcon icon={faMicrophone} />
             </button>
           </>
         )}
@@ -830,14 +948,7 @@ const Room = () => {
 
       {isCreator && (
         <div>
-          <p className='d-none'>Link: <a href={shareLink}>{shareLink}</a></p>
-
-          {shareMethod && (
-            <div>
-              <h4>Você escolheu compartilhar via: {shareMethod === 'copy' ? 'Copiar Link' : shareMethod === 'email' ? 'Enviar por E-mail' : shareMethod === 'whatsapp' ? 'Compartilhar no WhatsApp' : 'Compartilhar no Telegram'}</h4>
-              <button className="btn btn-primary" onClick={() => handleShare(shareMethod)}>Confirmar Compartilhamento</button>
-            </div>
-          )}
+          <p className=''>Link: <a href={shareLink}>{shareLink}</a></p>
         </div>
       )}
 
@@ -846,7 +957,9 @@ const Room = () => {
           <h3>Expulsar Usuários</h3>
           {Array.from(usersWithExpelButton).map((user) => (
             <div key={user}>
-              <button className='btn-exitUser' onClick={() => expelUser(user)}>Expulsar {user}</button>
+              <button className='btn-exitUser btn btn-danger' onClick={() => expelUser(user)}>
+                Expulsar {user}
+              </button>
             </div>
           ))}
         </div>
@@ -857,7 +970,6 @@ const Room = () => {
         <span>{statusMessage}</span>
       </div>
       )}
-
     </div>
   );
 };
