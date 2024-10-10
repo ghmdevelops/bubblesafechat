@@ -5,12 +5,14 @@ import { useNavigate } from 'react-router-dom';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGoogle } from '@fortawesome/free-brands-svg-icons';
+import Swal from 'sweetalert2';
+import '@sweetalert2/theme-dark/dark.css';
 import logo from './img/name.png';
 import icon from './img/icon-page.png';
 import googleIcon from './img/icon-google.png';
 import './AuthExample.css';
+import 'bootstrap/dist/css/bootstrap.min.css'; 
 
 library.add(faGoogle);
 
@@ -260,15 +262,15 @@ const AuthExample = () => {
                             autoComplete="new-password"
                         />
                     )}
-
-                    <label id='check'>
-                        <input
-                            type="checkbox"
-                            checked={showPassword}
-                            onChange={() => setShowPassword(!showPassword)}
-                        />
-                        Mostrar senha
-                    </label>
+<label id="check" className="d-flex align-items-center">
+    <input
+        type="checkbox"
+        checked={showPassword}
+        onChange={() => setShowPassword(!showPassword)}
+        className="me-3 d-none mt-2" // Margem à direita do checkbox
+    />
+    Mostrar senha
+</label>
 
                     <button type="submit" disabled={isLoading || isLockedOut}>
                         {isLoading ? 'Carregando...' : (isLogin ? 'Login' : 'Registrar')}

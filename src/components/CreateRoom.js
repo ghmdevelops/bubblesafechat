@@ -4,10 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import CryptoJS from 'crypto-js';
 import { Helmet } from 'react-helmet';
 import 'bootstrap/dist/css/bootstrap.min.css'; // Importa o CSS do Bootstrap
-import Swal from 'sweetalert2'; // Importa o SweetAlert
+import Swal from 'sweetalert2';
+import '@sweetalert2/theme-dark/dark.css';
 import './CreateRoom.css'; // Importe o CSS personalizado
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPowerOff } from '@fortawesome/free-solid-svg-icons'; 
+import googleIcon from './img/icon-page.png';
 
 const CreateRoom = () => {
   const [roomName, setRoomName] = useState('');
@@ -131,7 +133,7 @@ const CreateRoom = () => {
   return (
     <div className="auth-container">
       <Helmet>
-        <title>Criar Sala - Open Security Room</title>
+        <title>Open Security Room - Home</title>
         <meta name="description" content="Crie uma nova sala de chat na Open Security Room." />
         <meta name="keywords" content="criar sala, chat, Open Security Room" />
         <meta name="author" content="Open Security Room" />
@@ -140,7 +142,7 @@ const CreateRoom = () => {
       <header>
         <nav className="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
           <div className="container-fluid">
-            <a className="navbar-brand" href="#">Open Security Room</a>
+            <a className="navbar-brand" href="#"><img src={googleIcon} alt="OpenSecurityRoom"/>Open Security Room</a>
             <div id="navbarCollapse">
             <button className="logout-button btn btn-danger" onClick={handleLogout}>
               <FontAwesomeIcon icon={faPowerOff} />{/* Adiciona o ícone */}

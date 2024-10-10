@@ -4,10 +4,13 @@ import { database, auth, storage } from '../firebaseConfig';
 import { QRCodeCanvas } from 'qrcode.react';
 import './Room.css';
 import ReactDOM from 'react-dom';
+import ReactDOMServer from 'react-dom/server'; // Adicione esta importação
 import Swal from 'sweetalert2';
 import '@sweetalert2/theme-dark/dark.css';
+import 'bootstrap/dist/css/bootstrap.min.css'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPaperPlane, faMicrophone, faStopCircle, faTrashAlt, faPlayCircle } from '@fortawesome/free-solid-svg-icons';
+import { faPaperPlane, faMicrophone, faCheckCircle, faStopCircle, faTrashAlt, faPlayCircle, faClipboard, faQrcode, faShareAlt, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faWhatsapp, faTelegram } from '@fortawesome/free-brands-svg-icons';
 import { Helmet } from 'react-helmet';
 
 const Room = () => {
@@ -90,7 +93,7 @@ const Room = () => {
 
         const message = "Você tem certeza que deseja sair da sala?";
         event.returnValue = message;
-        return message; 
+        return message;
       }
     };
 
@@ -512,9 +515,94 @@ const Room = () => {
     audio.play();
   };
 
+  const showShareModal = () => {
+    const content = (
+      <div>
+        <div className="mb-3">
+          <button className="btn btn-primary w-100 mb-2" onClick={() => { handleShare('copy'); Swal.close(); }}>
+            <FontAwesomeIcon icon={faClipboard} className="me-2" /> Copiar Link
+          </button>
+          <button className="btn btn-primary w-100 mb-2" onClick={() => { handleShare('email'); Swal.close(); }}>
+            <FontAwesomeIcon icon={faPaperPlane} className="me-2" /> Enviar por E-mail
+          </button>
+          <button className="btn btn-primary w-100 mb-2" onClick={() => { handleShare('whatsapp'); Swal.close(); }}>
+            <FontAwesomeIcon icon={faWhatsapp} className="me-2" /> Compartilhar no WhatsApp
+          </button>
+          <button className="btn btn-primary w-100" onClick={() => { handleShare('telegram'); Swal.close(); }}>
+            <FontAwesomeIcon icon={faTelegram} className="me-2" /> Compartilhar no Telegram
+          </button>
+        </div>
+      </div>
+    );
+
+    // Converte o conteúdo para uma string HTML
+    const contentString = ReactDOMServer.renderToString(content);
+
+    Swal.fire({
+      title: 'Escolha uma opção para compartilhar',
+      html: contentString,
+      showCloseButton: true,
+      confirmButtonText: 'Fechar',
+    });
+  };
+
+  const confirmAction = (actionType) => {
+    let title, text, onConfirm;
+
+    // Define o título, texto e ação de acordo com o botão clicado
+    switch (actionType) {
+      case 'share':
+        title = 'Compartilhar';
+        text = 'Você deseja compartilhar o link?';
+        onConfirm = showShareModal; // Ação ao confirmar
+        break;
+      case 'delete':
+        title = 'Excluir Chat';
+        text = 'Você tem certeza que deseja excluir o chat? Esta ação não pode ser desfeita.';
+        onConfirm = deleteChat; // Ação ao confirmar
+        break;
+      case 'qr':
+        title = 'QR Code';
+        text = 'Você deseja visualizar o QR Code do chat?';
+        onConfirm = showQRCode; // Ação ao confirmar
+        break;
+      default:
+        return;
+    }
+
+    Swal.fire({
+      title: title,
+      text: text,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sim',
+      cancelButtonText: 'Não',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        onConfirm(); // Chama a ação correspondente se confirmado
+      }
+    });
+  };
+
   const QRCodeModal = ({ shareLink }) => (
-    <div style={{ borderRadius: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <QRCodeCanvas value={shareLink} size={190} style={{ borderRadius: '10px', overflow: 'hidden' }} />
+    <div style={{
+      borderRadius: '10px',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      maxWidth: '100%', /* Garante que o contêiner não exceda a largura da tela */
+      padding: '10px' /* Adiciona um pouco de espaçamento */
+    }}>
+      <QRCodeCanvas
+        value={shareLink}
+        size={Math.min(window.innerWidth * 0.8, 190)} // Ajusta o tamanho com base na largura da tela, máximo de 190px
+        style={{
+          borderRadius: '10px',
+          overflow: 'hidden',
+          width: '100%', // Faz com que o QR Code ocupe 100% da largura disponível
+          height: 'auto' // Mantém a proporção ao ajustar a largura
+        }}
+      />
       <p className="d-none">Link: {shareLink}</p>
     </div>
   );
@@ -556,8 +644,24 @@ const Room = () => {
 
   return (
     <div>
-      <h1>Sala de Chat - {roomName}</h1>
+      <Helmet>
+        <title>{'Open Security Room - Chat'}</title>
+        <meta name="description" content="Faça login para acessar suas salas de chat na Open Security Room ou crie uma nova conta para se juntar à comunidade." />
+        <meta name="keywords" content="login, registro, chat, segurança, comunidade" />
+        <meta name="author" content="Open Security Room" />
+        <meta property="og:title" content={'Open Security Room - Chat'} />
+        <meta property="og:description" content="Acesse suas salas de chat ou crie uma nova conta na Open Security Room." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={window.location.href} />
+        <meta property="og:image" content="URL_da_imagem_de_visualização" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={'Open Security Room - Chat'} />
+        <meta name="twitter:description" content="Acesse suas salas de chat ou crie uma nova conta na Open Security Room." />
+        <meta name="twitter:image" content="URL_da_imagem_de_visualização" />
+        <link rel="canonical" href={window.location.href} />
+      </Helmet>
 
+      <h1 className="text-center mt-2">Chat {roomName}</h1>
 
       {isCreator && (
         <div className="mb-3 mt-4">
@@ -570,8 +674,25 @@ const Room = () => {
                 id="destructionSwitch"
                 className="form-check-input visually-hidden"
               />
-              <label className="form-check-label" htmlFor="destructionSwitch">
-                <strong>Mensagens Autodestrutivas:</strong> {isDestructionActive ? ' Ativado' : ' Desativado'}
+              <label className="form-check-label label-checks" htmlFor="destructionSwitch">
+                <div className="mb-3 mt-3">
+                  <strong>Mensagens Autodestrutivas</strong>
+                  <span className={isDestructionActive ? 'text-success' : 'text-danger'}>
+                    {isDestructionActive ? ' Ativado' : ' Desativado'}
+                  </span>
+                  <button className="btn btn-primary w-10 mb-2" onClick={() => confirmAction('share')}>
+                    <FontAwesomeIcon icon={faShareAlt} />
+                  </button>
+                  <button className="btn btn-danger d-none" onClick={() => confirmAction('leave')}>
+                    Sair
+                  </button>
+                  <button className="btn btn-danger w-10 mb-2" onClick={() => confirmAction('delete')}>
+                    <FontAwesomeIcon icon={faTrash} />
+                  </button>
+                  <button className="btn btn-primary w-10 mb-2" onClick={() => confirmAction('qr')}>
+                    <FontAwesomeIcon icon={faQrcode} />
+                  </button>
+                </div>
               </label>
             </div>
 
@@ -607,17 +728,33 @@ const Room = () => {
         </div>
       )}
 
-      <div className="message-container mb-3" style={{ height: '300px', overflowY: 'scroll', border: '1px solid #ccc' }}>
+      <div className="message-container mb-3" style={{ height: '300px', overflowY: 'scroll', border: '1px solid transparent', borderRadius: '8px', padding: '10px' }}>
         {messages.map((msg) => {
           const timeSinceCreation = (Date.now() - new Date(msg.timestamp).getTime()) / 1000;
           const timeRemaining = destructionTime - timeSinceCreation;
+          const isSentByUser = msg.user === userName; // Verifica se a mensagem é do usuário atual
 
           return (
-            <div key={msg.id} style={{ padding: '5px', borderBottom: '1px solid #eee' }}>
-              <strong>{msg.user}:</strong> {msg.text ? msg.text : <button onClick={() => playAudio(msg.audioUrl)}><FontAwesomeIcon icon={faPlayCircle} /></button>}
+            <div
+              key={msg.id}
+              style={{
+                padding: '8px',
+                borderRadius: '15px',
+                margin: isSentByUser ? '5px 0 5px auto' : '5px auto 5px 0',
+                backgroundColor: isSentByUser ? '#dcf8c6' : '#f1f1f1',
+                maxWidth: '70%',
+                textAlign: isSentByUser ? 'right' : 'left',
+                position: 'relative',
+                color: '#000',
+              }}
+            >
+              <strong style={{ display: 'block', fontSize: '0.85em', color: '#555' }}>{msg.user}</strong>
+              <span>
+                {msg.text ? msg.text : <button onClick={() => playAudio(msg.audioUrl)}><FontAwesomeIcon icon={faPlayCircle} /></button>}
+              </span>
               {msg.readBy && (
-                <div>
-                  <small>Lido por: {msg.readBy.join(', ')}</small>
+                <div className='sub-textMsg'>
+                  <small>lido por: {msg.readBy.join(', ')}</small>
                 </div>
               )}
               {isDestructionActive && timeRemaining > 0 && (
@@ -630,6 +767,7 @@ const Room = () => {
         })}
         <div ref={messagesEndRef} />
       </div>
+
 
       {typingUsers.length > 0 && (
         <div style={{ marginBottom: '10px' }}>
@@ -692,18 +830,7 @@ const Room = () => {
 
       {isCreator && (
         <div>
-          <h3>Compartilhar link do chat:</h3>
-          <p>Link: <a href={shareLink}>{shareLink}</a></p>
-
-          <div className="mb-3">
-            <button className="btn btn-secondary" onClick={() => setShareMethod('copy')}>Copiar Link</button>
-            <button className="btn btn-secondary" onClick={() => setShareMethod('email')}>Enviar por E-mail</button>
-            <button className="btn btn-secondary" onClick={() => setShareMethod('whatsapp')}>Compartilhar no WhatsApp</button>
-            <button className="btn btn-secondary" onClick={() => setShareMethod('telegram')}>Compartilhar no Telegram</button>
-            <button className="btn btn-danger" onClick={leaveRoom}>Sair</button>
-            <button className="btn btn-danger" onClick={deleteChat}>Excluir Chat</button>
-            <button className="btn btn-primary" onClick={showQRCode}>QR Code do chat</button>
-          </div>
+          <p className='d-none'>Link: <a href={shareLink}>{shareLink}</a></p>
 
           {shareMethod && (
             <div>
@@ -716,16 +843,21 @@ const Room = () => {
 
       {isCreator && (
         <div>
-          <h3>Expulsar Usuários:</h3>
+          <h3>Expulsar Usuários</h3>
           {Array.from(usersWithExpelButton).map((user) => (
             <div key={user}>
-              <button onClick={() => expelUser(user)}>Expulsar {user}</button>
+              <button className='btn-exitUser' onClick={() => expelUser(user)}>Expulsar {user}</button>
             </div>
           ))}
         </div>
       )}
 
-      {statusMessage && <p style={{ color: 'green' }}>{statusMessage}</p>}
+      {statusMessage && (<div className="alert alert-success d-flex align-items-center" role="alert">
+        <FontAwesomeIcon icon={faCheckCircle} className="me-2" />
+        <span>{statusMessage}</span>
+      </div>
+      )}
+
     </div>
   );
 };
