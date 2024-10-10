@@ -948,7 +948,7 @@ const Room = () => {
 
       {isCreator && (
         <div>
-          <p className=''>Link: <a href={shareLink}>{shareLink}</a></p>
+          <p className='d-none'>Link: <a href={shareLink}>{shareLink}</a></p>
         </div>
       )}
 
