@@ -247,7 +247,11 @@ const AuthExample = () => {
                 if (user.emailVerified) {
                     Swal.fire({
                         icon: 'success',
-                        customClass: {popup: 'swal-popup-dark' },
+                        customClass: {
+                            popup: 'swal-popup-dark',
+                            confirmButton: 'btn btn-primary swal-confirm-button-dark',  
+                        },
+                        background: '#1f1f1f',
                         title: 'Login bem-sucedido',
                         html: 'Você foi logado com sucesso. Irei fechar em <b></b> milissegundos.',
                         timer: 1600,
