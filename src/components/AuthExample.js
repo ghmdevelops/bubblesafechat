@@ -86,16 +86,24 @@ const AuthExample = () => {
 
         try {
             await signInWithPopup(auth, provider);
+            let timerInterval;
 
             Swal.fire({
                 icon: 'success',
                 title: 'Login com Google bem-sucedido',
-                text: 'Você foi logado com sucesso usando sua conta Google.',
-                confirmButtonText: 'Ok',
-                customClass: {
-                    confirmButton: 'btn btn-primary',
+                html: 'Você foi logado com sucesso usando sua conta Google. Irei fechar em <b></b> milissegundos.',
+                timer: 1600,
+                timerProgressBar: true,
+                didOpen: () => {
+                    Swal.showLoading();
+                    const timer = Swal.getPopup().querySelector('b');
+                    timerInterval = setInterval(() => {
+                        timer.textContent = Swal.getTimerLeft();
+                    }, 100);
                 },
-                buttonsStyling: false,
+                willClose: () => {
+                    clearInterval(timerInterval);
+                }
             }).then(() => {
                 navigate('/');
             });
@@ -234,19 +242,30 @@ const AuthExample = () => {
         auth.signInWithEmailAndPassword(email, password)
             .then(userCredential => {
                 const user = userCredential.user;
+                let timerInterval;
 
                 if (user.emailVerified) {
-                    // Login bem-sucedido
                     Swal.fire({
                         icon: 'success',
+                        customClass: {popup: 'dark-popup'},
                         title: 'Login bem-sucedido',
-                        text: 'Você foi logado com sucesso.',
-                        confirmButtonText: 'Ok',
-                        customClass: {
-                            confirmButton: 'btn btn-primary',
+                        html: 'Você foi logado com sucesso. Irei fechar em <b></b> milissegundos.',
+                        timer: 1600,
+                        timerProgressBar: true,
+                        didOpen: () => {
+                            Swal.showLoading();
+                            const timer = Swal.getPopup().querySelector('b');
+                            timerInterval = setInterval(() => {
+                                timer.textContent = Swal.getTimerLeft();
+                            }, 100);
                         },
-                        buttonsStyling: false,
-                    }).then(() => {
+                        willClose: () => {
+                            clearInterval(timerInterval);
+                        }
+                    }).then((result) => {
+                        if (result.dismiss === Swal.DismissReason.timer) {
+                            console.log("I was closed by the timer");
+                        }
                         navigate('/');
                     });
                 } else {

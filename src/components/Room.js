@@ -41,7 +41,7 @@ const Room = () => {
   const [expelledUsers, setExpelledUsers] = useState([]);
   const [timeLeft, setTimeLeft] = useState({});
   const [usersWithExpelButton, setUsersWithExpelButton] = useState(new Set());
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
 
   const shareLink = `${window.location.origin}/opensecurityroom/#/room/${roomId}`;
 
@@ -214,7 +214,7 @@ const Room = () => {
           }));
           setPendingRequests(parsedRequests);
         } else {
-          setLoading(false); 
+          setLoading(false);
         }
       });
 
@@ -239,7 +239,7 @@ const Room = () => {
               timestamp: new Date().toISOString(),
             });
             setUsersWithExpelButton((prevUsers) => new Set([...prevUsers, userData.userName]));
-            setLoading(false); 
+            setLoading(false);
           });
         }
       });
@@ -461,19 +461,37 @@ const Room = () => {
         await Promise.all(deletePromises);
       }
       await database.ref(`rooms/${roomId}`).remove();
+      let timerInterval;
 
       setHasJoined(false);
       setUserName('');
       Swal.fire({
-        title: 'Sucesso!',
-        text: 'Sala e arquivos e mensagens excluídos com sucesso!',
-        icon: 'success',
-        confirmButtonText: 'Ok'
+        title: 'Excluindo sala arquivos e mensagens!!',
+        icon: 'info',
+        html: 'Irei fechar em <b></b> milissegundos.',
+        timer: 1800,
+        timerProgressBar: true,
+        didOpen: () => {
+          Swal.showLoading();
+          const timer = Swal.getPopup().querySelector('b');
+          timerInterval = setInterval(() => {
+            timer.textContent = Swal.getTimerLeft();
+          }, 100);
+        },
+        willClose: () => {
+          clearInterval(timerInterval);
+        }
+      }).then(() => {
+        setTimeout(() => {
+          navigate('/');
+        }, 100);
+        Swal.fire({
+          title: 'Sucesso!',
+          text: 'Sala e arquivos e mensagens excluídos com sucesso!',
+          icon: 'success',
+          confirmButtonText: 'Ok'
+        });
       });
-
-      setTimeout(() => {
-        navigate('/');
-      }, 500);
     } catch (error) {
       console.error('Erro ao excluir a sala e arquivos:', error);
       setStatusMessage('Erro ao excluir a sala. Tente novamente.');
