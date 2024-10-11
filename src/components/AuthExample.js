@@ -247,11 +247,6 @@ const AuthExample = () => {
                 if (user.emailVerified) {
                     Swal.fire({
                         icon: 'success',
-                        customClass: {
-                            popup: 'swal-popup-dark',
-                            confirmButton: 'btn btn-primary swal-confirm-button-dark',  
-                        },
-                        background: '#1f1f1f',
                         title: 'Login bem-sucedido',
                         html: 'Você foi logado com sucesso. Irei fechar em <b></b> milissegundos.',
                         timer: 1600,
@@ -295,7 +290,7 @@ const AuthExample = () => {
                 if (loginAttempts + 1 >= maxAttempts) {
                     setIsLockedOut(true);
                     localStorage.setItem('isLockedOut', 'true');
-                    const lockoutTimeMinutes = 3; // Tempo de bloqueio, por exemplo, 5 minutos
+                    const lockoutTimeMinutes = 3; 
                     Swal.fire({
                         icon: 'error',
                         title: 'Conta bloqueada',

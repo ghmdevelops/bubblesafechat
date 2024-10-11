@@ -6,8 +6,18 @@ body {
   color: #fff;
 }
 
-.password-input-container {
-  position: relative;
+.swal2-popup {
+  background-color: #1c1b1b; /* Cor de fundo do modal */
+  color: #fff; /* Cor do texto */
+  border-radius: 10px; /* Arredondar os cantos */
+}
+
+.swal2-title {
+  color: #ffffff; /* Cor do título */
+}
+
+.swal2-content {
+  color: #dddddd; /* Cor do texto do conteúdo */
 }
 
 .password-input-container input {
