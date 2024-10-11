@@ -35,9 +35,16 @@ const AuthExample = () => {
     const [lockoutMessage, setLockoutMessage] = useState('');
     const [passwordResetRequested, setPasswordResetRequested] = useState(false);
     const navigate = useNavigate();
+    const [passwordsMatch, setPasswordsMatch] = useState(true);
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
+    };
+
+    const handleConfirmPasswordChange = (e) => {
+        const value = e.target.value;
+        setConfirmPassword(value);
+        setPasswordsMatch(password === value);
     };
 
     const checkPasswordStrength = (password) => {
@@ -64,7 +71,7 @@ const AuthExample = () => {
 
         if (storedLockout === 'true') {
             setIsLockedOut(true);
-            setLockoutMessage('Sua conta está bloqueada. Redefina sua senha para acessar novamente.');
+            setLockoutMessage('Sua conta está bloqueada. Redefina sua senha e aguarde 3 minutos para acessar novamente.');
         }
 
         const storedAttempts = localStorage.getItem('loginAttempts');
@@ -257,17 +264,19 @@ const AuthExample = () => {
                 }
             })
             .catch(error => {
-                const attemptsLeft = 4 - loginAttempts;
+                const maxAttempts = 5;
+                const attemptsLeft = maxAttempts - (loginAttempts + 1);
                 setLoginAttempts(prev => prev + 1);
                 localStorage.setItem('loginAttempts', loginAttempts + 1);
 
-                if (loginAttempts + 1 >= 5) {
+                if (loginAttempts + 1 >= maxAttempts) {
                     setIsLockedOut(true);
                     localStorage.setItem('isLockedOut', 'true');
+                    const lockoutTimeMinutes = 3; // Tempo de bloqueio, por exemplo, 5 minutos
                     Swal.fire({
                         icon: 'error',
                         title: 'Conta bloqueada',
-                        text: 'Você excedeu o número de tentativas de login. Redefina sua senha.',
+                        text: `Você excedeu o número de tentativas de login. Sua conta está bloqueada por ${lockoutTimeMinutes} minutos.`,
                         confirmButtonText: 'Ok',
                         customClass: {
                             confirmButton: 'btn btn-primary',
@@ -275,7 +284,18 @@ const AuthExample = () => {
                         buttonsStyling: false,
                     });
                 } else {
-                    if (error.code === 'auth/wrong-password') {
+                    if (error.code === 'auth/user-not-found') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'E-mail não cadastrado',
+                            text: 'Esse e-mail não está registrado. Por favor, verifique ou crie uma nova conta.',
+                            confirmButtonText: 'Ok',
+                            customClass: {
+                                confirmButton: 'btn btn-primary',
+                            },
+                            buttonsStyling: false,
+                        });
+                    } else if (error.code === 'auth/wrong-password') {
                         Swal.fire({
                             icon: 'error',
                             title: 'Senha incorreta',
@@ -312,7 +332,7 @@ const AuthExample = () => {
                         Swal.fire({
                             icon: 'error',
                             title: 'Erro ao fazer login',
-                            text: 'Erro ao fazer login. Verifique as credenciais e tente novamente.',
+                            text: 'Não foi possível fazer login. Por favor, verifique se o e-mail está correto, se já possui uma conta cadastrada ou se a senha está correta, e tente novamente.',
                             confirmButtonText: 'Ok',
                             customClass: {
                                 confirmButton: 'btn btn-primary',
@@ -354,6 +374,25 @@ const AuthExample = () => {
             });
     };
 
+    const [showLockoutMessage, setShowLockoutMessage] = useState(true);
+    const [showErrorMessage, setShowErrorMessage] = useState(true);
+    const [showResetMessage, setShowResetMessage] = useState(true);
+    const [showRegistrationMessage, setShowRegistrationMessage] = useState(true);
+
+    useEffect(() => {
+        const timer1 = setTimeout(() => setShowLockoutMessage(false), 20000);
+        const timer2 = setTimeout(() => setShowErrorMessage(false), 20000);
+        const timer3 = setTimeout(() => setShowResetMessage(false), 20000);
+        const timer4 = setTimeout(() => setShowRegistrationMessage(false), 20000);
+
+        return () => {
+            clearTimeout(timer1);
+            clearTimeout(timer2);
+            clearTimeout(timer3);
+            clearTimeout(timer4);
+        };
+    }, [lockoutMessage, errorMessage, resetMessage, registrationMessage]);
+
     return (
         <div className="auth-container">
             <Helmet>
@@ -376,6 +415,11 @@ const AuthExample = () => {
             <img id="icon-img" src={icon} alt="OpenSecurityRoom" />
             <img src={logo} alt="OpenSecurityRoom" />
             <h1>{isResetPassword ? 'Redefinir Senha' : (isLogin ? 'Login' : 'Registrar')}</h1>
+
+            {lockoutMessage && showLockoutMessage && <p className="error-message">{lockoutMessage}</p>}
+            {errorMessage && showErrorMessage && <p className="error-message">{errorMessage}</p>}
+            {resetMessage && showResetMessage && <p className="success-message">{resetMessage}</p>}
+            {registrationMessage && showRegistrationMessage && <p className="success-message">{registrationMessage}</p>}
 
             {!isResetPassword ? (
                 <form onSubmit={isLogin ? handleLogin : handleRegister}>
@@ -433,7 +477,7 @@ const AuthExample = () => {
                             <input
                                 type={showPassword ? 'text' : 'password'}
                                 value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                onChange={handleConfirmPasswordChange} // Usa a função para comparar as senhas
                                 placeholder="Confirmar Senha"
                                 required
                                 autoComplete="new-password"
@@ -444,7 +488,11 @@ const AuthExample = () => {
                         </div>
                     )}
 
-                    {password && (
+                    {!passwordsMatch && !isLogin && (
+                        <p className="error-message">As senhas não correspondem. Por favor, tente novamente.</p>
+                    )}
+
+                    {!isLogin && password && (
                         <p className={`password-strength ${checkPasswordStrength(password)}`}>
                             <FontAwesomeIcon icon={faInfoCircle} className="me-2" />
                             Senha {checkPasswordStrength(password)}
@@ -495,8 +543,6 @@ const AuthExample = () => {
                 </form>
             )}
 
-            {lockoutMessage && <p className="error-message">{lockoutMessage}</p>}
-
             {isLogin && !isResetPassword && (
                 <p class="btn-redpass" >
                     Esqueceu sua senha?{' '}
@@ -515,9 +561,6 @@ const AuthExample = () => {
                 </p>
             )}
 
-            {errorMessage && <p className="error-message">{errorMessage}</p>}
-            {resetMessage && <p className="success-message">{resetMessage}</p>}
-            {registrationMessage && <p className="success-message">{registrationMessage}</p>}
         </div>
     );
 };

@@ -1,0 +1,47 @@
+.footer {
+  background: linear-gradient(45deg, #0992cd, #A74AC7); /* Gradiente similar ao da imagem */
+  color: white;
+  padding-top: 40px;
+}
+
+.footer a {
+  color: white;
+  text-decoration: none;
+}
+
+.footer a:hover {
+  color: #7c4dff;
+}
+
+.footer .container {
+  max-width: 1200px;
+}
+
+.footer hr {
+  background-color: #7c4dff;
+  height: 2px;
+}
+
+.footer p {
+  color: white;
+}
+
+.footer h6 {
+  color: #f5effb;
+  font-weight: bold;
+}
+
+.footer .text-center {
+  background-color: transparent;
+}
+
+.footer .social-icons a {
+  margin: 0 10px;
+  font-size: 1.5rem;
+  color: #bcefff;
+  transition: color 0.3s ease;
+}
+
+.footer .social-icons a:hover {
+  color: #7c4dff;
+}

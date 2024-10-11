@@ -3,14 +3,14 @@ import { auth, database } from '../firebaseConfig';
 import { useNavigate } from 'react-router-dom';
 import CryptoJS from 'crypto-js';
 import { Helmet } from 'react-helmet';
-import 'bootstrap/dist/css/bootstrap.min.css'; // Importa o CSS do Bootstrap
+import 'bootstrap/dist/css/bootstrap.min.css';
 import Swal from 'sweetalert2';
 import '@sweetalert2/theme-dark/dark.css';
-import './CreateRoom.css'; // Importe o CSS personalizado
+import './CreateRoom.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPowerOff, faUserCircle, } from '@fortawesome/free-solid-svg-icons';
+import { faPowerOff, faUserCircle, faDoorOpen } from '@fortawesome/free-solid-svg-icons';
 import googleIcon from './img/icon-page.png';
-import { EmailAuthProvider } from 'firebase/auth'; // Importa o provedor de autenticação de email
+import { EmailAuthProvider } from 'firebase/auth';
 
 const CreateRoom = () => {
   const [roomName, setRoomName] = useState('');
@@ -27,18 +27,42 @@ const CreateRoom = () => {
 
   useEffect(() => {
     Swal.fire({
-      title: 'Informações Importantes!',
-      text: 'Certifique-se de que seu nome de usuário é apropriado antes de criar uma sala.',
+      title: '🔒 Proteção Máxima e Controle Total!',
+      html: `<p style="text-align: left; font-size: 1em; color: #ffffff; line-height: 1.5;">
+                Bem-vindo à <strong>Open Security Room</strong>, sua plataforma com o mais alto nível de <strong>privacidade</strong> e <strong>segurança</strong>. Todas as salas são protegidas por <strong>criptografia de ponta</strong>, garantindo que você permaneça completamente anônimo e no controle.
+              </p>
+              <p style="text-align: left; font-size: 1em; color: #ffffff; line-height: 1.5;">
+                Seus dados pessoais são armazenados por no máximo <strong>24 horas</strong> e podem ser excluídos permanentemente a qualquer momento. Após esse período, realizamos um <strong>reset diário</strong> para garantir que nenhuma informação permaneça armazenada.
+              </p>
+              <p style="text-align: left; font-size: 1em; color: #ffffff; line-height: 1.5;">
+                Você pode compartilhar suas salas com total segurança por meio de <strong>QR Code</strong> ou link, sempre mantendo o controle total sobre quem acessa. Aqui, você está no comando.
+              </p>`,
       icon: 'info',
-      confirmButtonText: 'Ok'
-    });
+      confirmButtonText: 'Entendido!',
+      customClass: {
+        popup: 'swal-popup-dark',  // Classe personalizada para o popup
+        confirmButton: 'btn btn-primary swal-confirm-button-dark',  // Classe para o botão
+      },
+      buttonsStyling: false,
+      background: '#1f1f1f',  // Fundo escuro
+      width: '800px',  // Largura maior do modal
+      backdrop: `
+        rgba(0, 0, 0, 0.7)
+      `,
+      showClass: {
+        popup: 'animate__animated animate__fadeInDown'  // Animação de entrada
+      },
+      hideClass: {
+        popup: 'animate__animated animate__fadeOutUp'  // Animação de saída
+      }
+    });    
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
         const emailName = user.email.split('@')[0];
         setUserEmail(emailName);
-        resetLastAccessTime(); // Atualiza o horário do último acesso
+        resetLastAccessTime();
       } else {
-        navigate('/'); // Redireciona para o login se não estiver autenticado
+        navigate('/');
       }
     });
 
@@ -47,7 +71,6 @@ const CreateRoom = () => {
       window.addEventListener(event, resetLastAccessTime);
     });
 
-    // Inicia o timer de logout
     startLogoutTimer();
 
     return () => {
@@ -55,21 +78,77 @@ const CreateRoom = () => {
       events.forEach((event) => {
         window.removeEventListener(event, resetLastAccessTime);
       });
-      clearTimeout(logoutTimer); // Limpa o timer ao desmontar
+      clearTimeout(logoutTimer);
     };
   }, [navigate]);
 
   const resetLastAccessTime = () => {
-    localStorage.setItem('lastAccessTime', Date.now()); // Armazena o horário atual
-    startLogoutTimer(); // Reinicia o timer de logout
+    localStorage.setItem('lastAccessTime', Date.now());
+    startLogoutTimer();
   };
 
   const reauthenticateUser = async () => {
     const currentUser = auth.currentUser;
-    const credential = EmailAuthProvider.credential(currentUser.email, prompt('Digite sua senha para confirmar:'));
 
     try {
+      const { value: password } = await Swal.fire({
+        title: 'Reautenticação necessária',
+        input: 'password',
+        inputLabel: 'Digite sua senha para confirmar:',
+        inputPlaceholder: 'Senha',
+        inputAttributes: {
+          autocapitalize: 'off',
+          autocorrect: 'off',
+          id: 'password-input'
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar',
+        customClass: {
+          confirmButton: 'btn btn-primary',
+          cancelButton: 'btn btn-secondary'
+        },
+        buttonsStyling: false,
+        didOpen: () => {
+          // Criar o checkbox de "Mostrar senha"
+          const passwordInput = Swal.getInput();
+          const container = Swal.getHtmlContainer();
+          const inputLabel = document.querySelector('.swal2-input-label');
+          if (inputLabel) {
+            inputLabel.style.color = '#fff';
+          }
+
+          const checkboxLabel = document.createElement('label');
+          checkboxLabel.setAttribute('for', 'show-password');
+          checkboxLabel.innerHTML = 'Mostrar senha';
+
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.className = 'd-none';
+          checkbox.id = 'show-password';
+          checkbox.style.marginLeft = '10px';
+
+          container.appendChild(checkboxLabel);
+          container.appendChild(checkbox);
+
+          // Adicionar o evento para o checkbox
+          checkbox.addEventListener('change', (event) => {
+            if (event.target.checked) {
+              passwordInput.type = 'text';
+            } else {
+              passwordInput.type = 'password';
+            }
+          });
+        }
+      });
+
+      if (!password) {
+        return false;
+      }
+
+      const credential = EmailAuthProvider.credential(currentUser.email, password);
       await currentUser.reauthenticateWithCredential(credential);
+
       return true;
     } catch (error) {
       Swal.fire('Erro de autenticação', 'Reautenticação falhou, tente novamente.', 'error');
@@ -80,7 +159,6 @@ const CreateRoom = () => {
   const deleteAccount = async () => {
     const currentUser = auth.currentUser;
 
-    // Verifica se o e-mail foi verificado
     if (!currentUser.emailVerified) {
       Swal.fire({
         title: 'Verifique seu e-mail',
@@ -89,31 +167,41 @@ const CreateRoom = () => {
         confirmButtonText: 'Ok'
       });
 
-      // Envia um e-mail de verificação
-      currentUser.sendEmailVerification()
-        .then(() => {
-          Swal.fire('E-mail enviado', 'Por favor, verifique seu e-mail e tente novamente.', 'info');
-        })
-        .catch((error) => {
-          Swal.fire('Erro ao enviar e-mail', error.message, 'error');
-        });
-      return; // Para a função se o e-mail não foi verificado
+      try {
+        await currentUser.sendEmailVerification();
+        Swal.fire('E-mail enviado', 'Por favor, verifique seu e-mail e tente novamente.', 'info');
+      } catch (error) {
+        Swal.fire('Erro ao enviar e-mail', error.message, 'error');
+      }
+      return;
     }
 
-    if (window.confirm('Tem certeza que deseja excluir sua conta e todos os seus dados?')) {
+    const result = await Swal.fire({
+      title: 'Excluir conta?',
+      text: 'Tem certeza que deseja excluir sua conta e todos os seus dados?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sim, excluir',
+      cancelButtonText: 'Cancelar',
+      customClass: {
+        confirmButton: 'btn btn-danger',
+        cancelButton: 'btn btn-secondary'
+      },
+      buttonsStyling: false
+    });
+
+    if (result.isConfirmed) {
       try {
-        const reauthenticated = await reauthenticateUser(); // Primeiro reautentica o usuário
-        if (!reauthenticated) return; // Se a reautenticação falhar, aborta a operação
+        const reauthenticated = await reauthenticateUser();
 
-        // Exclui os dados do usuário no banco de dados (Realtime Database ou Firestore)
+        if (!reauthenticated) return;
+
         const userRef = database.ref(`users/${currentUser.uid}`);
-        await userRef.remove(); // Remove os dados
-
-        // Exclui a conta do Firebase Authentication
+        await userRef.remove();
         await currentUser.delete();
 
         Swal.fire('Conta excluída com sucesso!', '', 'success');
-        navigate('/'); // Redireciona para a página inicial após exclusão
+        navigate('/');
       } catch (error) {
         console.error('Erro ao excluir a conta:', error);
         Swal.fire('Erro ao excluir a conta', error.message, 'error');
@@ -122,9 +210,9 @@ const CreateRoom = () => {
   };
 
   const startLogoutTimer = () => {
-    clearTimeout(logoutTimer); // Limpa o timer anterior
+    clearTimeout(logoutTimer);
     logoutTimer = setTimeout(() => {
-      handleLogout(); // Chama a função de logout após o tempo limite
+      handleLogout();
     }, LOGOUT_TIMEOUT);
   };
 
@@ -139,51 +227,75 @@ const CreateRoom = () => {
       setLoading(true); // Inicia o carregamento
       const encryptionKey = generateEncryptionKey();
       sessionStorage.setItem('encryptionKey', encryptionKey);
-      localStorage.setItem('userName', userName); // Salva o nome do usuário
+      localStorage.setItem('userName', userName);
 
-      // Cria uma nova sala no banco de dados
       const roomRef = database.ref('rooms').push({
         name: roomName,
         createdAt: new Date().toISOString(),
         creator: currentUser.uid,
-        creatorName: userName, // Adiciona o nome do criador junto com o ID
+        creatorName: userName,
         encryptionKey: encryptionKey
       });
 
       // Navega para a sala recém-criada
       navigate(`/room/${roomRef.key}`, { state: { roomName: roomName, encryptionKey } });
-      setSuccessMessage('Sala criada com sucesso!'); // Mensagem de sucesso
-      setErrorMessage(''); // Limpa mensagens de erro
+      setSuccessMessage('Sala criada com sucesso!');
+      setErrorMessage('');
     } else {
       console.error('Usuário não autenticado!');
     }
   };
 
   const handleLogout = () => {
-    if (window.confirm('Você tem certeza que deseja sair?')) { // Confirmação antes de sair
-      auth.signOut()
-        .then(() => {
-          localStorage.removeItem('lastAccessTime'); // Limpa o horário do último acesso
-          navigate('/'); // Redireciona para a página de login
-        })
-        .catch((error) => {
-          console.error('Erro ao deslogar:', error.message);
-        });
-    }
+    Swal.fire({
+      title: 'Tem certeza?',
+      text: "Você tem certeza que deseja sair?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sim, sair!',
+      cancelButtonText: 'Cancelar',
+      customClass: {
+        confirmButton: 'btn btn-primary',
+        cancelButton: 'btn btn-secondary'
+      },
+      buttonsStyling: false
+    }).then((result) => {
+      if (result.isConfirmed) {
+        auth.signOut()
+          .then(() => {
+            localStorage.removeItem('lastAccessTime');
+            navigate('/');
+          })
+          .catch((error) => {
+            console.error('Erro ao deslogar:', error.message);
+            Swal.fire('Erro!', 'Erro ao deslogar. Tente novamente mais tarde.', 'error');
+          });
+      }
+    });
   };
 
   const handleConfirmName = () => {
     if (userName.trim()) {
       setIsNameConfirmed(true);
     } else {
-      alert('Por favor, insira um nome de usuário válido.');
+      Swal.fire({
+        icon: 'error',
+        title: 'Nome inválido',
+        text: 'Por favor, insira um nome de usuário válido.',
+        confirmButtonText: 'Ok',
+        customClass: {
+          confirmButton: 'btn btn-primary',
+        },
+        buttonsStyling: false
+      });
     }
   };
 
-  // Função para cancelar a confirmação do nome
   const handleCancelName = () => {
     setIsNameConfirmed(false);
-    setUserName(''); // Limpa o campo de nome
+    setUserName('');
   };
 
   return (
@@ -200,11 +312,11 @@ const CreateRoom = () => {
           <div className="container-fluid">
             <a className="navbar-brand" href="#"><img src={googleIcon} alt="OpenSecurityRoom" />Open Security Room</a>
             <div id="navbarCollapse">
-              <button className="btn btn-danger mt-3" onClick={deleteAccount}>
+              <button className="btn btn-danger" onClick={deleteAccount}>
                 Excluir Conta e Todos os Dados
               </button>
               <button className="logout-button btn btn-danger" onClick={handleLogout}>
-                <FontAwesomeIcon icon={faPowerOff} />{/* Adiciona o ícone */}
+                <FontAwesomeIcon icon={faPowerOff} />
               </button>
             </div>
           </div>
@@ -219,43 +331,48 @@ const CreateRoom = () => {
         {!isNameConfirmed ? (
           <div>
             <label>
-              <span>
-                <FontAwesomeIcon icon={faUserCircle} />
-                Insira o seu nick ex: Joao9302
+              <FontAwesomeIcon icon={faUserCircle} />
+              <span className='ms-1'>
+                Insira o seu nick? <span style={{ color: '#D462FF', fontWeight: 'bold' }}>Ex: Qu@ntumJumperTest2</span>
               </span>
               <div className="input-group mb-3">
                 <input
                   type="text"
                   value={userName}
                   onChange={(e) => setUserName(e.target.value)}
-                  placeholder="Digite seu novo nome de usuário"
-                  className="form-control" // Adiciona a classe do Bootstrap
+                  placeholder="Digite seu nick"
+                  className="form-control"
                 />
               </div>
             </label>
-            <button className="btn btn-primary mx-2" onClick={handleConfirmName} disabled={!userName.trim()}>Confirmar Nome</button>
+            <button className="btn btn-primary mx-2"  style={{ height: '46px' }} onClick={handleConfirmName} disabled={!userName.trim()}>Confirmar Nick</button>
           </div>
         ) : (
           <>
             <label>
-              Insira o nome da sala
+              <span>
+                <FontAwesomeIcon icon={faDoorOpen} />
+              </span>
+              <span className='ms-2'>
+                Insira o nome da sala: <span style={{ color: '#D462FF', fontWeight: 'bold' }}>Ex: TurmaCerveja</span>
+              </span>
               <input
                 type="text"
                 value={roomName}
-                onChange={(e) => setRoomName(e.target.value)} // Atualiza o nome da sala
+                onChange={(e) => setRoomName(e.target.value)}
                 placeholder="Nome da Sala"
-                className="form-control mb-3" // Adiciona a classe do Bootstrap
+                className="form-control mb-3"
               />
             </label>
             <button className="btn btn-primary mx-2" onClick={createRoom} disabled={!roomName.trim() || loading}>
               {loading ? 'Criando...' : 'Criar Sala'}
             </button>
-            <button className="btn btn-secondary" onClick={handleCancelName}>Cancelar</button> {/* Botão de Cancelar */}
+            <button className="btn btn-warning cancroom" onClick={handleCancelName}>Cancelar</button>
           </>
         )}
 
-        {successMessage && <p className="success-message">{successMessage}</p>} {/* Mensagem de sucesso */}
-        {errorMessage && <p className="error-message">{errorMessage}</p>} {/* Mensagem de erro */}
+        {successMessage && <p className="success-message">{successMessage}</p>}
+        {errorMessage && <p className="error-message">{errorMessage}</p>}
       </div>
     </div>
   );

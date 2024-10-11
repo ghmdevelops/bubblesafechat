@@ -776,7 +776,7 @@ const Room = () => {
                 className="form-check-input visually-hidden"
               />
               <label className="form-check-label label-checks" htmlFor="destructionSwitch">
-                <div className="mb-5 mt-3">
+                <div className="mb-3 mt-3">
                   <strong>Mensagens Autodestrutivas</strong>
                   <span className={isDestructionActive ? 'text-success' : 'text-danger'}>
                     {isDestructionActive ? ' Ativado' : ' Desativado'}
@@ -844,7 +844,7 @@ const Room = () => {
         </div>
       )}
 
-      <div className="message-container mb-1" style={{ height: '300px', overflowY: 'scroll', border: '1px solid transparent', borderRadius: '8px', padding: '10px' }}>
+      <div className="message-container mb-1" style={{ height: '470px', overflowY: 'scroll', border: '1px solid transparent', borderRadius: '8px', padding: '10px' }}>
         {messages.map((msg) => {
           const timeSinceCreation = (Date.now() - new Date(msg.timestamp).getTime()) / 1000;
           const timeRemaining = destructionTime - timeSinceCreation;
@@ -855,7 +855,7 @@ const Room = () => {
             <div
               key={msg.id}
               style={{
-                padding: '8px',
+                padding: '4px',
                 borderRadius: '15px',
                 margin: isSentByUser ? '5px 0 5px auto' : '5px auto 5px 0',
                 backgroundColor: isSentByUser ? '#dcf8c6' : '#f1f1f1',
@@ -885,7 +885,6 @@ const Room = () => {
         })}
         <div ref={messagesEndRef} />
       </div>
-
 
       {typingUsers.length > 0 && (
         <div className='ms-2' style={{ fontSize: '10px' }}>
@@ -954,7 +953,7 @@ const Room = () => {
 
       {isCreator && (
         <div>
-          <h3>Expulsar Usuários</h3>
+          <h3 className='ms-2'>Expulsar Usuários</h3>
           {Array.from(usersWithExpelButton).map((user) => (
             <div key={user}>
               <button className='btn-exitUser btn btn-danger' onClick={() => expelUser(user)}>

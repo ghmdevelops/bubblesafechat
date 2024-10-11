@@ -179,3 +179,26 @@ label#check:hover {
 .success-message {
   color: green;
 }
+
+* {
+  scrollbar-width: thin; /* Para Firefox */
+  scrollbar-color: #01a2cf #2b3856; /* Para Firefox */
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: linear-gradient(45deg, #2b3856, #151515);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, #0f1720, #0f1720);
+  border-radius: 10px;
+  border: 2px solid #151515;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, #0f1720, #0f1720);
+}

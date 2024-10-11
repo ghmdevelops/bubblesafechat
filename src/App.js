@@ -5,6 +5,7 @@ import Room from './components/Room';
 import AuthExample from './components/AuthExample';
 import NotFound from './components/NotFound';
 import { auth } from './firebaseConfig';
+import Footer from './components/Footer';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -31,6 +32,7 @@ function App() {
         <Route path="/room/:roomId" element={<Room />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      <Footer />
     </Router>
   );
 }
