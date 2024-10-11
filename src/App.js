@@ -21,7 +21,18 @@ function App() {
   }, []);
 
   if (loading) {
-    return <div>Carregando...</div>;
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <div className="text-center">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Carregando...</span>
+          </div>
+          <div className="mt-3">
+            <span>Carregando...</span>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

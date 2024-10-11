@@ -117,7 +117,8 @@ const Room = () => {
 
   useEffect(() => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      const messageContainer = document.querySelector('.message-container');
+      messageContainer.scrollTop = messageContainer.scrollHeight;
     }
   }, [messages]);
 
@@ -857,9 +858,9 @@ const Room = () => {
               style={{
                 padding: '4px',
                 borderRadius: '15px',
-                margin: isSentByUser ? '5px 0 5px auto' : '5px auto 5px 0',
+                margin: isSentByUser ? '10px 0 5px auto' : '10px auto 5px 0',
                 backgroundColor: isSentByUser ? '#dcf8c6' : '#f1f1f1',
-                maxWidth: '70%',
+                maxWidth: '80%',
                 textAlign: isSentByUser ? 'right' : 'left',
                 position: 'relative',
                 color: '#000',
@@ -956,7 +957,7 @@ const Room = () => {
           <h3 className='ms-2'>Expulsar Usuários</h3>
           {Array.from(usersWithExpelButton).map((user) => (
             <div key={user}>
-              <button className='btn-exitUser btn btn-danger' onClick={() => expelUser(user)}>
+              <button className='mb-4 btn-exitUser btn btn-danger' onClick={() => expelUser(user)}>
                 Expulsar {user}
               </button>
             </div>

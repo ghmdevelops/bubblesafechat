@@ -11,6 +11,12 @@
 }
 
 .message-container {
+  max-height: 470px;
+  overflow-y: auto; /* Garante que apenas o contêiner de mensagens terá scroll */
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 13px;
   border: 2px solid transparent;
   background-color: #002c3f;
 }
