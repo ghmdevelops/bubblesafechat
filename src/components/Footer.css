@@ -1,29 +1,8 @@
 .footer {
-  background: linear-gradient(45deg, #0992cd, #A74AC7); /* Gradiente similar ao da imagem */
+  background: linear-gradient(45deg, #0992cd, #a74ac7);
   color: white;
-  padding-top: 40px;
-}
-
-.footer a {
-  color: white;
-  text-decoration: none;
-}
-
-.footer a:hover {
-  color: #7c4dff;
-}
-
-.footer .container {
-  max-width: 1200px;
-}
-
-.footer hr {
-  background-color: #7c4dff;
-  height: 2px;
-}
-
-.footer p {
-  color: white;
+  padding: 40px 0;
+  position: relative;
 }
 
 .footer h6 {
@@ -31,17 +10,57 @@
   font-weight: bold;
 }
 
-.footer .text-center {
-  background-color: transparent;
+.footer p {
+  color: #f5effb;
+  margin: 5px 0;
 }
 
-.footer .social-icons a {
-  margin: 0 10px;
+.social-icons a {
   font-size: 1.5rem;
   color: #bcefff;
+  margin: 0 10px;
   transition: color 0.3s ease;
 }
 
-.footer .social-icons a:hover {
+.social-icons a:hover {
   color: #7c4dff;
+}
+
+.footer hr {
+  background-color: #7c4dff;
+  height: 2px;
+}
+
+@media (max-width: 768px) {
+  .footer .container {
+    padding: 0 15px;
+  }
+
+  .footer h6 {
+    font-size: 1.2rem;
+  }
+
+  .footer p {
+    font-size: 0.9rem;
+  }
+
+  .social-icons a {
+    font-size: 1.2rem;
+  }
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main {
+  flex: 1;
 }

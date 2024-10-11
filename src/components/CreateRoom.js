@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { auth, database } from '../firebaseConfig';
 import { useNavigate } from 'react-router-dom';
 import CryptoJS from 'crypto-js';
@@ -8,7 +8,7 @@ import Swal from 'sweetalert2';
 import '@sweetalert2/theme-dark/dark.css';
 import './CreateRoom.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPowerOff, faUserCircle, faDoorOpen } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faPlus, faTimes, faCheck, faPowerOff, faUserCircle, faDoorOpen } from '@fortawesome/free-solid-svg-icons';
 import iconPage from './img/icon-page.png';
 import { EmailAuthProvider } from 'firebase/auth';
 
@@ -26,7 +26,7 @@ const CreateRoom = () => {
   let logoutTimer;
 
   useEffect(() => {
-    /*Swal.fire({
+    Swal.fire({
       title: '🔒 Proteção Máxima e Controle Total!',
       html: `<p style="text-align: left; font-size: 1em; color: #ffffff; line-height: 1.5;">
                 Bem-vindo à <strong>Open Security Room</strong>, sua plataforma com o mais alto nível de <strong>privacidade</strong> e <strong>segurança</strong>. Todas as salas são protegidas por <strong>criptografia de ponta</strong>, garantindo que você permaneça completamente anônimo e no controle.
@@ -44,7 +44,7 @@ const CreateRoom = () => {
         confirmButton: 'btn btn-primary swal-confirm-button-dark',  // Classe para o botão
       },
       buttonsStyling: false,
-      background: '#1f1f1f',  // Fundo escuro
+      background: '#0C090A',  // Fundo escuro
       width: '800px',  // Largura maior do modal
       backdrop: `
         rgba(0, 0, 0, 0.7)
@@ -55,7 +55,7 @@ const CreateRoom = () => {
       hideClass: {
         popup: 'animate__animated animate__fadeOutUp'  // Animação de saída
       }
-    });*/
+    });
 
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
@@ -320,7 +320,7 @@ const CreateRoom = () => {
             <div class="collapse navbar-collapse" id="navbarCollapse">
               <ul className="navbar-nav ms-auto mb-2 mb-md-0">
                 <li class="nav-item">
-                  <button className="btn btn-danger" onClick={deleteAccount}>
+                  <button className="btn btn-primary" onClick={deleteAccount}>
                     Excluir Conta e Todos os Dados
                   </button>
                   <button className="logout-button btn btn-danger" onClick={handleLogout}>
@@ -342,20 +342,22 @@ const CreateRoom = () => {
           <div>
             <label>
               <FontAwesomeIcon icon={faUserCircle} />
-              <span className='ms-1'>
-                Insira o seu nick? <span style={{ color: '#D462FF', fontWeight: 'bold' }}>Ex: Qu@ntumJumperTest2</span>
+              <span className='ms-1 mb-1'>
+                Insira o seu nick
               </span>
-              <div className="input-group mb-1">
+              <div className="input-group mb-2">
                 <input
                   type="text"
                   value={userName}
                   onChange={(e) => setUserName(e.target.value)}
-                  placeholder="Digite seu nick"
-                  className="form-control mb-0"
+                  placeholder="ex: Qu@ntumJumperTest2"
+                  className="form-control mb-1"
                 />
               </div>
             </label>
-            <button className="btn btn-primary mx-2" style={{ height: '46px' }} onClick={handleConfirmName} disabled={!userName.trim()}>Confirmar Nick</button>
+            <button className="btn btn-success" style={{ height: '40px', width: '46px' }} onClick={handleConfirmName} disabled={!userName.trim()}>
+              <FontAwesomeIcon icon={faCheck} />
+            </button>
           </div>
         ) : (
           <>
@@ -364,20 +366,31 @@ const CreateRoom = () => {
                 <FontAwesomeIcon icon={faDoorOpen} />
               </span>
               <span className='ms-2'>
-                Insira o nome da sala: <span style={{ color: '#D462FF', fontWeight: 'bold' }}>Ex: TurmaCerveja</span>
+                Insira o nome da sala
               </span>
               <input
                 type="text"
                 value={roomName}
                 onChange={(e) => setRoomName(e.target.value)}
-                placeholder="Nome da Sala"
+                placeholder="ex: TurmaCerveja"
                 className="form-control mb-3"
               />
             </label>
-            <button className="btn btn-primary mx-2" onClick={createRoom} disabled={!roomName.trim() || loading}>
-              {loading ? 'Criando...' : 'Criar Sala'}
+            <button className="btn btn-success" onClick={createRoom} style={{ height: '40px', width: '46px' }} disabled={!roomName.trim() || loading}>
+              {loading ? (
+                <>
+                  <FontAwesomeIcon icon={faSpinner} className="me-2" spin />
+                  Criando...
+                </>
+              ) : (
+                <>
+                  <FontAwesomeIcon icon={faPlus} />                </>
+              )}
             </button>
-            <button className="btn btn-warning cancroom" onClick={handleCancelName}>Cancelar</button>
+
+            <button className="btn btn-danger cancroom" style={{ width: '46px' }} onClick={handleCancelName}>
+              <FontAwesomeIcon icon={faTimes} />
+            </button>
           </>
         )}
 

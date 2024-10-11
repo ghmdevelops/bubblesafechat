@@ -249,7 +249,7 @@ const AuthExample = () => {
                         icon: 'success',
                         title: 'Login bem-sucedido',
                         html: 'Você foi logado com sucesso. Irei fechar em <b></b> milissegundos.',
-                        timer: 1600,
+                        timer: 1400,
                         timerProgressBar: true,
                         didOpen: () => {
                             Swal.showLoading();
@@ -290,7 +290,7 @@ const AuthExample = () => {
                 if (loginAttempts + 1 >= maxAttempts) {
                     setIsLockedOut(true);
                     localStorage.setItem('isLockedOut', 'true');
-                    const lockoutTimeMinutes = 3; 
+                    const lockoutTimeMinutes = 3;
                     Swal.fire({
                         icon: 'error',
                         title: 'Conta bloqueada',
@@ -517,7 +517,7 @@ const AuthExample = () => {
                         </p>
                     )}
 
-                    <button type="submit" disabled={isLoading || isLockedOut}>
+                    <button type="submit" style={{ height: '50px' }} className="btn btn-primary" disabled={isLoading || isLockedOut}>
                         {isLoading ? (
                             <div className="spinner-container">
                                 <FontAwesomeIcon icon={faSpinner} spin className="spinner" />
@@ -540,7 +540,7 @@ const AuthExample = () => {
                     </button>
 
                     {isLogin && (
-                        <button type="button" onClick={handleGoogleLogin} disabled={isLoading || isLockedOut}>
+                        <button type="button" className="btn btn-primary" style={{ height: '50px' }} onClick={handleGoogleLogin} disabled={isLoading || isLockedOut}>
                             {isLoading ? ' Carregando...' : <><img src={googleIcon} alt="Google" style={{ width: '20px', marginRight: '5px' }} /> Cadastre-se com o Google</>}
                         </button>
                     )}

@@ -1,24 +1,32 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFacebook, faTwitter, faGoogle, faInstagram, faLinkedin, faGithub } from '@fortawesome/free-brands-svg-icons';
-import { faHome, faEnvelope, faPhone, faPrint } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelope, faPhone, faHome } from '@fortawesome/free-solid-svg-icons';
 import './Footer.css';
 
 const Footer = () => {
     return (
-        <footer className="footer text-light pt-4">
+        <footer className="footer text-light pt-4 mt-3 mb-3">
             <div className="container text-center text-md-left">
                 <div className="row">
-                    <div className="col-md-3 col-lg-4 col-xl-3 mx-auto mb-4">
-                        <h6 className="text-uppercase fw-bold">Company Name</h6>
+                    <div className="col-md-4 col-lg-4 col-xl-4 mx-auto mb-4">
+                        <h6 className="text-uppercase fw-bold">Open Security Room</h6>
+                        <p>Converse com segurança, controle com liberdade!</p>
                         <hr className="mb-4 mt-0 d-inline-block mx-auto" style={{ width: '60px' }} />
-                        <p>Creating iOS and Mac apps since 2008. Small team working remotely from Texas, California, and Canada.</p>
-                        <p><FontAwesomeIcon icon={faEnvelope} /> info@example.com</p>
+                        <p>Desenvolvendo soluções de chat seguras. Equipe pequena e dedicada, trabalhando remotamente de diferentes partes do Brasil e além. Inovação e segurança no centro de tudo o que fazemos.</p>
+                        <p className='mt-4'><FontAwesomeIcon icon={faEnvelope} /> Email: info@example.com</p>
+                    </div>
+
+                    <div className="col-md-4 col-lg-4 col-xl-4 mx-auto mb-4 d-none">
+                        <h6 className="text-uppercase fw-bold">Contact Us</h6>
+                        <hr className="mb-4 mt-0 d-inline-block mx-auto" style={{ width: '60px' }} />
+                        <p><FontAwesomeIcon icon={faHome} /> Address: 123 Main St, City, Country</p>
+                        <p><FontAwesomeIcon icon={faPhone} /> Phone: +123 456 7890</p>
                     </div>
                 </div>
             </div>
 
-            <div className="bg-dark text-light text-center p-3">
+            <div className="text-light text-center p-3 mt-5">
                 <section className="social-icons">
                     <a href="#" className="text-light mx-2">
                         <FontAwesomeIcon icon={faFacebook} />

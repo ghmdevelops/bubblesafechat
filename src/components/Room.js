@@ -469,7 +469,7 @@ const Room = () => {
         title: 'Excluindo sala arquivos e mensagens!!',
         icon: 'info',
         html: 'Irei fechar em <b></b> milissegundos.',
-        timer: 1800,
+        timer: 1500,
         timerProgressBar: true,
         didOpen: () => {
           Swal.showLoading();
@@ -739,8 +739,8 @@ const Room = () => {
 
   if (!hasJoined && !isCreator) {
     return (
-      <div className="container mt-5 d-flex justify-content-center">
-        <div className="card p-4 shadow bg-dark text-light" style={{ width: '100%', maxWidth: '600px' }}>
+      <div className="container mt-5 d-flex justify-content-center mb-5">
+        <div className="card p-4 shadow bg-dark text-light mt-5 mb-5" style={{ width: '100%', maxWidth: '600px' }}>
           <h1 className="text-center mb-4">Solicitação de Entrada</h1>
           <p className="text-center">Insira seu nome para solicitar acesso à sala:</p>
           <div className="d-flex justify-content-center">
@@ -749,7 +749,7 @@ const Room = () => {
               value={userName}
               onChange={(e) => setUserName(e.target.value)}
               placeholder="Digite seu nome"
-              className="form-control"
+              className="form-control mt-3 mb-2"
               style={{ maxWidth: '100%', width: '100%' }}
             />
           </div>
@@ -757,7 +757,7 @@ const Room = () => {
             <button
               onClick={requestAccess}
               disabled={!userName.trim() || loading}
-              className="btn btn-primary w-100"
+              className="btn btn-primary w-100 mt-3 mb-2"
             >
               Solicitar Acesso
             </button>
@@ -925,7 +925,7 @@ const Room = () => {
         </div>
       )}
 
-      <div className="message-container mb-1" style={{ height: '470px', overflowY: 'scroll', border: '1px solid transparent', borderRadius: '8px', padding: '10px' }}>
+      <div className="message-container mb-1" style={{ height: '470px', overflowY: 'scroll', border: '1px solid #728FCE', borderRadius: '8px', padding: '10px' }}>
         {messages.map((msg) => {
           const timeSinceCreation = (Date.now() - new Date(msg.timestamp).getTime()) / 1000;
           const timeRemaining = destructionTime - timeSinceCreation;
@@ -939,7 +939,7 @@ const Room = () => {
                 padding: '4px',
                 borderRadius: '15px',
                 margin: isSentByUser ? '10px 0 5px auto' : '10px auto 5px 0',
-                backgroundColor: isSentByUser ? '#dcf8c6' : '#f1f1f1',
+                backgroundColor: isSentByUser ? '#d6eaff' : '#f1f1f1',
                 maxWidth: '80%',
                 textAlign: isSentByUser ? 'right' : 'left',
                 position: 'relative',
