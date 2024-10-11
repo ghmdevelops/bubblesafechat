@@ -15,26 +15,6 @@ body {
   padding: 20px;
 }
 
-input {
-  padding: 10px;
-  margin: 10px 0;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  width: 100%;
-  max-width: 400px; /* Limita a largura do input */
-}
-
-button {
-  padding: 10px 15px;
-  margin: 10px 0;
-  border: none;
-  border-radius: 5px;
-  background-color: #007bff;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
 button:hover {
   background-color: #0056b3; /* Cor ao passar o mouse */
 }
@@ -73,5 +53,21 @@ button:hover {
 }
 
 .swal-confirm-button-dark:hover {
-  background-color: #357ABD; /* Cor ao passar o mouse */
+  background-color: #357abd; /* Cor ao passar o mouse */
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+
+  label {
+    font-size: 13px;
+  }
+
+  input,
+  button {
+    font-size: 14px;
+    padding: 8px;
+  }
 }

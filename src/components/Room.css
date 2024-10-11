@@ -23,6 +23,10 @@
 
 .message-container div {
   transition: all 0.3s;
+  max-width: 80%; 
+  word-wrap: break-word; 
+  word-break: break-word; 
+  white-space: normal;
 }
 
 .message-container div:hover {
@@ -121,4 +125,22 @@ h3 {
 
 .input-audio-container.audio-active audio {
   display: block;
+}
+
+.dropdown-menu {
+  background-color: #002c3f;
+  border: 1px solid #005a8b; 
+  border-radius: 5px; 
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.dropdown-item {
+  color: #fff; 
+  padding: 10px; 
+  transition: background-color 0.3s; 
+}
+
+.dropdown-item:hover {
+  background-color: #005a8b; 
+  color: #fff;
 }

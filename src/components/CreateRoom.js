@@ -9,7 +9,7 @@ import '@sweetalert2/theme-dark/dark.css';
 import './CreateRoom.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPowerOff, faUserCircle, faDoorOpen } from '@fortawesome/free-solid-svg-icons';
-import googleIcon from './img/icon-page.png';
+import iconPage from './img/icon-page.png';
 import { EmailAuthProvider } from 'firebase/auth';
 
 const CreateRoom = () => {
@@ -26,7 +26,7 @@ const CreateRoom = () => {
   let logoutTimer;
 
   useEffect(() => {
-    Swal.fire({
+    /*Swal.fire({
       title: '🔒 Proteção Máxima e Controle Total!',
       html: `<p style="text-align: left; font-size: 1em; color: #ffffff; line-height: 1.5;">
                 Bem-vindo à <strong>Open Security Room</strong>, sua plataforma com o mais alto nível de <strong>privacidade</strong> e <strong>segurança</strong>. Todas as salas são protegidas por <strong>criptografia de ponta</strong>, garantindo que você permaneça completamente anônimo e no controle.
@@ -55,7 +55,8 @@ const CreateRoom = () => {
       hideClass: {
         popup: 'animate__animated animate__fadeOutUp'  // Animação de saída
       }
-    });    
+    });*/
+
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
         const emailName = user.email.split('@')[0];
@@ -305,19 +306,28 @@ const CreateRoom = () => {
         <meta name="description" content="Crie uma nova sala de chat na Open Security Room." />
         <meta name="keywords" content="criar sala, chat, Open Security Room" />
         <meta name="author" content="Open Security Room" />
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
       </Helmet>
 
       <header>
-        <nav className="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-          <div className="container-fluid">
-            <a className="navbar-brand" href="#"><img src={googleIcon} alt="OpenSecurityRoom" />Open Security Room</a>
-            <div id="navbarCollapse">
-              <button className="btn btn-danger" onClick={deleteAccount}>
-                Excluir Conta e Todos os Dados
-              </button>
-              <button className="logout-button btn btn-danger" onClick={handleLogout}>
-                <FontAwesomeIcon icon={faPowerOff} />
-              </button>
+        <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+          <div class="container-fluid">
+            <a className="navbar-brand" href="#"><img src={iconPage} alt="OpenSecurityRoom" />Open Security Room</a>
+            <button class="navbar-toggler bg-black" type="button" data-toggle="collapse" data-target="#navbarCollapse"
+              aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+              <ul className="navbar-nav ms-auto mb-2 mb-md-0">
+                <li class="nav-item">
+                  <button className="btn btn-danger" onClick={deleteAccount}>
+                    Excluir Conta e Todos os Dados
+                  </button>
+                  <button className="logout-button btn btn-danger" onClick={handleLogout}>
+                    <FontAwesomeIcon icon={faPowerOff} />
+                  </button>
+                </li>
+              </ul>
             </div>
           </div>
         </nav>
@@ -335,17 +345,17 @@ const CreateRoom = () => {
               <span className='ms-1'>
                 Insira o seu nick? <span style={{ color: '#D462FF', fontWeight: 'bold' }}>Ex: Qu@ntumJumperTest2</span>
               </span>
-              <div className="input-group mb-3">
+              <div className="input-group mb-1">
                 <input
                   type="text"
                   value={userName}
                   onChange={(e) => setUserName(e.target.value)}
                   placeholder="Digite seu nick"
-                  className="form-control"
+                  className="form-control mb-0"
                 />
               </div>
             </label>
-            <button className="btn btn-primary mx-2"  style={{ height: '46px' }} onClick={handleConfirmName} disabled={!userName.trim()}>Confirmar Nick</button>
+            <button className="btn btn-primary mx-2" style={{ height: '46px' }} onClick={handleConfirmName} disabled={!userName.trim()}>Confirmar Nick</button>
           </div>
         ) : (
           <>

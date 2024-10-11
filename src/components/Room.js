@@ -9,9 +9,10 @@ import Swal from 'sweetalert2';
 import '@sweetalert2/theme-dark/dark.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserCircle, faPaperPlane, faMicrophone, faCheckCircle, faStopCircle, faTrashAlt, faPlayCircle, faClipboard, faQrcode, faShareAlt, faTrash, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faClock, faSignOutAlt, faUserCircle, faPaperPlane, faMicrophone, faCheckCircle, faStopCircle, faTrashAlt, faPlayCircle, faClipboard, faQrcode, faShareAlt, faTrash, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp, faTelegram } from '@fortawesome/free-brands-svg-icons';
 import { Helmet } from 'react-helmet';
+import iconPage from './img/icon-page.png'
 
 const Room = () => {
   const { roomId } = useParams();
@@ -40,6 +41,7 @@ const Room = () => {
   const [expelledUsers, setExpelledUsers] = useState([]);
   const [timeLeft, setTimeLeft] = useState({});
   const [usersWithExpelButton, setUsersWithExpelButton] = useState(new Set());
+  const [loading, setLoading] = useState(false); 
 
   const shareLink = `${window.location.origin}/opensecurityroom/#/room/${roomId}`;
 
@@ -211,6 +213,8 @@ const Room = () => {
             ...value,
           }));
           setPendingRequests(parsedRequests);
+        } else {
+          setLoading(false); 
         }
       });
 
@@ -235,6 +239,7 @@ const Room = () => {
               timestamp: new Date().toISOString(),
             });
             setUsersWithExpelButton((prevUsers) => new Set([...prevUsers, userData.userName]));
+            setLoading(false); 
           });
         }
       });
@@ -247,6 +252,7 @@ const Room = () => {
             message: `Sua solicitação foi recusada.`,
             timestamp: new Date().toISOString(),
           });
+          setLoading(false);
         }
       });
     }
@@ -266,6 +272,8 @@ const Room = () => {
       return;
     }
 
+    setLoading(true);
+
     const requestsRef = database.ref(`rooms/${roomId}/requests`).push();
     requestsRef
       .set({
@@ -274,7 +282,7 @@ const Room = () => {
       })
       .then(() => {
         setHasRequestedAccess(true);
-        setStatusMessage('Solicitação de entrada enviada. Aguarde aprovação.');
+        setStatusMessage('Solicitação de entrada enviada. Aguarde aprovação.',);
       })
       .catch((error) => {
         console.log('Erro ao enviar solicitação:', error);
@@ -407,11 +415,20 @@ const Room = () => {
   };
 
   const leaveRoom = () => {
-    setStatusMessage('Você saiu da sala.');
-    setTimeout(() => {
-      localStorage.removeItem('hasJoined');
-      navigate('/');
-    }, 2000);
+    const messageRef = database.ref(`rooms/${roomId}/messages`).push();
+    messageRef.set({
+      text: `${userName} saiu da sala.`,
+      user: 'Sistema',
+      timestamp: new Date().toISOString(),
+    }).then(() => {
+      setStatusMessage('Você saiu da sala.');
+      setTimeout(() => {
+        localStorage.removeItem('hasJoined');
+        navigate('/');
+      }, 2000);
+    }).catch((error) => {
+      console.error('Erro ao enviar mensagem de saída:', error);
+    });
   };
 
   const deleteChat = async () => {
@@ -447,11 +464,16 @@ const Room = () => {
 
       setHasJoined(false);
       setUserName('');
-      setStatusMessage('Sala e arquivos excluídos com sucesso!');
+      Swal.fire({
+        title: 'Sucesso!',
+        text: 'Sala e arquivos e mensagens excluídos com sucesso!',
+        icon: 'success',
+        confirmButtonText: 'Ok'
+      });
 
       setTimeout(() => {
         navigate('/');
-      }, 2000);
+      }, 500);
     } catch (error) {
       console.error('Erro ao excluir a sala e arquivos:', error);
       setStatusMessage('Erro ao excluir a sala. Tente novamente.');
@@ -490,7 +512,7 @@ const Room = () => {
         });
 
         database.ref(`rooms/${roomId}/messages`).push({
-          text: 'O criador ativou as mensagens autodestrutivas.',
+          text: 'O Moderador ativou as mensagens autodestrutivas.',
           user: 'Sistema',
           timestamp: new Date().toISOString(),
         });
@@ -503,7 +525,7 @@ const Room = () => {
       });
 
       database.ref(`rooms/${roomId}/messages`).push({
-        text: 'O criador desativou as mensagens autodestrutivas.',
+        text: 'O Moderador desativou as mensagens autodestrutivas.',
         user: 'Sistema',
         timestamp: new Date().toISOString(),
       });
@@ -599,12 +621,19 @@ const Room = () => {
       title: 'Escolha uma opção para compartilhar',
       html: contentString,
       showCloseButton: true,
-      confirmButtonText: 'Fechar',
+      showCancelButton: false,
+      showConfirmButton: false,
       didOpen: () => {
-        // Adiciona eventos de clique quando o modal estiver pronto
         document.getElementById('copyLink').addEventListener('click', () => {
           navigator.clipboard.writeText(shareLink)
-            .then(() => { alert('Link copiado para a área de transferência!'); })
+            .then(() => {
+              Swal.fire({
+                title: 'Sucesso!',
+                text: 'Link copiado para a área de transferência!',
+                icon: 'success',
+                confirmButtonText: 'Ok'
+              });
+            })
             .catch(err => { console.error('Erro ao copiar: ', err); });
           Swal.close();
         });
@@ -628,40 +657,30 @@ const Room = () => {
   };
 
   const confirmAction = (actionType) => {
-    let title, text, onConfirm;
-
     switch (actionType) {
       case 'share':
-        title = 'Compartilhar';
-        text = 'Você deseja compartilhar o link?';
-        onConfirm = showShareModal;
+        showShareModal();
         break;
       case 'delete':
-        title = 'Excluir Chat';
-        text = 'Você tem certeza que deseja excluir o chat? Esta ação não pode ser desfeita.';
-        onConfirm = deleteChat;
+        Swal.fire({
+          title: 'Excluir Chat',
+          text: 'Você tem certeza que deseja excluir o chat? Esta ação não pode ser desfeita.',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Sim',
+          cancelButtonText: 'Não',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            deleteChat();
+          }
+        });
         break;
       case 'qr':
-        title = 'QR Code';
-        text = 'Você deseja visualizar o QR Code do chat?';
-        onConfirm = showQRCode;
+        showQRCode();
         break;
       default:
         return;
     }
-
-    Swal.fire({
-      title: title,
-      text: text,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Sim',
-      cancelButtonText: 'Não',
-    }).then((result) => {
-      if (result.isConfirmed) {
-        onConfirm();
-      }
-    });
   };
 
   const QRCodeModal = ({ shareLink }) => (
@@ -695,7 +714,8 @@ const Room = () => {
       title: 'QR Code',
       html: modalContent,
       showCloseButton: true,
-      confirmButtonText: 'Fechar',
+      showCancelButton: false,
+      showConfirmButton: false,
     });
   };
 
@@ -718,12 +738,19 @@ const Room = () => {
           <div className="d-grid gap-2 mt-3">
             <button
               onClick={requestAccess}
-              disabled={!userName.trim()}
+              disabled={!userName.trim() || loading}
               className="btn btn-primary w-100"
             >
               Solicitar Acesso
             </button>
           </div>
+          {loading && (
+            <div className="d-flex justify-content-center mt-3">
+              <div className="spinner-border" role="status">
+                <span className="visually-hidden">Carregando...</span>
+              </div>
+            </div>
+          )}
           {statusMessage && (
             <div className="alert alert-info text-center mt-3" role="alert">
               {statusMessage}
@@ -755,19 +782,63 @@ const Room = () => {
         <meta name="twitter:description" content="Acesse suas salas de chat ou crie uma nova conta na Open Security Room." />
         <meta name="twitter:image" content="URL_da_imagem_de_visualização" />
         <link rel="canonical" href={window.location.href} />
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
       </Helmet>
 
-      <h1 className="text-center mb-5 mt-4">Chat {roomName}</h1>
+      <header>
+        <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+          <div class="container-fluid">
+            <a className="navbar-brand" href="#"><img src={iconPage} alt="OpenSecurityRoom" />Open Security Room</a>
+            <button class="navbar-toggler  bg-black" type="button" data-toggle="collapse" data-target="#navbarCollapse"
+              aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+              <ul className="navbar-nav ms-auto mb-2 mb-md-0">
+
+                {isCreator ? (
+                  <>
+                    <li class="nav-item">
+                      <button className="dropdown-item" onClick={() => confirmAction('share')}>
+                        <FontAwesomeIcon icon={faShareAlt} /> Compartilhar
+                      </button>
+                    </li>
+                    <li class="nav-item">
+                      <button className="dropdown-item" onClick={() => confirmAction('delete')}>
+                        <FontAwesomeIcon icon={faTrash} /> Excluir Chat
+                      </button>
+                    </li>
+                    <li class="nav-item">
+                      <button className="dropdown-item" onClick={() => confirmAction('qr')}>
+                        <FontAwesomeIcon icon={faQrcode} /> QR Code
+                      </button>
+                    </li>
+                  </>
+                ) : (
+                  <li>
+                    <button className="dropdown-item" onClick={leaveRoom}>
+                      <FontAwesomeIcon icon={faSignOutAlt} /> Sair do Chat
+                    </button>
+                  </li>
+                )}
+
+              </ul>
+            </div>
+          </div>
+        </nav>
+      </header>
+
+      <h1 className="text-center mb-2 mt-4">Chat {roomName}</h1>
 
       {isDestructionActive && (
         <div className="alert alert-warning text-center" role="alert">
-          O criador ativou as mensagens autodestrutivas. Todas as mensagens serão excluídas a cada {destructionTime} segundos.
+          O Moderador ativou as mensagens autodestrutivas. Todas as mensagens serão excluídas a cada {destructionTime} segundos.
         </div>
       )}
 
       {isCreator && (
-        <div className="mb-3 mt-4">
-          <div className="d-flex align-items-center">
+        <div className="mb-4 mt-4">
+          <div className="d-flex align-items-center justify-content-center align-items-center">
             <div className="form-check form-switch me-3">
               <input
                 type="checkbox"
@@ -777,23 +848,14 @@ const Room = () => {
                 className="form-check-input visually-hidden"
               />
               <label className="form-check-label label-checks" htmlFor="destructionSwitch">
-                <div className="mb-3 mt-3">
-                  <strong>Mensagens Autodestrutivas</strong>
-                  <span className={isDestructionActive ? 'text-success' : 'text-danger'}>
-                    {isDestructionActive ? ' Ativado' : ' Desativado'}
+                <div className="mb-1 mt-1 p-1 rounded d-flex flex-column align-items-center" style={{ cursor: 'pointer' }}>
+                  <div className="d-flex align-items-center justify-content-center mb-2">
+                    <FontAwesomeIcon icon={faClock} className="me-2" style={{ fontSize: '1rem', color: '#ffcc00' }} />
+                    <strong style={{ fontSize: '15px', color: '#fff' }}>Mensagens Autodestrutivas</strong>
+                  </div>
+                  <span style={{ fontSize: '1rem', color: isDestructionActive ? '#28a745' : '#dc3545', fontWeight: 'bold', textAlign: 'center' }}>
+                    {isDestructionActive ? 'Ativado' : 'Desativado'}
                   </span>
-                  <button className="btn btn-primary w-10 mb-2" onClick={() => confirmAction('share')}>
-                    <FontAwesomeIcon icon={faShareAlt} />
-                  </button>
-                  <button className="btn btn-danger d-none" onClick={() => confirmAction('leave')}>
-                    Sair
-                  </button>
-                  <button className="btn btn-danger w-10 mb-2" onClick={() => confirmAction('delete')}>
-                    <FontAwesomeIcon icon={faTrash} />
-                  </button>
-                  <button className="btn btn-primary w-10 mb-2" onClick={() => confirmAction('qr')}>
-                    <FontAwesomeIcon icon={faQrcode} />
-                  </button>
                 </div>
               </label>
             </div>
