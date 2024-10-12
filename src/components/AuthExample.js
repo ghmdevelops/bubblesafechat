@@ -13,8 +13,9 @@ import icon from './img/icon-page.png';
 import googleIcon from './img/icon-google.png';
 import './AuthExample.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { faSignInAlt, faUserPlus, faSpinner, faUser, faEnvelope, faLock, faEye, faEyeSlash, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import { faPaperPlane, faArrowLeft, faSignInAlt, faUserPlus, faSpinner, faUser, faEnvelope, faLock, faEye, faEyeSlash, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import IntroPage from './IntroPage';
 
 library.add(faGoogle);
 
@@ -36,6 +37,7 @@ const AuthExample = () => {
     const [passwordResetRequested, setPasswordResetRequested] = useState(false);
     const navigate = useNavigate();
     const [passwordsMatch, setPasswordsMatch] = useState(true);
+    const [showIntro, setShowIntro] = useState(true);
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
@@ -114,10 +116,6 @@ const AuthExample = () => {
                     title: 'Autenticação interrompida',
                     text: 'A janela de autenticação foi fechada. Tente novamente.',
                     confirmButtonText: 'Ok',
-                    customClass: {
-                        confirmButton: 'btn btn-primary',
-                    },
-                    buttonsStyling: false,
                 });
             } else {
                 Swal.fire({
@@ -125,10 +123,6 @@ const AuthExample = () => {
                     title: 'Erro no login com Google',
                     text: 'Erro ao fazer login com Google. Tente novamente.',
                     confirmButtonText: 'Ok',
-                    customClass: {
-                        confirmButton: 'btn btn-primary',
-                    },
-                    buttonsStyling: false,
                 });
                 console.error('Erro ao fazer login com Google:', error);
             }
@@ -158,10 +152,6 @@ const AuthExample = () => {
                 title: 'Senha Fraca',
                 text: 'A senha inserida é muito fraca. Por favor, escolha uma senha com pelo menos 8 caracteres, incluindo letras maiúsculas, minúsculas, números e caracteres especiais.',
                 confirmButtonText: 'Ok',
-                customClass: {
-                    confirmButton: 'btn btn-primary',
-                },
-                buttonsStyling: false,
             });
             return;
         }
@@ -188,10 +178,6 @@ const AuthExample = () => {
                             title: 'Cadastro realizado!',
                             text: 'Verifique seu e-mail para confirmar sua conta antes de fazer login.',
                             confirmButtonText: 'Ok',
-                            customClass: {
-                                confirmButton: 'btn btn-primary',
-                            },
-                            buttonsStyling: false,
                         });
 
                         setTimeout(() => {
@@ -230,10 +216,6 @@ const AuthExample = () => {
                 title: 'Conta bloqueada',
                 text: 'Você deve redefinir sua senha antes de tentar fazer login.',
                 confirmButtonText: 'Ok',
-                customClass: {
-                    confirmButton: 'btn btn-primary',
-                },
-                buttonsStyling: false,
             });
             return;
         }
@@ -273,10 +255,6 @@ const AuthExample = () => {
                         title: 'E-mail não verificado',
                         text: 'Por favor, verifique seu e-mail antes de fazer login.',
                         confirmButtonText: 'Ok',
-                        customClass: {
-                            confirmButton: 'btn btn-primary',
-                        },
-                        buttonsStyling: false,
                     });
                     auth.signOut();
                 }
@@ -296,10 +274,6 @@ const AuthExample = () => {
                         title: 'Conta bloqueada',
                         text: `Você excedeu o número de tentativas de login. Sua conta está bloqueada por ${lockoutTimeMinutes} minutos.`,
                         confirmButtonText: 'Ok',
-                        customClass: {
-                            confirmButton: 'btn btn-primary',
-                        },
-                        buttonsStyling: false,
                     });
                 } else {
                     if (error.code === 'auth/user-not-found') {
@@ -308,10 +282,6 @@ const AuthExample = () => {
                             title: 'E-mail não cadastrado',
                             text: 'Esse e-mail não está registrado. Por favor, verifique ou crie uma nova conta.',
                             confirmButtonText: 'Ok',
-                            customClass: {
-                                confirmButton: 'btn btn-primary',
-                            },
-                            buttonsStyling: false,
                         });
                     } else if (error.code === 'auth/wrong-password') {
                         Swal.fire({
@@ -319,10 +289,6 @@ const AuthExample = () => {
                             title: 'Senha incorreta',
                             text: `Senha incorreta. Você tem ${attemptsLeft} tentativas restantes. Considere redefinir sua senha.`,
                             confirmButtonText: 'Ok',
-                            customClass: {
-                                confirmButton: 'btn btn-primary',
-                            },
-                            buttonsStyling: false,
                         });
                     } else if (error.code === 'auth/user-not-found') {
                         Swal.fire({
@@ -330,10 +296,6 @@ const AuthExample = () => {
                             title: 'E-mail não encontrado',
                             text: 'E-mail não encontrado. Verifique se o e-mail está correto.',
                             confirmButtonText: 'Ok',
-                            customClass: {
-                                confirmButton: 'btn btn-primary',
-                            },
-                            buttonsStyling: false,
                         });
                     } else if (error.code === 'auth/invalid-email') {
                         Swal.fire({
@@ -341,10 +303,6 @@ const AuthExample = () => {
                             title: 'E-mail inválido',
                             text: 'E-mail inválido. Verifique o formato.',
                             confirmButtonText: 'Ok',
-                            customClass: {
-                                confirmButton: 'btn btn-primary',
-                            },
-                            buttonsStyling: false,
                         });
                     } else {
                         Swal.fire({
@@ -352,10 +310,6 @@ const AuthExample = () => {
                             title: 'Erro ao fazer login',
                             text: 'Não foi possível fazer login. Por favor, verifique se o e-mail está correto, se já possui uma conta cadastrada ou se a senha está correta, e tente novamente.',
                             confirmButtonText: 'Ok',
-                            customClass: {
-                                confirmButton: 'btn btn-primary',
-                            },
-                            buttonsStyling: false,
                         });
                     }
                 }
@@ -430,155 +384,170 @@ const AuthExample = () => {
                 <link rel="canonical" href={window.location.href} />
             </Helmet>
 
-            <img id="icon-img" src={icon} alt="OpenSecurityRoom" />
-            <img src={logo} alt="OpenSecurityRoom" />
-            <h1>{isResetPassword ? 'Redefinir Senha' : (isLogin ? 'Login' : 'Registrar')}</h1>
 
-            {lockoutMessage && showLockoutMessage && <p className="error-message">{lockoutMessage}</p>}
-            {errorMessage && showErrorMessage && <p className="error-message">{errorMessage}</p>}
-            {resetMessage && showResetMessage && <p className="success-message">{resetMessage}</p>}
-            {registrationMessage && showRegistrationMessage && <p className="success-message">{registrationMessage}</p>}
+            {showIntro ? (  // Condicional para mostrar a introdução
+                <IntroPage onContinue={() => setShowIntro(false)} />
+            ) : (
+                <>
 
-            {!isResetPassword ? (
-                <form onSubmit={isLogin ? handleLogin : handleRegister}>
-                    {!isLogin && (
-                        <div className="input-icon-container">
-                            <div className="icon-background">
-                                <FontAwesomeIcon icon={faUser} className="input-icon" />
+                    <img id="icon-img" src={icon} alt="OpenSecurityRoom" />
+                    <img src={logo} alt="OpenSecurityRoom" />
+                    <h1>{isResetPassword ? 'Redefinir Senha' : (isLogin ? 'Login' : 'Registrar')}</h1>
+
+                    {lockoutMessage && showLockoutMessage && <p className="error-message">{lockoutMessage}</p>}
+                    {errorMessage && showErrorMessage && <p className="error-message">{errorMessage}</p>}
+                    {resetMessage && showResetMessage && <p className="success-message">{resetMessage}</p>}
+                    {registrationMessage && showRegistrationMessage && <p className="success-message">{registrationMessage}</p>}
+
+                    {!isResetPassword ? (
+                        <form onSubmit={isLogin ? handleLogin : handleRegister}>
+                            {!isLogin && (
+                                <div className="input-icon-container">
+                                    <div className="icon-background">
+                                        <FontAwesomeIcon icon={faUser} className="input-icon" />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        value={firstName}
+                                        onChange={(e) => setFirstName(e.target.value)}
+                                        placeholder="Primeiro Nome"
+                                        className='mt-2'
+                                        required
+                                    />
+                                </div>
+                            )}
+
+                            <div className="input-icon-container">
+                                <div className="icon-background">
+                                    <FontAwesomeIcon icon={faEnvelope} className="input-icon" />
+                                </div>
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="Email"
+                                    required
+                                    autoComplete="email"
+                                    className='mt-2'
+                                />
                             </div>
+
+                            <div className="input-icon-container">
+                                <div className="icon-background">
+                                    <FontAwesomeIcon icon={faLock} className="input-icon" />
+                                </div>
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="Senha"
+                                    required
+                                    autoComplete={isLogin ? "current-password" : "new-password"}
+                                    className='mt-2'
+                                />
+                                <span onClick={togglePasswordVisibility} className="eye-icon">
+                                    <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                                </span>
+                            </div>
+
+                            {!isLogin && (
+                                <div className="input-icon-container">
+                                    <div className="icon-background">
+                                        <FontAwesomeIcon icon={faLock} className="input-icon" />
+                                    </div>
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        value={confirmPassword}
+                                        onChange={handleConfirmPasswordChange}
+                                        placeholder="Confirmar Senha"
+                                        required
+                                        autoComplete="new-password"
+                                        className='mt-2'
+                                    />
+                                    <span onClick={togglePasswordVisibility} className="eye-icon">
+                                        <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                                    </span>
+                                </div>
+                            )}
+
+                            {!passwordsMatch && !isLogin && (
+                                <p className="error-message">As senhas não correspondem. Por favor, tente novamente.</p>
+                            )}
+
+                            {!isLogin && password && (
+                                <p className={`password-strength ${checkPasswordStrength(password)}`}>
+                                    <FontAwesomeIcon icon={faInfoCircle} className="me-2" />
+                                    Senha {checkPasswordStrength(password)}
+                                </p>
+                            )}
+
+                            <button type="submit" style={{ height: '50px' }} className="btn btn-primary" disabled={isLoading || isLockedOut}>
+                                {isLoading ? (
+                                    <div className="spinner-container">
+                                        <FontAwesomeIcon icon={faSpinner} spin className="spinner" />
+                                    </div>
+                                ) : (
+                                    <>
+                                        {isLogin ? (
+                                            <>
+                                                <FontAwesomeIcon icon={faSignInAlt} className="me-2" />
+                                                Login
+                                            </>
+                                        ) : (
+                                            <>
+                                                <FontAwesomeIcon icon={faUserPlus} className="me-2" />
+                                                Registrar
+                                            </>
+                                        )}
+                                    </>
+                                )}
+                            </button>
+
+                            {isLogin && (
+                                <button type="button" className="btn btn-primary" style={{ height: '50px' }} onClick={handleGoogleLogin} disabled={isLoading || isLockedOut}>
+                                    {isLoading ? ' Carregando...' : <><img src={googleIcon} alt="Google" style={{ width: '20px', marginRight: '5px' }} /> Cadastre-se com o Google</>}
+                                </button>
+                            )}
+                        </form>
+                    ) : (
+                        <form onSubmit={handlePasswordReset}>
                             <input
-                                type="text"
-                                value={firstName}
-                                onChange={(e) => setFirstName(e.target.value)}
-                                placeholder="Primeiro Nome"
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="Email para recuperação"
                                 required
                             />
-                        </div>
+                            <button type="submit" className='btn btn-primary' style={{ height: '50px' }}>
+                                <FontAwesomeIcon icon={faPaperPlane} className="me-2" />
+                                Enviar e-mail de recuperação
+                            </button>
+                            <button type="button" style={{ height: '50px' }} className='btn btn-primary' onClick={() => setIsResetPassword(false)}>
+                                <FontAwesomeIcon icon={faArrowLeft} className="me-2" />
+                                Voltar
+                            </button>
+                        </form>
                     )}
 
-                    <div className="input-icon-container">
-                        <div className="icon-background">
-                            <FontAwesomeIcon icon={faEnvelope} className="input-icon" />
-                        </div>
-                        <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="Email"
-                            required
-                            autoComplete="email"
-                        />
-                    </div>
-
-                    <div className="input-icon-container">
-                        <div className="icon-background">
-                            <FontAwesomeIcon icon={faLock} className="input-icon" />
-                        </div>
-                        <input
-                            type={showPassword ? 'text' : 'password'}
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Senha"
-                            required
-                            autoComplete={isLogin ? "current-password" : "new-password"}
-                        />
-                        <span onClick={togglePasswordVisibility} className="eye-icon">
-                            <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
-                        </span>
-                    </div>
-
-                    {!isLogin && (
-                        <div className="input-icon-container">
-                            <div className="icon-background">
-                                <FontAwesomeIcon icon={faLock} className="input-icon" />
-                            </div>
-                            <input
-                                type={showPassword ? 'text' : 'password'}
-                                value={confirmPassword}
-                                onChange={handleConfirmPasswordChange} // Usa a função para comparar as senhas
-                                placeholder="Confirmar Senha"
-                                required
-                                autoComplete="new-password"
-                            />
-                            <span onClick={togglePasswordVisibility} className="eye-icon">
-                                <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                    {isLogin && !isResetPassword && (
+                        <p class="btn-redpass" >
+                            Esqueceu sua senha?{' '}
+                            <span onClick={() => setIsResetPassword(true)}>
+                                Redefinir senha
                             </span>
-                        </div>
-                    )}
-
-                    {!passwordsMatch && !isLogin && (
-                        <p className="error-message">As senhas não correspondem. Por favor, tente novamente.</p>
-                    )}
-
-                    {!isLogin && password && (
-                        <p className={`password-strength ${checkPasswordStrength(password)}`}>
-                            <FontAwesomeIcon icon={faInfoCircle} className="me-2" />
-                            Senha {checkPasswordStrength(password)}
                         </p>
                     )}
 
-                    <button type="submit" style={{ height: '50px' }} className="btn btn-primary" disabled={isLoading || isLockedOut}>
-                        {isLoading ? (
-                            <div className="spinner-container">
-                                <FontAwesomeIcon icon={faSpinner} spin className="spinner" />
-                            </div>
-                        ) : (
-                            <>
-                                {isLogin ? (
-                                    <>
-                                        <FontAwesomeIcon icon={faSignInAlt} className="me-2" />
-                                        Login
-                                    </>
-                                ) : (
-                                    <>
-                                        <FontAwesomeIcon icon={faUserPlus} className="me-2" />
-                                        Registrar
-                                    </>
-                                )}
-                            </>
-                        )}
-                    </button>
-
-                    {isLogin && (
-                        <button type="button" className="btn btn-primary" style={{ height: '50px' }} onClick={handleGoogleLogin} disabled={isLoading || isLockedOut}>
-                            {isLoading ? ' Carregando...' : <><img src={googleIcon} alt="Google" style={{ width: '20px', marginRight: '5px' }} /> Cadastre-se com o Google</>}
-                        </button>
+                    {!isResetPassword && (
+                        <p class="btn-redpass">
+                            {isLogin ? 'Não tem uma conta?' : 'Já tem uma conta?'}{' '}
+                            <span onClick={() => setIsLogin(!isLogin)}>
+                                {isLogin ? 'Registrar' : 'Login'}
+                            </span>
+                        </p>
                     )}
-                </form>
-            ) : (
-                <form onSubmit={handlePasswordReset}>
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Email para recuperação"
-                        required
-                    />
-                    <button type="submit">
-                        Enviar e-mail de recuperação
-                    </button>
-                    <button type="button" onClick={() => setIsResetPassword(false)}>Voltar</button>
-                </form>
+                </>
             )}
-
-            {isLogin && !isResetPassword && (
-                <p class="btn-redpass" >
-                    Esqueceu sua senha?{' '}
-                    <span onClick={() => setIsResetPassword(true)}>
-                        Redefinir senha
-                    </span>
-                </p>
-            )}
-
-            {!isResetPassword && (
-                <p class="btn-redpass">
-                    {isLogin ? 'Não tem uma conta?' : 'Já tem uma conta?'}{' '}
-                    <span onClick={() => setIsLogin(!isLogin)}>
-                        {isLogin ? 'Registrar' : 'Login'}
-                    </span>
-                </p>
-            )}
-
         </div>
     );
 };

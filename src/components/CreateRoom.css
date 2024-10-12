@@ -31,29 +31,21 @@ button:hover {
   color: red;
 }
 
-.logout-button {
-  background-color: #dc3545; /* Vermelho */
-}
-
-.logout-button:hover {
-  background-color: #c82333; /* Cor ao passar o mouse */
-}
-
 .swal-popup-dark {
   border-radius: 15px;
-  border: 2px solid #4a90e2; /* Borda azul ou qualquer cor de destaque */
+  border: 2px solid #000000;
 }
 
 .swal-confirm-button-dark {
-  background-color: #4a90e2;
-  color: #fff;
+  background-color: #4abee2;
   padding: 10px 20px;
   border-radius: 5px;
   font-size: 1.1em;
 }
 
 .swal-confirm-button-dark:hover {
-  background-color: #357abd; /* Cor ao passar o mouse */
+  background-color: #42a2bf; 
+  color: #151617;
 }
 
 @media (max-width: 768px) {

@@ -15,7 +15,7 @@
   border: 1px solid transparent;
   border-radius: 8px;
   padding: 10px;
-  font-size: 13px;
+  font-size: 12px;
   background-color: transparent;
 }
 
@@ -82,7 +82,7 @@
 }
 
 .sub-textMsg small {
-  font-size: 13px;
+  font-size: 10.7px;
 }
 
 .typing-indicator {
@@ -138,6 +138,7 @@ h3 {
 }
 
 .dropdown-item:hover {
-  background-color: #005a8b;
+  border-radius: 12px;
+  background-color: #00a6e8;
   color: #fff;
 }

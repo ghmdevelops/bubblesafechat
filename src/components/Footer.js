@@ -3,13 +3,15 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFacebook, faTwitter, faGoogle, faInstagram, faLinkedin, faGithub } from '@fortawesome/free-brands-svg-icons';
 import { faEnvelope, faPhone, faHome } from '@fortawesome/free-solid-svg-icons';
 import './Footer.css';
+import iconPage from './img/icon-page.png'
 
 const Footer = () => {
     return (
-        <footer className="footer text-light pt-4 mt-3 mb-3">
+        <footer className="footer text-light pt-4 mt-5 mb-4">
             <div className="container text-center text-md-left">
                 <div className="row">
                     <div className="col-md-4 col-lg-4 col-xl-4 mx-auto mb-4">
+                        <img style={{ width: '  110px' }} src={iconPage} alt='OpenSecurityRoom' />
                         <h6 className="text-uppercase fw-bold">Open Security Room</h6>
                         <p>Converse com segurança, controle com liberdade!</p>
                         <hr className="mb-4 mt-0 d-inline-block mx-auto" style={{ width: '60px' }} />

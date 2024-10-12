@@ -9,7 +9,7 @@ import Swal from 'sweetalert2';
 import '@sweetalert2/theme-dark/dark.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClock, faSignOutAlt, faUserCircle, faPaperPlane, faMicrophone, faCheckCircle, faStopCircle, faTrashAlt, faPlayCircle, faClipboard, faQrcode, faShareAlt, faTrash, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faSignInAlt, faUser, faClock, faSignOutAlt, faUserCircle, faPaperPlane, faMicrophone, faCheckCircle, faStopCircle, faTrashAlt, faPlayCircle, faClipboard, faQrcode, faShareAlt, faTrash, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp, faTelegram } from '@fortawesome/free-brands-svg-icons';
 import { Helmet } from 'react-helmet';
 import iconPage from './img/icon-page.png'
@@ -741,16 +741,20 @@ const Room = () => {
     return (
       <div className="container mt-5 d-flex justify-content-center mb-5">
         <div className="card p-4 shadow bg-dark text-light mt-5 mb-5" style={{ width: '100%', maxWidth: '600px' }}>
+          <img className='col-md-4 col-lg-4 col-xl-4 mx-auto mb-4' style={{ width: '  110px' }} src={iconPage} alt='OpenSecurityRoom' />
           <h1 className="text-center mb-4">Solicitação de Entrada</h1>
-          <p className="text-center">Insira seu nome para solicitar acesso à sala:</p>
+          <p className="text-center">
+            <FontAwesomeIcon icon={faUser} className="me-2" style={{ color: '#00a6e8' }} />
+            Insira seu nome para solicitar acesso à sala
+          </p>
           <div className="d-flex justify-content-center">
             <input
               type="text"
               value={userName}
               onChange={(e) => setUserName(e.target.value)}
               placeholder="Digite seu nome"
-              className="form-control mt-3 mb-2"
-              style={{ maxWidth: '100%', width: '100%' }}
+              className="form-control mt-1 mb-1"
+              style={{ maxWidth: '100%', width: '100%', height: '45px' }}
             />
           </div>
           <div className="d-grid gap-2 mt-3">
@@ -758,7 +762,9 @@ const Room = () => {
               onClick={requestAccess}
               disabled={!userName.trim() || loading}
               className="btn btn-primary w-100 mt-3 mb-2"
+              style={{ height: '50px' }}
             >
+              <FontAwesomeIcon icon={faSignInAlt} className="me-2" />
               Solicitar Acesso
             </button>
           </div>
@@ -868,7 +874,7 @@ const Room = () => {
               <label className="form-check-label label-checks" htmlFor="destructionSwitch">
                 <div className="mb-1 mt-1 p-1 rounded d-flex flex-column align-items-center" style={{ cursor: 'pointer' }}>
                   <div className="d-flex align-items-center justify-content-center mb-2">
-                    <FontAwesomeIcon icon={faClock} className="me-2" style={{ fontSize: '1rem', color: '#ffcc00' }} />
+                    <FontAwesomeIcon icon={faClock} className="me-2" style={{ fontSize: '1rem', color: '#00a6e8' }} />
                     <strong style={{ fontSize: '15px', color: '#fff' }}>Mensagens Autodestrutivas</strong>
                   </div>
                   <span style={{ fontSize: '1rem', color: isDestructionActive ? '#28a745' : '#dc3545', fontWeight: 'bold', textAlign: 'center' }}>
@@ -947,7 +953,7 @@ const Room = () => {
               }}
             >
               <strong style={{ display: 'block', fontSize: '0.85em', color: '#555' }}><FontAwesomeIcon icon={faUserCircle} /> {msg.user}</strong>
-              <span>
+              <span style={{ fontSize: '12.4px', fontWeight: '400', marginBottom: '20px' }}>
                 {msg.text ? msg.text : <button onClick={() => playAudio(msg.audioUrl)}><FontAwesomeIcon icon={faPlayCircle} /></button>}
               </span>
               {msg.readBy && (

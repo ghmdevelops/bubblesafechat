@@ -1,0 +1,143 @@
+body {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.intro-container {
+  background-color: transparent;
+  color: #fff;
+  padding: 40px 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  max-width: 800px;
+  margin: auto;
+  text-align: center;
+  min-height: 600px;
+  overflow: auto;
+  animation: slideIn 0.5s ease-out;
+}
+
+.intro-container::-webkit-scrollbar {
+  display: none;
+}
+
+.intro-container {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer and Edge */
+}
+
+.highlight-text {
+  font-size: 40px;
+  font-weight: 700;
+  background: linear-gradient(90deg, #fff, #fff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 10px 0;
+  animation: textGlow 1.5s ease-in-out infinite alternate;
+}
+
+.intro-description {
+  font-size: 1.2rem;
+  color: #b0b0b0;
+  margin: 20px 0;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.intro-description:hover {
+  color: #ffffff; /* Muda a cor ao passar o mouse */
+  transform: scale(1.05); /* Aumenta levemente o tamanho */
+}
+
+.intro-benefits {
+  margin: 40px 0;
+}
+
+.benefits-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 20px 0;
+}
+
+.benefits-list li {
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.benefits-list li:hover {
+  background: rgba(255, 255, 255, 0.1); /* Fundo leve ao passar o mouse */
+  transform: translateY(-2px); /* Levanta o item ao passar o mouse */
+}
+
+.intro-image {
+  width: 120px;
+  margin: 20px 0;
+  animation: fadeIn 1s;
+}
+
+.regisText {
+  cursor: pointer;
+  color: #a160fc;
+  text-transform: uppercase;
+  transition: font-size 0.3s ease, color 0.3s ease, text-shadow 0.3s ease;
+}
+
+.regisText:hover {
+  font-size: 17px;
+  color: #c59cff;
+  text-shadow: 0 0 10px #c59cff, 0 0 20px #c59cff; /* Efeito de brilho ao passar o mouse */
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes textGlow {
+  0% {
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.8),
+      0 0 10px rgba(255, 255, 255, 0.6);
+  }
+  100% {
+    text-shadow: 0 0 20px rgba(255, 255, 255, 1),
+      0 0 30px rgba(255, 255, 255, 0.8);
+  }
+}
+
+@media (max-width: 768px) {
+  .intro-container {
+    padding: 20px 10px;
+    min-height: 400px;
+  }
+
+  .highlight-text {
+    font-size: 30px;
+  }
+
+  .intro-description {
+    font-size: 1rem;
+  }
+
+  .benefits-title {
+    font-size: 1.5rem;
+  }
+
+  .benefits-list li {
+    font-size: 0.9rem;
+  }
+}

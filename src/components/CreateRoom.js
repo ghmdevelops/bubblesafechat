@@ -26,36 +26,44 @@ const CreateRoom = () => {
   let logoutTimer;
 
   useEffect(() => {
-    Swal.fire({
-      title: '🔒 Proteção Máxima e Controle Total!',
-      html: `<p style="text-align: left; font-size: 1em; color: #ffffff; line-height: 1.5;">
-                Bem-vindo à <strong>Open Security Room</strong>, sua plataforma com o mais alto nível de <strong>privacidade</strong> e <strong>segurança</strong>. Todas as salas são protegidas por <strong>criptografia de ponta</strong>, garantindo que você permaneça completamente anônimo e no controle.
-              </p>
-              <p style="text-align: left; font-size: 1em; color: #ffffff; line-height: 1.5;">
-                Seus dados pessoais são armazenados por no máximo <strong>24 horas</strong> e podem ser excluídos permanentemente a qualquer momento. Após esse período, realizamos um <strong>reset diário</strong> para garantir que nenhuma informação permaneça armazenada.
-              </p>
-              <p style="text-align: left; font-size: 1em; color: #ffffff; line-height: 1.5;">
-                Você pode compartilhar suas salas com total segurança por meio de <strong>QR Code</strong> ou link, sempre mantendo o controle total sobre quem acessa. Aqui, você está no comando.
-              </p>`,
-      icon: 'info',
-      confirmButtonText: 'Entendido!',
-      customClass: {
-        popup: 'swal-popup-dark',  // Classe personalizada para o popup
-        confirmButton: 'btn btn-primary swal-confirm-button-dark',  // Classe para o botão
-      },
-      buttonsStyling: false,
-      background: '#0C090A',  // Fundo escuro
-      width: '800px',  // Largura maior do modal
-      backdrop: `
-        rgba(0, 0, 0, 0.7)
-      `,
-      showClass: {
-        popup: 'animate__animated animate__fadeInDown'  // Animação de entrada
-      },
-      hideClass: {
-        popup: 'animate__animated animate__fadeOutUp'  // Animação de saída
+    const showProtectionMessage = () => {
+      const lastShown = localStorage.getItem('lastProtectionMessageShown');
+      const now = new Date();
+
+      if (!lastShown || (now - new Date(lastShown)) > 3 * 24 * 60 * 60 * 1000) {
+        Swal.fire({
+          title: '🔒 Proteção Máxima e Controle Total!',
+          html: `<p style="text-align: left; font-size: 1em; color: #ffffff; line-height: 1.5;">
+                    Bem-vindo à <strong>Open Security Room</strong>, sua plataforma com o mais alto nível de <strong>privacidade</strong> e <strong>segurança</strong>. Todas as salas são protegidas por <strong>criptografia de ponta</strong>, garantindo que você permaneça completamente anônimo e no controle.
+                  </p>
+                  <p style="text-align: left; font-size: 1em; color: #ffffff; line-height: 1.5;">
+                    Seus dados pessoais são armazenados por no máximo <strong>24 horas</strong> e podem ser excluídos permanentemente a qualquer momento. Após esse período, realizamos um <strong>reset diário</strong> para garantir que nenhuma informação permaneça armazenada.
+                  </p>
+                  <p style="text-align: left; font-size: 1em; color: #ffffff; line-height: 1.5;">
+                    Você pode compartilhar suas salas com total segurança por meio de <strong>QR Code</strong> ou link, sempre mantendo o controle total sobre quem acessa. Aqui, você está no comando.
+                  </p>`,
+          icon: 'info',
+          confirmButtonText: 'Entendido!',
+          customClass: {
+            popup: 'swal-popup-dark',
+          },
+          background: '#0C090A',
+          width: '800px',
+          backdrop: `rgba(0, 0, 0, 0.7)`,
+          showClass: {
+            popup: 'animate__animated animate__fadeInDown',
+          },
+          hideClass: {
+            popup: 'animate__animated animate__fadeOutUp',
+          }
+        }).then(() => {
+          // Atualiza a data da última exibição
+          localStorage.setItem('lastProtectionMessageShown', now);
+        });
       }
-    });
+    };
+
+    showProtectionMessage();
 
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
@@ -105,13 +113,7 @@ const CreateRoom = () => {
         showCancelButton: true,
         confirmButtonText: 'Confirmar',
         cancelButtonText: 'Cancelar',
-        customClass: {
-          confirmButton: 'btn btn-primary',
-          cancelButton: 'btn btn-secondary'
-        },
-        buttonsStyling: false,
         didOpen: () => {
-          // Criar o checkbox de "Mostrar senha"
           const passwordInput = Swal.getInput();
           const container = Swal.getHtmlContainer();
           const inputLabel = document.querySelector('.swal2-input-label');
@@ -132,7 +134,6 @@ const CreateRoom = () => {
           container.appendChild(checkboxLabel);
           container.appendChild(checkbox);
 
-          // Adicionar o evento para o checkbox
           checkbox.addEventListener('change', (event) => {
             if (event.target.checked) {
               passwordInput.type = 'text';
@@ -184,11 +185,6 @@ const CreateRoom = () => {
       showCancelButton: true,
       confirmButtonText: 'Sim, excluir',
       cancelButtonText: 'Cancelar',
-      customClass: {
-        confirmButton: 'btn btn-danger',
-        cancelButton: 'btn btn-secondary'
-      },
-      buttonsStyling: false
     });
 
     if (result.isConfirmed) {
@@ -253,15 +249,8 @@ const CreateRoom = () => {
       text: "Você tem certeza que deseja sair?",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
       confirmButtonText: 'Sim, sair!',
       cancelButtonText: 'Cancelar',
-      customClass: {
-        confirmButton: 'btn btn-primary',
-        cancelButton: 'btn btn-secondary'
-      },
-      buttonsStyling: false
     }).then((result) => {
       if (result.isConfirmed) {
         auth.signOut()
@@ -286,10 +275,6 @@ const CreateRoom = () => {
         title: 'Nome inválido',
         text: 'Por favor, insira um nome de usuário válido.',
         confirmButtonText: 'Ok',
-        customClass: {
-          confirmButton: 'btn btn-primary',
-        },
-        buttonsStyling: false
       });
     }
   };
@@ -320,10 +305,10 @@ const CreateRoom = () => {
             <div class="collapse navbar-collapse" id="navbarCollapse">
               <ul className="navbar-nav ms-auto mb-2 mb-md-0">
                 <li class="nav-item">
-                  <button className="btn btn-primary" onClick={deleteAccount}>
+                  <button className="btn btn-outline-info" onClick={deleteAccount}>
                     Excluir Conta e Todos os Dados
                   </button>
-                  <button className="logout-button btn btn-danger" onClick={handleLogout}>
+                  <button className="logout-button btn btn-outline-danger" onClick={handleLogout}>
                     <FontAwesomeIcon icon={faPowerOff} />
                   </button>
                 </li>
@@ -341,7 +326,7 @@ const CreateRoom = () => {
         {!isNameConfirmed ? (
           <div>
             <label>
-              <FontAwesomeIcon icon={faUserCircle} />
+              <FontAwesomeIcon icon={faUserCircle} style={{ color: '#00a6e8' }} />
               <span className='ms-1 mb-1'>
                 Insira o seu nick
               </span>
@@ -355,7 +340,7 @@ const CreateRoom = () => {
                 />
               </div>
             </label>
-            <button className="btn btn-success" style={{ height: '40px', width: '46px' }} onClick={handleConfirmName} disabled={!userName.trim()}>
+            <button className="btn btn-outline-info" style={{ height: '40px', width: '46px' }} onClick={handleConfirmName} disabled={!userName.trim()}>
               <FontAwesomeIcon icon={faCheck} />
             </button>
           </div>
@@ -363,7 +348,7 @@ const CreateRoom = () => {
           <>
             <label>
               <span>
-                <FontAwesomeIcon icon={faDoorOpen} />
+                <FontAwesomeIcon icon={faDoorOpen} style={{ color: '#00a6e8' }} />
               </span>
               <span className='ms-2'>
                 Insira o nome da sala
@@ -376,7 +361,7 @@ const CreateRoom = () => {
                 className="form-control mb-3"
               />
             </label>
-            <button className="btn btn-success" onClick={createRoom} style={{ height: '40px', width: '46px' }} disabled={!roomName.trim() || loading}>
+            <button className="btn btn-outline-info" onClick={createRoom} style={{ height: '40px', width: '46px' }} disabled={!roomName.trim() || loading}>
               {loading ? (
                 <>
                   <FontAwesomeIcon icon={faSpinner} className="me-2" spin />
@@ -388,7 +373,7 @@ const CreateRoom = () => {
               )}
             </button>
 
-            <button className="btn btn-danger cancroom" style={{ width: '46px' }} onClick={handleCancelName}>
+            <button className="btn btn-outline-danger cancroom" style={{ width: '46px' }} onClick={handleCancelName}>
               <FontAwesomeIcon icon={faTimes} />
             </button>
           </>
