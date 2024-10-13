@@ -7,17 +7,17 @@ body {
 }
 
 .swal2-popup {
-  background-color: #1c1b1b; /* Cor de fundo do modal */
-  color: #fff; /* Cor do texto */
-  border-radius: 10px; /* Arredondar os cantos */
+  background-color: #1c1b1b; 
+  color: #fff; 
+  border-radius: 10px; 
 }
 
 .swal2-title {
-  color: #ffffff; /* Cor do título */
+  color: #ffffff; 
 }
 
 .swal2-content {
-  color: #dddddd; /* Cor do texto do conteúdo */
+  color: #dddddd;
 }
 
 .password-input-container input {
@@ -100,6 +100,16 @@ label#check:hover {
 
 .auth-container h1 {
   margin-bottom: 20px;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUpTitle 0.5s ease-in-out forwards;
+}
+
+@keyframes fadeInUpTitle {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .auth-container form {
