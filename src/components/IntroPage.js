@@ -1,7 +1,8 @@
-import React, { useEffect, useState, faLock, faUserShield, faShieldAlt, faRocket } from 'react';
+import React, { useEffect, useState } from 'react';
 import './IntroPage.css';
 import iconPage from './img/icon-page.png';
 import { Helmet } from 'react-helmet';
+import { faLock, faUserShield, faShieldAlt, faRocket } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const IntroPage = ({ onContinue }) => {
