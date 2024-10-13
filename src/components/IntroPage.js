@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, faLock, faUserShield, faShieldAlt, faRocket } from 'react';
 import './IntroPage.css';
 import iconPage from './img/icon-page.png';
 import { Helmet } from 'react-helmet';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const IntroPage = ({ onContinue }) => {
     const [showCookieConsent, setShowCookieConsent] = useState(false);
@@ -30,11 +31,26 @@ const IntroPage = ({ onContinue }) => {
     return (
         <div className="intro-container text-center">
             <Helmet>
-                <title>{'Open Security Room - Home'}</title>
-                <meta name="description" content="Faça login para acessar suas salas de chat na Open Security Room ou crie uma nova conta para se juntar à comunidade." />
-                <meta name="keywords" content="login, registro, chat, segurança, comunidade" />
+                <title>{'Open Security Room'}</title>
+                <meta name="description" content="Entre no Open Security Room para criar ou acessar salas de chat seguras e privadas. Junte-se à comunidade e proteja suas conversas online." />
+                <meta name="keywords" content="login, registro, chat seguro, privacidade, criptografia, comunidade online, segurança digital" />
                 <meta name="author" content="Open Security Room" />
+                <meta property="og:title" content='Open Security Room - Login Seguro' />
+                <meta property="og:description" content="Participe da Open Security Room para criar ou acessar salas de chat criptografadas. Segurança e privacidade são prioridades." />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content={window.location.href} />
+                <meta property="og:image" content="URL_da_imagem_de_visualização" />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content='Open Security Room - Login Seguro' />
+                <meta name="twitter:description" content="Junte-se ao Open Security Room e proteja suas conversas com segurança máxima." />
+                <meta name="twitter:image" content="URL_da_imagem_de_visualização" />
                 <link rel="canonical" href={window.location.href} />
+                <img src="URL_da_imagem_de_visualização" alt="Login seguro no Open Security Room" />
+                <img src="URL_da_imagem_de_visualização" alt="Registro seguro no Open Security Room" />
+                <link rel="sitemap" type="application/xml" href="sitemap.xml" />
+                <meta name="robots" content="index, follow" />
+                User-agent: *
+                Allow: /
             </Helmet>
 
             <img
@@ -49,13 +65,25 @@ const IntroPage = ({ onContinue }) => {
             <p className="intro-description">
                 Esta plataforma oferece o mais alto nível de privacidade e segurança para suas salas de chat. Aqui, você pode se sentir seguro e no controle.
             </p>
-            <div className="intro-benefits">
+            <div className="benefits-list mt-2">
                 <h2 className="benefits-title mb-4">Por que escolher o Open Security Room?</h2>
                 <p>Nosso compromisso é garantir que você tenha a melhor experiência possível. Aqui estão alguns dos benefícios de usar nossa plataforma:</p>
-                <ul className="benefits-list">
-                    <li>Privacidade Total: Seus dados são criptografados e nunca serão compartilhados.</li>
-                    <li>Simplicidade: A interface foi projetada para ser fácil de usar, mesmo para iniciantes.</li>
-                </ul>
+                <li>
+                    <FontAwesomeIcon icon={faLock} className="me-2" />
+                    <strong>Privacidade Total:</strong> Seus dados são criptografados e nunca serão compartilhados. Garantimos que todas as suas conversas estão protegidas com a mais alta segurança disponível, mantendo sua privacidade intacta.
+                </li>
+                <li>
+                    <FontAwesomeIcon icon={faUserShield} className="me-2" />
+                    <strong>Gerenciamento de Permissões:</strong> Você tem controle total sobre quem pode entrar na sua sala e quem participa das conversas. Controle granular de acesso para garantir a segurança do ambiente.
+                </li>
+                <li>
+                    <FontAwesomeIcon icon={faShieldAlt} className="me-2" />
+                    <strong>Segurança Robusta:</strong> Utilizamos criptografia de ponta a ponta e várias camadas de segurança para garantir que suas informações permaneçam seguras e longe de invasores.
+                </li>
+                <li>
+                    <FontAwesomeIcon icon={faRocket} className="me-2" />
+                    <strong>Simplicidade:</strong> A interface foi projetada para ser fácil de usar, mesmo para iniciantes. Você pode acessar e gerenciar suas salas com apenas alguns cliques, sem complicações.
+                </li>
             </div>
             <p>
                 Clique em <b className='regisText' onClick={onContinue}>Login</b> para prosseguir para o login ou inscrever-se.

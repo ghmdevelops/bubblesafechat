@@ -318,19 +318,25 @@ const AuthExample = () => {
         <div className="auth-container">
             <Helmet>
                 <title>{isLogin ? 'Open Security Room - Login' : 'Open Security Room - Registro'}</title>
-                <meta name="description" content="Faça login para acessar suas salas de chat na Open Security Room ou crie uma nova conta para se juntar à comunidade." />
-                <meta name="keywords" content="login, registro, chat, segurança, comunidade" />
+                <meta name="description" content="Entre no Open Security Room para criar ou acessar salas de chat seguras e privadas. Junte-se à comunidade e proteja suas conversas online." />
+                <meta name="keywords" content="login, registro, chat seguro, privacidade, criptografia, comunidade online, segurança digital" />
                 <meta name="author" content="Open Security Room" />
-                <meta property="og:title" content={isLogin ? 'Open Security Room - Login' : 'Open Security Room - Registro'} />
-                <meta property="og:description" content="Acesse suas salas de chat ou crie uma nova conta na Open Security Room." />
+                <meta property="og:title" content={isLogin ? 'Open Security Room - Login Seguro' : 'Open Security Room - Registro Seguro'} />
+                <meta property="og:description" content="Participe da Open Security Room para criar ou acessar salas de chat criptografadas. Segurança e privacidade são prioridades." />
                 <meta property="og:type" content="website" />
                 <meta property="og:url" content={window.location.href} />
                 <meta property="og:image" content="URL_da_imagem_de_visualização" />
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content={isLogin ? 'Open Security Room - Login' : 'Open Security Room - Registro'} />
-                <meta name="twitter:description" content="Acesse suas salas de chat ou crie uma nova conta na Open Security Room." />
+                <meta name="twitter:title" content={isLogin ? 'Open Security Room - Login Seguro' : 'Open Security Room - Registro Seguro'} />
+                <meta name="twitter:description" content="Junte-se ao Open Security Room e proteja suas conversas com segurança máxima." />
                 <meta name="twitter:image" content="URL_da_imagem_de_visualização" />
                 <link rel="canonical" href={window.location.href} />
+                <img src="URL_da_imagem_de_visualização" alt="Login seguro no Open Security Room" />
+                <img src="URL_da_imagem_de_visualização" alt="Registro seguro no Open Security Room" />
+                <link rel="sitemap" type="application/xml" href="sitemap.xml" />
+                <meta name="robots" content="index, follow" />
+                User-agent: *
+                Allow: /
             </Helmet>
 
             {showIntro ? (

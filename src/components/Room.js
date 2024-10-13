@@ -9,7 +9,7 @@ import Swal from 'sweetalert2';
 import '@sweetalert2/theme-dark/dark.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSignInAlt, faUser, faClock, faSignOutAlt, faUserCircle, faPaperPlane, faMicrophone, faCheckCircle, faStopCircle, faTrashAlt, faPlayCircle, faClipboard, faQrcode, faShareAlt, faTrash, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faPauseCircle, faDoorOpen, faSignInAlt, faUser, faClock, faSignOutAlt, faUserCircle, faPaperPlane, faMicrophone, faCheckCircle, faStopCircle, faTrashAlt, faPlayCircle, faClipboard, faQrcode, faShareAlt, faTrash, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp, faTelegram } from '@fortawesome/free-brands-svg-icons';
 import { Helmet } from 'react-helmet';
 import iconPage from './img/icon-page.png'
@@ -42,9 +42,9 @@ const Room = () => {
   const [timeLeft, setTimeLeft] = useState({});
   const [usersWithExpelButton, setUsersWithExpelButton] = useState(new Set());
   const [loading, setLoading] = useState(false);
+  const [playingAudioId, setPlayingAudioId] = useState(null);
 
   const shareLink = `${window.location.origin}/opensecurityroom/#/room/${roomId}`;
-
 
   useEffect(() => {
     const roomRef = database.ref(`rooms/${roomId}`);
@@ -251,8 +251,15 @@ const Room = () => {
           denyRef.set({
             message: `Sua solicitação foi recusada.`,
             timestamp: new Date().toISOString(),
+          }).then(() => {
+            Swal.fire({
+              icon: 'error',
+              title: 'Solicitação Recusada',
+              text: `A solicitação de ${userData.userName} foi recusada com sucesso.`,
+              confirmButtonText: 'OK',
+            });
+            setLoading(false);
           });
-          setLoading(false);
         }
       });
     }
@@ -351,11 +358,17 @@ const Room = () => {
 
     deniedRef.on('value', (snapshot) => {
       if (snapshot.exists() && !isCreator) {
-        setStatusMessage('Sua solicitação foi recusada. Redirecionando...');
-
-        setTimeout(() => {
-          navigate('/');
-        }, 2000);
+        Swal.fire({
+          icon: 'error',
+          title: 'Solicitação Recusada',
+          text: 'Sua solicitação de acesso foi recusada. Redirecionando...',
+          timer: 1500,
+          timerProgressBar: true,
+          showConfirmButton: false,
+          willClose: () => {
+            navigate('/');
+          }
+        });
       }
     });
 
@@ -469,7 +482,7 @@ const Room = () => {
         title: 'Excluindo sala arquivos e mensagens!!',
         icon: 'info',
         html: 'Irei fechar em <b></b> milissegundos.',
-        timer: 1500,
+        timer: 1300,
         timerProgressBar: true,
         didOpen: () => {
           Swal.showLoading();
@@ -608,9 +621,31 @@ const Room = () => {
     }
   };
 
-  const playAudio = (audioUrl) => {
+  const playAudio = (audioUrl, messageId) => {
     const audio = new Audio(audioUrl);
+
+    if (playingAudioId !== null && playingAudioId !== messageId) {
+      setPlayingAudioId(null);
+    }
+
     audio.play();
+    setPlayingAudioId(messageId);
+
+    audio.onended = () => {
+      setPlayingAudioId(null);
+    };
+
+    audio.onpause = () => {
+      setPlayingAudioId(null);
+    };
+  };
+
+  const togglePlayPause = (audioUrl, messageId) => {
+    if (playingAudioId === messageId) {
+      setPlayingAudioId(null);
+    } else {
+      playAudio(audioUrl, messageId);
+    }
   };
 
   const showShareModal = () => {
@@ -792,18 +827,18 @@ const Room = () => {
   return (
     <div>
       <Helmet>
-        <title>{'Open Security Room - Chat'}</title>
-        <meta name="description" content="Faça login para acessar suas salas de chat na Open Security Room ou crie uma nova conta para se juntar à comunidade." />
-        <meta name="keywords" content="login, registro, chat, segurança, comunidade" />
+        <title>{`Open Security Room - ${roomName ? roomName : 'Carregando...'}`}</title>
+        <meta name="description" content="Entre no Open Security Room para criar ou acessar salas de chat seguras e privadas. Junte-se à comunidade e proteja suas conversas online." />
+        <meta name="keywords" content="login, registro, chat seguro, privacidade, criptografia, comunidade online, segurança digital" />
         <meta name="author" content="Open Security Room" />
-        <meta property="og:title" content={'Open Security Room - Chat'} />
-        <meta property="og:description" content="Acesse suas salas de chat ou crie uma nova conta na Open Security Room." />
+        <meta property="og:title" content='Open Security Room - Login Seguro' />
+        <meta property="og:description" content="Participe da Open Security Room para criar ou acessar salas de chat criptografadas. Segurança e privacidade são prioridades." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={window.location.href} />
         <meta property="og:image" content="URL_da_imagem_de_visualização" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={'Open Security Room - Chat'} />
-        <meta name="twitter:description" content="Acesse suas salas de chat ou crie uma nova conta na Open Security Room." />
+        <meta name="twitter:title" content='Open Security Room - Login Seguro' />
+        <meta name="twitter:description" content="Junte-se ao Open Security Room e proteja suas conversas com segurança máxima." />
         <meta name="twitter:image" content="URL_da_imagem_de_visualização" />
         <link rel="canonical" href={window.location.href} />
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
@@ -852,7 +887,9 @@ const Room = () => {
         </nav>
       </header>
 
-      <h1 className="text-center mb-2 mt-4">Chat {roomName}</h1>
+      <div className="title-container">
+        <h1 className="text-center mb-2 mt-4"><FontAwesomeIcon icon={faDoorOpen} /> Room {roomName}</h1>
+      </div>
 
       {isDestructionActive && (
         <div className="alert alert-warning text-center" role="alert">
@@ -908,17 +945,20 @@ const Room = () => {
                 key={request.id}
                 className="list-group-item d-flex justify-content-between align-items-center bg-dark text-light border-dark"
               >
-                {request.userName}
+                <div className="d-flex align-items-center">
+                  <FontAwesomeIcon icon={faUser} className="me-2" />
+                  {request.userName}
+                </div>
                 <div>
                   <button
-                    className="btn btn-primary btn-sm me-2"
+                    className="btn btn-outline-info btn-sm me-2"
                     onClick={() => handleRequest(request.id, 'accept')}
                   >
                     <FontAwesomeIcon icon={faCheck} className="me-1" />
                     Aceitar
                   </button>
                   <button
-                    className="btn btn-danger btn-sm"
+                    className="btn btn-outline-danger btn-sm"
                     onClick={() => handleRequest(request.id, 'deny')}
                   >
                     <FontAwesomeIcon icon={faTimes} className="me-1" />
@@ -953,8 +993,15 @@ const Room = () => {
               }}
             >
               <strong style={{ display: 'block', fontSize: '0.85em', color: '#555' }}><FontAwesomeIcon icon={faUserCircle} /> {msg.user}</strong>
-              <span style={{ fontSize: '12.4px', fontWeight: '400', marginBottom: '20px' }}>
-                {msg.text ? msg.text : <button onClick={() => playAudio(msg.audioUrl)}><FontAwesomeIcon icon={faPlayCircle} /></button>}
+              <span style={{ fontSize: '11.7px', fontWeight: '400', marginBottom: '20px' }}>
+                {msg.text ? msg.text : <button style={{ color: "#fff", fontSize: "20px" }}
+                  className="play-button"
+                  onClick={() => togglePlayPause(msg.audioUrl, msg.id)}
+                >
+                  <FontAwesomeIcon
+                    icon={playingAudioId === msg.id ? faPauseCircle : faPlayCircle}
+                  />
+                </button>}
               </span>
               {msg.readBy && (
                 <div className='sub-textMsg'>

@@ -75,7 +75,6 @@ button:hover {
 
 .benefits-list li:hover {
   transform: translateY(-5px);
-  color: #4abee2;
 }
 
 .benefits-list li:nth-child(1) {

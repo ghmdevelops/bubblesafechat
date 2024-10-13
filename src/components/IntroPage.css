@@ -16,7 +16,8 @@ body {
   text-align: center;
   min-height: 600px;
   overflow: auto;
-  animation: slideIn 0.5s ease-out;
+  animation: slideIn 1s ease-out;
+  backdrop-filter: blur(10px);
 }
 
 .intro-container::-webkit-scrollbar {
@@ -24,30 +25,36 @@ body {
 }
 
 .intro-container {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* Internet Explorer and Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .highlight-text {
   font-size: 40px;
   font-weight: 700;
-  background: linear-gradient(90deg, #fff, #fff);
+  background: linear-gradient(90deg, #fff, #a160fc);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin: 10px 0;
-  animation: textGlow 1.5s ease-in-out infinite alternate;
+  animation: textGlow 2s ease-in-out infinite alternate;
+  transition: transform 0.5s ease, letter-spacing 0.5s ease;
+}
+
+.highlight-text:hover {
+  transform: scale(1.1);
+  letter-spacing: 3px;
 }
 
 .intro-description {
   font-size: 1.2rem;
   color: #b0b0b0;
   margin: 20px 0;
-  transition: color 0.3s ease, transform 0.3s ease;
+  transition: color 0.5s ease, transform 0.5s ease;
 }
 
 .intro-description:hover {
-  color: #ffffff; /* Muda a cor ao passar o mouse */
-  transform: scale(1.05); /* Aumenta levemente o tamanho */
+  color: #ffffff;
+  transform: scale(1.1);
 }
 
 .intro-benefits {
@@ -58,29 +65,32 @@ body {
   list-style-type: none;
   padding: 0;
   margin: 20px 0;
+  animation: fadeInUp 2s ease-out both;
 }
 
 .benefits-list li {
-  transition: background 0.3s ease, transform 0.3s ease;
+  transition: background 0.5s ease, transform 0.5s ease, color 0.5s ease;
+  padding: 10px;
+  border-radius: 8px;
 }
 
 .intro-image {
   width: 120px;
   margin: 20px 0;
-  animation: fadeIn 1s;
+  animation: fadeIn 2s, bounce 3s infinite;
 }
 
 .regisText {
   cursor: pointer;
   color: #a160fc;
   text-transform: uppercase;
-  transition: font-size 0.3s ease, color 0.3s ease, text-shadow 0.3s ease;
+  transition: font-size 0.5s ease, color 0.5s ease, text-shadow 0.5s ease;
 }
 
 .regisText:hover {
-  font-size: 17px;
+  font-size: 18px;
   color: #c59cff;
-  text-shadow: 0 0 10px #c59cff, 0 0 20px #c59cff; /* Efeito de brilho ao passar o mouse */
+  text-shadow: 0 0 15px #c59cff, 0 0 30px #c59cff;
 }
 
 .cookie-consent {
@@ -96,27 +106,13 @@ body {
   z-index: 1000;
   width: 80%;
   max-width: 600px;
-  max-height: 400px; /* Limita a altura do aviso */
-  overflow-y: auto; /* Permite rolagem vertical */
-  overflow-x: hidden; /* Oculta rolagem horizontal */
+  max-height: 400px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
-.cookie-consent li{
+.cookie-consent li {
   list-style-type: none;
-}
-
-/* Ocultar scrollbar padrão, mas permitir rolagem */
-.cookie-consent::-webkit-scrollbar {
-  width: 8px; /* Largura da barra de rolagem */
-}
-
-.cookie-consent::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.5); /* Cor da barra de rolagem */
-  border-radius: 4px; /* Arredonda as bordas da barra */
-}
-
-.cookie-consent::-webkit-scrollbar-track {
-  background: transparent; /* Oculta o fundo da barra de rolagem */
 }
 
 .cookie-consent h3 {
@@ -128,17 +124,31 @@ body {
   margin: 5px 0;
 }
 
-.cookie-consent a {
-  color: #007bff;
-  text-decoration: underline;
-}
-
 .cookie-buttons {
   margin-top: 10px;
 }
 
 .cookie-buttons button {
   margin-right: 10px;
+  transition: transform 0.5s ease, background 0.5s ease;
+}
+
+.cookie-buttons button:hover {
+  transform: scale(1.1);
+  background-color: #5a5a5a;
+}
+
+.cookie-consent::-webkit-scrollbar {
+  width: 8px;
+}
+
+.cookie-consent::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+}
+
+.cookie-consent::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 @keyframes fadeIn {
@@ -150,25 +160,41 @@ body {
   }
 }
 
-@keyframes slideIn {
+@keyframes bounce {
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-25px);
+  }
+  60% {
+    transform: translateY(-15px);
+  }
+}
+
+@keyframes fadeInUp {
   from {
-    transform: translateY(-20px);
     opacity: 0;
+    transform: translateY(40px);
   }
   to {
-    transform: translateY(0);
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
 @keyframes textGlow {
   0% {
     text-shadow: 0 0 5px rgba(255, 255, 255, 0.8),
-      0 0 10px rgba(255, 255, 255, 0.6);
+      0 0 15px rgba(255, 255, 255, 0.6);
   }
   100% {
-    text-shadow: 0 0 20px rgba(255, 255, 255, 1),
-      0 0 30px rgba(255, 255, 255, 0.8);
+    text-shadow: 0 0 30px rgba(255, 255, 255, 1),
+      0 0 40px rgba(255, 255, 255, 0.8);
   }
 }
 

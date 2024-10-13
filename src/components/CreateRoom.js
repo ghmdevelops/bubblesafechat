@@ -8,7 +8,7 @@ import Swal from 'sweetalert2';
 import '@sweetalert2/theme-dark/dark.css';
 import './CreateRoom.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faPlus, faTimes, faCheck, faPowerOff, faUserCircle, faDoorOpen } from '@fortawesome/free-solid-svg-icons';
+import { faLock, faUserShield, faShieldAlt, faEye, faSpinner, faPlus, faTimes, faCheck, faPowerOff, faUserCircle, faDoorOpen } from '@fortawesome/free-solid-svg-icons';
 import iconPage from './img/icon-page.png';
 import { EmailAuthProvider } from 'firebase/auth';
 
@@ -287,10 +287,20 @@ const CreateRoom = () => {
   return (
     <div className="auth-container">
       <Helmet>
-        <title>Open Security Room - Home</title>
-        <meta name="description" content="Crie uma nova sala de chat na Open Security Room." />
-        <meta name="keywords" content="criar sala, chat, Open Security Room" />
+        <title>Open Security Room - Rooms</title>
+        <meta name="description" content="Entre no Open Security Room para criar ou acessar salas de chat seguras e privadas. Junte-se à comunidade e proteja suas conversas online." />
+        <meta name="keywords" content="login, registro, chat seguro, privacidade, criptografia, comunidade online, segurança digital" />
         <meta name="author" content="Open Security Room" />
+        <meta property="og:title" content='Open Security Room - Login Seguro' />
+        <meta property="og:description" content="Participe da Open Security Room para criar ou acessar salas de chat criptografadas. Segurança e privacidade são prioridades." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={window.location.href} />
+        <meta property="og:image" content="URL_da_imagem_de_visualização" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content='Open Security Room - Login Seguro' />
+        <meta name="twitter:description" content="Junte-se ao Open Security Room e proteja suas conversas com segurança máxima." />
+        <meta name="twitter:image" content="URL_da_imagem_de_visualização" />
+        <link rel="canonical" href={window.location.href} />
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
       </Helmet>
 
@@ -322,8 +332,14 @@ const CreateRoom = () => {
         {!isNameConfirmed && <h2>Bem-vindo, {userEmail}
           <h1>Digite um nick que combine com você</h1>
           <ul className="benefits-list mt-2">
-            <li>Segurança robusta que garante a privacidade das suas conversas</li>
-            <li>Transparência total no uso e gerenciamento dos seus dados</li>
+            <li>
+              <FontAwesomeIcon icon={faShieldAlt} className="me-2" />
+              Segurança robusta que garante a privacidade das suas conversas
+            </li>
+            <li>
+              <FontAwesomeIcon icon={faEye} className="me-2" />
+              Transparência total no uso e gerenciamento dos seus dados
+            </li>
           </ul>
         </h2>}
 
@@ -357,9 +373,16 @@ const CreateRoom = () => {
           <>
             <h1>Criar uma Sala</h1>
             <ul className="benefits-list mt-2">
-              <li>Não coletamos ou compartilhamos seus dados pessoais. Você tem controle total sobre as informações que decide compartilhar</li>
-              <li>Gerenciamento de permissões**: Você pode controlar quem pode entrar na sua sala e quem pode participar das conversas</li>
+              <li>
+                <FontAwesomeIcon icon={faLock} className="me-2" />
+                Não coletamos ou compartilhamos seus dados pessoais. Você tem controle total sobre as informações que decide compartilhar
+              </li>
+              <li>
+                <FontAwesomeIcon icon={faUserShield} className="me-2" />
+                Gerenciamento de permissões: Você pode controlar quem pode entrar na sua sala e quem pode participar das conversas
+              </li>
             </ul>
+
             <label>
               <span>
                 <FontAwesomeIcon icon={faDoorOpen} style={{ color: '#00a6e8' }} />

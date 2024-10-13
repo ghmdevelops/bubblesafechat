@@ -41,7 +41,7 @@
 }
 
 .message-container::-webkit-scrollbar {
-  width: 4px;
+  width: 2px;
 }
 
 .message-container::-webkit-scrollbar-track {
@@ -63,7 +63,7 @@
 }
 
 .message-container {
-  scrollbar-width: thin;
+  scrollbar-width: none;
   scrollbar-color: #131e2b #0061df;
 }
 
@@ -141,4 +141,54 @@ h3 {
   border-radius: 12px;
   background-color: #00a6e8;
   color: #fff;
+}
+
+@keyframes slideIn {
+  0% {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.title-container {
+  padding-top: 70px;
+  animation: slideIn 1s ease-out;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.title-container h1 {
+  font-size: 1.7rem;
+  color: #ffffff;
+  font-weight: bold;
+}
+
+.play-button {
+  background-color: #0059ac;
+  border: none;
+  border-radius: 5%; 
+  width: 240px;
+  height: 45px;
+  cursor: pointer;
+  margin-right: 12px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.play-button:hover {
+  background-color: #0059ac; 
+  transform: scale(1.1); 
+}
+
+.play-button:focus {
+  outline: none;
+}
+
+.play-button i {
+  color: white;
+  font-size: 10rem;
 }
