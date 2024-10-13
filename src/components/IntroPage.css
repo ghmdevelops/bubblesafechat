@@ -64,11 +64,6 @@ body {
   transition: background 0.3s ease, transform 0.3s ease;
 }
 
-.benefits-list li:hover {
-  background: rgba(255, 255, 255, 0.1); /* Fundo leve ao passar o mouse */
-  transform: translateY(-2px); /* Levanta o item ao passar o mouse */
-}
-
 .intro-image {
   width: 120px;
   margin: 20px 0;

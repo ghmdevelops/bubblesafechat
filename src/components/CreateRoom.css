@@ -4,6 +4,7 @@ body {
   background-color: #16202b;
   font-family: "Roboto", sans-serif;
   color: #fff;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .auth-container {
@@ -13,22 +14,45 @@ body {
   justify-content: center;
   height: 100vh;
   padding: 20px;
+  opacity: 0;
+  animation: fadeIn 0.5s forwards, slideIn 0.5s forwards;
+}
+
+button {
+  transition: background-color 0.3s ease, transform 0.2s ease,
+    box-shadow 0.3s ease;
 }
 
 button:hover {
-  background-color: #0056b3; /* Cor ao passar o mouse */
+  background-color: #0056b3;
+  transform: scale(1.05) rotate(3deg);
+  box-shadow: 0 4px 20px rgba(0, 86, 179, 0.5);
 }
 
 .navbar-brand img {
   width: 60px;
+  transition: transform 0.3s ease;
+}
+
+.navbar-brand img:hover {
+  transform: rotate(10deg) scale(1.1);
 }
 
 .success-message {
   color: green;
+  opacity: 0;
+  animation: fadeIn 0.5s forwards;
 }
 
 .error-message {
   color: red;
+  opacity: 0;
+  animation: fadeIn 0.5s forwards, shake 0.5s forwards;
+}
+
+.text-animated {
+  opacity: 0; /* Inicia invisível */
+  animation: fadeInUp 0.5s forwards, whisper 2s infinite alternate; /* Adiciona o efeito de sussurro */
 }
 
 .swal-popup-dark {
@@ -36,16 +60,50 @@ button:hover {
   border: 2px solid #000000;
 }
 
+.benefits-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  font-size: 20px;
+}
+
+.benefits-list li {
+  transition: transform 0.3s ease, color 0.3s ease;
+  opacity: 0;
+  animation: fadeInUp 0.5s forwards;
+}
+
+.benefits-list li:hover {
+  transform: translateY(-5px);
+  color: #4abee2;
+}
+
+.benefits-list li:nth-child(1) {
+  animation-delay: 0.2s;
+}
+
+.benefits-list li:nth-child(2) {
+  animation-delay: 0.4s;
+}
+
+.benefits-list li:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
 .swal-confirm-button-dark {
   background-color: #4abee2;
   padding: 10px 20px;
   border-radius: 5px;
   font-size: 1.1em;
+  transition: background-color 0.3s ease, transform 0.2s ease,
+    box-shadow 0.3s ease;
 }
 
 .swal-confirm-button-dark:hover {
-  background-color: #42a2bf; 
+  background-color: #42a2bf;
   color: #151617;
+  transform: scale(1.05);
+  box-shadow: 0 4px 20px rgba(66, 162, 191, 0.5);
 }
 
 @media (max-width: 768px) {
@@ -57,13 +115,71 @@ button:hover {
     font-size: 13px;
   }
 
-  span{
+  span {
     font-size: 14px;
   }
+}
 
-  input,
-  button {
-    font-size: 14px;
-    padding: 8px;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+  0% {
+    transform: translate(0);
+  }
+  25% {
+    transform: translate(-2px);
+  }
+  50% {
+    transform: translate(2px);
+  }
+  75% {
+    transform: translate(-2px);
+  }
+  100% {
+    transform: translate(0);
+  }
+}
+
+@keyframes whisper {
+  0% {
+    transform: translateX(-2px);
+  }
+  100% {
+    transform: translateX(2px);
+  }
+}
+
+.button-pulse {
+  animation: pulse 1s infinite;
 }

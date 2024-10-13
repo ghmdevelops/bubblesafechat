@@ -87,7 +87,7 @@ const AuthExample = () => {
         setIsLoading(true);
 
         try {
-            await signInWithPopup(auth, provider);
+            const result = await signInWithPopup(auth, provider);
             let timerInterval;
 
             Swal.fire({
@@ -131,11 +131,12 @@ const AuthExample = () => {
         }
     };
 
-    const handleRegister = (e) => {
+    const handleRegister = async (e) => {
         e.preventDefault();
         setErrorMessage('');
         setRegistrationMessage('');
 
+        // Validação de entradas
         if (!firstName.trim()) {
             setErrorMessage('Por favor, insira seu primeiro nome.');
             return;
@@ -146,7 +147,7 @@ const AuthExample = () => {
             return;
         }
 
-        if (checkPasswordStrength(password) === 'fraca') {
+        if (checkPasswordStrength(password) === 'Fraca') {
             Swal.fire({
                 icon: 'error',
                 title: 'Senha Fraca',
@@ -167,46 +168,37 @@ const AuthExample = () => {
         }
 
         setIsLoading(true);
-        auth.createUserWithEmailAndPassword(email, password)
-            .then(userCredential => {
-                const user = userCredential.user;
+        try {
+            const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+            const user = userCredential.user;
 
-                user.sendEmailVerification()
-                    .then(() => {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Cadastro realizado!',
-                            text: 'Verifique seu e-mail para confirmar sua conta antes de fazer login.',
-                            confirmButtonText: 'Ok',
-                        });
-
-                        setTimeout(() => {
-                            setIsLogin(true);
-                        }, 5000);
-                    })
-                    .catch(error => {
-                        setErrorMessage('Erro ao enviar e-mail de verificação.');
-                    });
-
-                auth.signOut();
-            })
-            .catch(error => {
-                if (error.code === 'auth/email-already-in-use') {
-                    setErrorMessage('Esse e-mail já está em uso. Tente outro.');
-                } else if (error.code === 'auth/invalid-email') {
-                    setErrorMessage('E-mail inválido.');
-                } else if (error.code === 'auth/weak-password') {
-                    setErrorMessage('Senha fraca. Escolha uma senha mais forte.');
-                } else {
-                    setErrorMessage('Erro ao registrar. Verifique as informações e tente novamente.');
-                }
-            })
-            .finally(() => {
-                setIsLoading(false);
+            await user.sendEmailVerification();
+            Swal.fire({
+                icon: 'success',
+                title: 'Cadastro realizado!',
+                text: 'Verifique seu e-mail para confirmar sua conta antes de fazer login.',
+                confirmButtonText: 'Ok',
             });
+
+            setTimeout(() => {
+                setIsLogin(true);
+            }, 5000);
+        } catch (error) {
+            if (error.code === 'auth/email-already-in-use') {
+                setErrorMessage('Esse e-mail já está em uso. Tente outro.');
+            } else if (error.code === 'auth/invalid-email') {
+                setErrorMessage('E-mail inválido.');
+            } else if (error.code === 'auth/weak-password') {
+                setErrorMessage('Senha fraca. Escolha uma senha mais forte.');
+            } else {
+                setErrorMessage('Erro ao registrar. Verifique as informações e tente novamente.');
+            }
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
         setErrorMessage('');
 
@@ -221,149 +213,106 @@ const AuthExample = () => {
         }
 
         setIsLoading(true);
-        auth.signInWithEmailAndPassword(email, password)
-            .then(userCredential => {
-                const user = userCredential.user;
-                let timerInterval;
+        try {
+            const userCredential = await auth.signInWithEmailAndPassword(email, password);
+            const user = userCredential.user;
 
-                if (user.emailVerified) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Login bem-sucedido',
-                        html: 'Você foi logado com sucesso. Irei fechar em <b></b> milissegundos.',
-                        timer: 1400,
-                        timerProgressBar: true,
-                        didOpen: () => {
-                            Swal.showLoading();
-                            const timer = Swal.getPopup().querySelector('b');
-                            timerInterval = setInterval(() => {
-                                timer.textContent = Swal.getTimerLeft();
-                            }, 100);
-                        },
-                        willClose: () => {
-                            clearInterval(timerInterval);
-                        }
-                    }).then((result) => {
-                        if (result.dismiss === Swal.DismissReason.timer) {
-                            console.log("I was closed by the timer");
-                        }
-                        navigate('/');
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'E-mail não verificado',
-                        text: 'Por favor, verifique seu e-mail antes de fazer login.',
-                        confirmButtonText: 'Ok',
-                    });
-                    auth.signOut();
-                }
-            })
-            .catch(error => {
-                const maxAttempts = 5;
-                const attemptsLeft = maxAttempts - (loginAttempts + 1);
-                setLoginAttempts(prev => prev + 1);
-                localStorage.setItem('loginAttempts', loginAttempts + 1);
+            if (user.emailVerified) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Login bem-sucedido',
+                    html: 'Você foi logado com sucesso. Irei fechar em <b></b> milissegundos.',
+                    timer: 1400,
+                    timerProgressBar: true,
+                    didOpen: () => {
+                        Swal.showLoading();
+                        const timer = Swal.getPopup().querySelector('b');
+                        setInterval(() => {
+                            timer.textContent = Swal.getTimerLeft();
+                        }, 100);
+                    }
+                }).then(() => {
+                    navigate('/');
+                });
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'E-mail não verificado',
+                    text: 'Por favor, verifique seu e-mail antes de fazer login.',
+                    confirmButtonText: 'Ok',
+                });
+                auth.signOut();
+            }
+        } catch (error) {
+            const maxAttempts = 5;
+            const attemptsLeft = maxAttempts - (loginAttempts + 1);
+            setLoginAttempts(prev => prev + 1);
+            localStorage.setItem('loginAttempts', loginAttempts + 1);
 
-                if (loginAttempts + 1 >= maxAttempts) {
-                    setIsLockedOut(true);
-                    localStorage.setItem('isLockedOut', 'true');
-                    const lockoutTimeMinutes = 3;
+            if (loginAttempts + 1 >= maxAttempts) {
+                setIsLockedOut(true);
+                localStorage.setItem('isLockedOut', 'true');
+                const lockoutTimeMinutes = 3;
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Conta bloqueada',
+                    text: `Você excedeu o número de tentativas de login. Sua conta está bloqueada por ${lockoutTimeMinutes} minutos.`,
+                    confirmButtonText: 'Ok',
+                });
+            } else {
+                if (error.code === 'auth/user-not-found') {
                     Swal.fire({
                         icon: 'error',
-                        title: 'Conta bloqueada',
-                        text: `Você excedeu o número de tentativas de login. Sua conta está bloqueada por ${lockoutTimeMinutes} minutos.`,
+                        title: 'E-mail não cadastrado',
+                        text: 'Esse e-mail não está registrado. Por favor, verifique ou crie uma nova conta.',
+                        confirmButtonText: 'Ok',
+                    });
+                } else if (error.code === 'auth/wrong-password') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Senha incorreta',
+                        text: `Senha incorreta. Você tem ${attemptsLeft} tentativas restantes. Considere redefinir sua senha.`,
                         confirmButtonText: 'Ok',
                     });
                 } else {
-                    if (error.code === 'auth/user-not-found') {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'E-mail não cadastrado',
-                            text: 'Esse e-mail não está registrado. Por favor, verifique ou crie uma nova conta.',
-                            confirmButtonText: 'Ok',
-                        });
-                    } else if (error.code === 'auth/wrong-password') {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Senha incorreta',
-                            text: `Senha incorreta. Você tem ${attemptsLeft} tentativas restantes. Considere redefinir sua senha.`,
-                            confirmButtonText: 'Ok',
-                        });
-                    } else if (error.code === 'auth/user-not-found') {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'E-mail não encontrado',
-                            text: 'E-mail não encontrado. Verifique se o e-mail está correto.',
-                            confirmButtonText: 'Ok',
-                        });
-                    } else if (error.code === 'auth/invalid-email') {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'E-mail inválido',
-                            text: 'E-mail inválido. Verifique o formato.',
-                            confirmButtonText: 'Ok',
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Erro ao fazer login',
-                            text: 'Não foi possível fazer login. Por favor, verifique se o e-mail está correto, se já possui uma conta cadastrada ou se a senha está correta, e tente novamente.',
-                            confirmButtonText: 'Ok',
-                        });
-                    }
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro ao fazer login',
+                        text: 'Não foi possível fazer login. Verifique as informações e tente novamente.',
+                        confirmButtonText: 'Ok',
+                    });
                 }
-            })
-            .finally(() => {
-                setIsLoading(false);
-            });
+            }
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const handlePasswordReset = () => {
+    const handlePasswordReset = async () => {
         if (!email) {
             setErrorMessage('Por favor, insira seu e-mail para redefinir a senha.');
             return;
         }
 
-        auth.sendPasswordResetEmail(email)
-            .then(() => {
-                setResetMessage('E-mail de recuperação de senha enviado. Verifique sua caixa de entrada ou lixo eletrônico.');
-                setErrorMessage('');
-                setPasswordResetRequested(true);
-                setIsLockedOut(false);
+        try {
+            await auth.sendPasswordResetEmail(email);
+            setResetMessage('E-mail de recuperação de senha enviado. Verifique sua caixa de entrada ou lixo eletrônico.');
+            setErrorMessage('');
+            setPasswordResetRequested(true);
+            setIsLockedOut(false);
 
-                localStorage.removeItem('isLockedOut');
-                localStorage.removeItem('loginAttempts');
-            })
-            .catch(error => {
-                if (error.code === 'auth/user-not-found') {
-                    setErrorMessage('E-mail não encontrado. Verifique se o e-mail está correto.');
-                } else if (error.code === 'auth/invalid-email') {
-                    setErrorMessage('E-mail inválido. Verifique o formato.');
-                } else {
-                    setErrorMessage('Erro ao enviar o e-mail de recuperação. Tente novamente mais tarde.');
-                }
-            });
+            localStorage.removeItem('isLockedOut');
+            localStorage.removeItem('loginAttempts');
+        } catch (error) {
+            if (error.code === 'auth/user-not-found') {
+                setErrorMessage('E-mail não encontrado. Verifique se o e-mail está correto.');
+            } else if (error.code === 'auth/invalid-email') {
+                setErrorMessage('E-mail inválido. Verifique o formato.');
+            } else {
+                setErrorMessage('Erro ao enviar o e-mail de recuperação. Tente novamente mais tarde.');
+            }
+        }
     };
-
-    const [showLockoutMessage, setShowLockoutMessage] = useState(true);
-    const [showErrorMessage, setShowErrorMessage] = useState(true);
-    const [showResetMessage, setShowResetMessage] = useState(true);
-    const [showRegistrationMessage, setShowRegistrationMessage] = useState(true);
-
-    useEffect(() => {
-        const timer1 = setTimeout(() => setShowLockoutMessage(false), 20000);
-        const timer2 = setTimeout(() => setShowErrorMessage(false), 20000);
-        const timer3 = setTimeout(() => setShowResetMessage(false), 20000);
-        const timer4 = setTimeout(() => setShowRegistrationMessage(false), 20000);
-
-        return () => {
-            clearTimeout(timer1);
-            clearTimeout(timer2);
-            clearTimeout(timer3);
-            clearTimeout(timer4);
-        };
-    }, [lockoutMessage, errorMessage, resetMessage, registrationMessage]);
 
     return (
         <div className="auth-container">
@@ -384,20 +333,18 @@ const AuthExample = () => {
                 <link rel="canonical" href={window.location.href} />
             </Helmet>
 
-
-            {showIntro ? (  // Condicional para mostrar a introdução
+            {showIntro ? (
                 <IntroPage onContinue={() => setShowIntro(false)} />
             ) : (
                 <>
-
                     <img id="icon-img" src={icon} alt="OpenSecurityRoom" />
                     <img src={logo} alt="OpenSecurityRoom" />
                     <h1>{isResetPassword ? 'Redefinir Senha' : (isLogin ? 'Login' : 'Registrar')}</h1>
 
-                    {lockoutMessage && showLockoutMessage && <p className="error-message">{lockoutMessage}</p>}
-                    {errorMessage && showErrorMessage && <p className="error-message">{errorMessage}</p>}
-                    {resetMessage && showResetMessage && <p className="success-message">{resetMessage}</p>}
-                    {registrationMessage && showRegistrationMessage && <p className="success-message">{registrationMessage}</p>}
+                    {lockoutMessage && <p className="error-message">{lockoutMessage}</p>}
+                    {errorMessage && <p className="error-message">{errorMessage}</p>}
+                    {resetMessage && <p className="success-message">{resetMessage}</p>}
+                    {registrationMessage && <p className="success-message">{registrationMessage}</p>}
 
                     {!isResetPassword ? (
                         <form onSubmit={isLogin ? handleLogin : handleRegister}>
@@ -511,13 +458,21 @@ const AuthExample = () => {
                         </form>
                     ) : (
                         <form onSubmit={handlePasswordReset}>
-                            <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="Email para recuperação"
-                                required
-                            />
+
+                            <div className="input-icon-container">
+                                <div className="icon-background">
+                                    <FontAwesomeIcon icon={faEnvelope} className="input-icon" />
+                                </div>
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="Email para recuperação"
+                                    style={{ height: '50px' }}
+                                    className='mt-2'
+                                    required
+                                />
+                            </div>
                             <button type="submit" className='btn btn-primary' style={{ height: '50px' }}>
                                 <FontAwesomeIcon icon={faPaperPlane} className="me-2" />
                                 Enviar e-mail de recuperação
@@ -530,7 +485,7 @@ const AuthExample = () => {
                     )}
 
                     {isLogin && !isResetPassword && (
-                        <p class="btn-redpass" >
+                        <p className="btn-redpass">
                             Esqueceu sua senha?{' '}
                             <span onClick={() => setIsResetPassword(true)}>
                                 Redefinir senha
@@ -539,7 +494,7 @@ const AuthExample = () => {
                     )}
 
                     {!isResetPassword && (
-                        <p class="btn-redpass">
+                        <p className="btn-redpass">
                             {isLogin ? 'Não tem uma conta?' : 'Já tem uma conta?'}{' '}
                             <span onClick={() => setIsLogin(!isLogin)}>
                                 {isLogin ? 'Registrar' : 'Login'}

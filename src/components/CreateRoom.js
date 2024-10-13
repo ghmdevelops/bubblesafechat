@@ -318,17 +318,21 @@ const CreateRoom = () => {
         </nav>
       </header>
 
-      <div className="container" style={{ marginTop: '70px' }}>
-        {!isNameConfirmed && <h2>Bem-vindo, {userEmail}</h2>}
-
-        <h1>Criar uma Sala</h1>
+      <div className="container">
+        {!isNameConfirmed && <h2>Bem-vindo, {userEmail}
+          <h1>Digite um nick que combine com você</h1>
+          <ul className="benefits-list mt-2">
+            <li>Segurança robusta que garante a privacidade das suas conversas</li>
+            <li>Transparência total no uso e gerenciamento dos seus dados</li>
+          </ul>
+        </h2>}
 
         {!isNameConfirmed ? (
           <div>
             <label>
               <FontAwesomeIcon icon={faUserCircle} style={{ color: '#00a6e8' }} />
               <span className='ms-1 mb-1'>
-                Insira o seu nick
+                Escolha um apelido que represente você
               </span>
               <div className="input-group mb-2">
                 <input
@@ -336,46 +340,57 @@ const CreateRoom = () => {
                   value={userName}
                   onChange={(e) => setUserName(e.target.value)}
                   placeholder="ex: Qu@ntumJumperTest2"
-                  className="form-control mb-1"
+                  className="form-control w-100"
                 />
+                <button
+                  className="btn btn-outline-info w-100 w-md-auto"
+                  onClick={handleConfirmName}
+                  disabled={!userName.trim()}>
+                  <FontAwesomeIcon icon={faCheck} className="me-2" />
+                  Confirmar
+                </button>
               </div>
             </label>
-            <button className="btn btn-outline-info" style={{ height: '40px', width: '46px' }} onClick={handleConfirmName} disabled={!userName.trim()}>
-              <FontAwesomeIcon icon={faCheck} />
-            </button>
+
           </div>
         ) : (
           <>
+            <h1>Criar uma Sala</h1>
+            <ul className="benefits-list mt-2">
+              <li>Não coletamos ou compartilhamos seus dados pessoais. Você tem controle total sobre as informações que decide compartilhar</li>
+              <li>Gerenciamento de permissões**: Você pode controlar quem pode entrar na sua sala e quem pode participar das conversas</li>
+            </ul>
             <label>
               <span>
                 <FontAwesomeIcon icon={faDoorOpen} style={{ color: '#00a6e8' }} />
               </span>
               <span className='ms-2'>
-                Insira o nome da sala
+                Escolha um nome exclusivo para a sua sala
               </span>
-              <input
-                type="text"
-                value={roomName}
-                onChange={(e) => setRoomName(e.target.value)}
-                placeholder="ex: TurmaCerveja"
-                className="form-control mb-3"
-              />
+              <div className="input-group mb-2">
+                <input
+                  type="text"
+                  value={roomName}
+                  onChange={(e) => setRoomName(e.target.value)}
+                  placeholder="ex: TurmaCerveja"
+                  className="form-control mb-3"
+                />
+                <button className="btn btn-outline-info w-100 w-md-auto" onClick={createRoom} disabled={!roomName.trim() || loading}>
+                  {loading ? (
+                    <>
+                      <FontAwesomeIcon icon={faSpinner} className="me-2" spin />
+                      Criando...
+                    </>
+                  ) : (
+                    <>
+                      <FontAwesomeIcon icon={faPlus} />                </>
+                  )} Confirmar
+                </button>
+                <button className="btn btn-outline-danger w-100 w-md-auto cancroom" onClick={handleCancelName}>
+                  <FontAwesomeIcon icon={faTimes} /> Cancelar
+                </button>
+              </div>
             </label>
-            <button className="btn btn-outline-info" onClick={createRoom} style={{ height: '40px', width: '46px' }} disabled={!roomName.trim() || loading}>
-              {loading ? (
-                <>
-                  <FontAwesomeIcon icon={faSpinner} className="me-2" spin />
-                  Criando...
-                </>
-              ) : (
-                <>
-                  <FontAwesomeIcon icon={faPlus} />                </>
-              )}
-            </button>
-
-            <button className="btn btn-outline-danger cancroom" style={{ width: '46px' }} onClick={handleCancelName}>
-              <FontAwesomeIcon icon={faTimes} />
-            </button>
           </>
         )}
 
