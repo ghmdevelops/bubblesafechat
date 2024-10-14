@@ -10,6 +10,98 @@
   margin-bottom: 20px;
 }
 
+.visually-hidden {
+  display: none;
+}
+
+.toggle-container {
+  background-color: transparent;
+  border-radius: 12px;
+  padding: 15px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+
+.toggle-header {
+  font-size: 1rem;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.icon-clock {
+  font-size: 1.3rem;
+  color: #ffffff;
+  transition: color 0.3s ease;
+}
+
+.toggle-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.toggle-header.active .toggle-title {
+  color: #34c759;
+}
+
+.toggle-header.inactive .toggle-title {
+  color: #ff3b30;
+}
+
+.toggle-container:active {
+  transform: scale(0.98);
+}
+
+.message {
+  animation: fadeIn 0.4s ease-in-out, pulse 1.5s ease-in-out infinite;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) rotate(-1deg) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 89, 172, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 10px 10px rgba(0, 89, 172, 0);
+  }
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(2px);
+  }
+  50% {
+    transform: translateX(-2px);
+  }
+  75% {
+    transform: translateX(2px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.message:hover {
+  transform: scale(1.02) rotate(0.5deg);
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
 .message-container {
   max-height: 470px;
   border: 1px solid transparent;
@@ -171,7 +263,7 @@ h3 {
 .play-button {
   background-color: #0059ac;
   border: none;
-  border-radius: 5%; 
+  border-radius: 5%;
   width: 240px;
   height: 45px;
   cursor: pointer;
@@ -180,8 +272,8 @@ h3 {
 }
 
 .play-button:hover {
-  background-color: #0059ac; 
-  transform: scale(1.1); 
+  background-color: #0059ac;
+  transform: scale(1.1);
 }
 
 .play-button:focus {

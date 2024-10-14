@@ -899,7 +899,7 @@ const Room = () => {
 
       {isCreator && (
         <div className="mb-4 mt-4">
-          <div className="d-flex align-items-center justify-content-center align-items-center">
+          <div className="d-flex">
             <div className="form-check form-switch me-3">
               <input
                 type="checkbox"
@@ -909,14 +909,11 @@ const Room = () => {
                 className="form-check-input visually-hidden"
               />
               <label className="form-check-label label-checks" htmlFor="destructionSwitch">
-                <div className="mb-1 mt-1 p-1 rounded d-flex flex-column align-items-center" style={{ cursor: 'pointer' }}>
-                  <div className="d-flex align-items-center justify-content-center mb-2">
-                    <FontAwesomeIcon icon={faClock} className="me-2" style={{ fontSize: '1rem', color: '#00a6e8' }} />
-                    <strong style={{ fontSize: '15px', color: '#fff' }}>Mensagens Autodestrutivas</strong>
+                <div className="toggle-container p-3 rounded d-flex flex-column align-items-center">
+                  <div className={`toggle-header d-flex align-items-center justify-content-center mb-2 ${isDestructionActive ? 'active' : 'inactive'}`}>
+                    <FontAwesomeIcon icon={faClock} className="me-2 icon-clock" />
+                    <strong className="toggle-title">Autodestruição</strong>
                   </div>
-                  <span style={{ fontSize: '1rem', color: isDestructionActive ? '#28a745' : '#dc3545', fontWeight: 'bold', textAlign: 'center' }}>
-                    {isDestructionActive ? 'Ativado' : 'Desativado'}
-                  </span>
                 </div>
               </label>
             </div>
@@ -971,7 +968,7 @@ const Room = () => {
         </div>
       )}
 
-      <div className="message-container mb-1" style={{ height: '470px', overflowY: 'scroll', border: '1px solid #728FCE', borderRadius: '8px', padding: '10px' }}>
+      <div className="message-container mb-1" style={{ height: '470px', overflowY: 'scroll', border: '1px solid #0059ac', borderRadius: '8px', padding: '10px' }}>
         {messages.map((msg) => {
           const timeSinceCreation = (Date.now() - new Date(msg.timestamp).getTime()) / 1000;
           const timeRemaining = destructionTime - timeSinceCreation;
@@ -979,7 +976,7 @@ const Room = () => {
           const remainingTime = timeLeft[msg.id];
 
           return (
-            <div
+            <div className='message'
               key={msg.id}
               style={{
                 padding: '4px',

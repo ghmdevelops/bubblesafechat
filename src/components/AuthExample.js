@@ -38,6 +38,27 @@ const AuthExample = () => {
     const navigate = useNavigate();
     const [passwordsMatch, setPasswordsMatch] = useState(true);
     const [showIntro, setShowIntro] = useState(true);
+    const [isValidName, setIsValidName] = useState(true);
+
+    const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
+
+    useEffect(() => {
+        const lastIntroShownTime = localStorage.getItem('lastIntroShownTime');
+        const currentTime = Date.now();
+        if (lastIntroShownTime && currentTime - lastIntroShownTime < THREE_HOURS_MS) {
+            setShowIntro(false);
+        }
+    }, []);
+
+    const handleContinue = () => {
+        setShowIntro(false);
+        localStorage.setItem('lastIntroShownTime', Date.now());
+    };
+
+    const validateName = (name) => {
+        const regex = /^[a-zA-Z]+(?:\s[a-zA-Z]+)+$/;
+        return regex.test(name);
+    };
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
@@ -136,11 +157,12 @@ const AuthExample = () => {
         setErrorMessage('');
         setRegistrationMessage('');
 
-        // Validação de entradas
-        if (!firstName.trim()) {
-            setErrorMessage('Por favor, insira seu primeiro nome.');
+        if (!validateName(firstName)) {
+            setIsValidName(false);
             return;
         }
+        setIsValidName(true);
+        console.log("Nome e sobrenome válidos");
 
         if (!email.includes('@') || !email.includes('.')) {
             setErrorMessage('Por favor, insira um e-mail válido.');
@@ -172,6 +194,10 @@ const AuthExample = () => {
             const userCredential = await auth.createUserWithEmailAndPassword(email, password);
             const user = userCredential.user;
 
+            await user.updateProfile({
+                displayName: firstName,
+            });
+
             await user.sendEmailVerification();
             Swal.fire({
                 icon: 'success',
@@ -182,7 +208,7 @@ const AuthExample = () => {
 
             setTimeout(() => {
                 setIsLogin(true);
-            }, 5000);
+            }, 1200);
         } catch (error) {
             if (error.code === 'auth/email-already-in-use') {
                 setErrorMessage('Esse e-mail já está em uso. Tente outro.');
@@ -296,7 +322,15 @@ const AuthExample = () => {
 
         try {
             await auth.sendPasswordResetEmail(email);
-            setResetMessage('E-mail de recuperação de senha enviado. Verifique sua caixa de entrada ou lixo eletrônico.');
+            Swal.fire({
+                icon: 'success',
+                title: 'E-mail Enviado!',
+                text: 'E-mail de recuperação de senha enviado. Verifique sua caixa de entrada ou lixo eletrônico.',
+                confirmButtonText: 'Ok',
+                customClass: {
+                    confirmButton: 'btn btn-outline-warning'
+                }
+            });
             setErrorMessage('');
             setPasswordResetRequested(true);
             setIsLockedOut(false);
@@ -340,7 +374,7 @@ const AuthExample = () => {
             </Helmet>
 
             {showIntro ? (
-                <IntroPage onContinue={() => setShowIntro(false)} />
+                <IntroPage onContinue={handleContinue} />
             ) : (
                 <>
                     <img id="icon-img" src={icon} alt="OpenSecurityRoom" />
@@ -363,10 +397,15 @@ const AuthExample = () => {
                                         type="text"
                                         value={firstName}
                                         onChange={(e) => setFirstName(e.target.value)}
-                                        placeholder="Primeiro Nome"
-                                        className='mt-2'
+                                        placeholder="Nome Sobrenome"
+                                        className={`mt-2 ${!isValidName ? 'is-invalid' : ''}`}
                                         required
                                     />
+                                    {!isValidName && (
+                                        <div className="invalid-feedback">
+                                            Por favor, insira um nome e sobrenome válidos.
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
@@ -385,7 +424,7 @@ const AuthExample = () => {
                                 />
                             </div>
 
-                            <div className="input-icon-container">
+                            <div className={`input-icon-container ${password ? checkPasswordStrength(password).toLowerCase() : ''}`}>
                                 <div className="icon-background">
                                     <FontAwesomeIcon icon={faLock} className="input-icon" />
                                 </div>
@@ -404,7 +443,7 @@ const AuthExample = () => {
                             </div>
 
                             {!isLogin && (
-                                <div className="input-icon-container">
+                                <div className={`input-icon-container ${confirmPassword ? checkPasswordStrength(confirmPassword).toLowerCase() : ''}`}>
                                     <div className="icon-background">
                                         <FontAwesomeIcon icon={faLock} className="input-icon" />
                                     </div>
@@ -427,12 +466,12 @@ const AuthExample = () => {
                                 <p className="error-message">As senhas não correspondem. Por favor, tente novamente.</p>
                             )}
 
-                            {!isLogin && password && (
+                            {/*{!isLogin && password && (
                                 <p className={`password-strength ${checkPasswordStrength(password)}`}>
-                                    <FontAwesomeIcon icon={faInfoCircle} className="me-2" />
+                                    <FontAwesomeIcon icon={faLock} className="me-2" />
                                     Senha {checkPasswordStrength(password)}
                                 </p>
-                            )}
+                            )}*/}
 
                             <button type="submit" style={{ height: '50px' }} className="btn btn-primary" disabled={isLoading || isLockedOut}>
                                 {isLoading ? (

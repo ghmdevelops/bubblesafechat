@@ -4,16 +4,20 @@ body {
   background-image: url("./img/Background_Blue_1500.png");
   font-family: "Roboto", sans-serif;
   color: #fff;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .swal2-popup {
-  background-color: #1c1b1b; 
-  color: #fff; 
-  border-radius: 10px; 
+  background-color: #1c1b1b;
+  color: #fff;
+  border-radius: 10px;
 }
 
 .swal2-title {
-  color: #ffffff; 
+  color: #ffffff;
 }
 
 .swal2-content {
@@ -53,16 +57,16 @@ body {
   }
 }
 
-.password-strength.Fraca {
-  color: red;
+.input-icon-container.fraca {
+  border: 3px solid rgb(255, 0, 0);
 }
 
-.password-strength.Média {
-  color: orange;
+.input-icon-container.media {
+  border: 3px solid rgb(255, 166, 0);
 }
 
-.password-strength.Forte {
-  color: rgb(0, 232, 0);
+.input-icon-container.forte {
+  border: 3px solid rgb(6, 245, 6);
 }
 
 img#icon-img {
@@ -122,7 +126,7 @@ label#check:hover {
 .auth-container input {
   margin-bottom: 10px;
   padding: 10px;
-  border: 1px solid #ccc;
+  border: 1px solid none;
   border-radius: 5px;
   font-size: 16px;
 }

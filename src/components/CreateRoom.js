@@ -21,6 +21,7 @@ const CreateRoom = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
+  const [displayName, setDisplayName] = useState(''); // Armazena o nome para a saudação
 
   const LOGOUT_TIMEOUT = 60 * 60 * 1000;
   let logoutTimer;
@@ -90,6 +91,14 @@ const CreateRoom = () => {
       clearTimeout(logoutTimer);
     };
   }, [navigate]);
+
+  useEffect(() => {
+    const user = auth.currentUser;
+    if (user) {
+      setDisplayName(user.displayName || '');
+      setUserName('');
+    }
+  }, []);
 
   const resetLastAccessTime = () => {
     localStorage.setItem('lastAccessTime', Date.now());
@@ -272,8 +281,8 @@ const CreateRoom = () => {
     } else {
       Swal.fire({
         icon: 'error',
-        title: 'Nome inválido',
-        text: 'Por favor, insira um nome de usuário válido.',
+        title: 'Nick inválido',
+        text: 'Por favor, insira um nome de nick válido.',
         confirmButtonText: 'Ok',
       });
     }
@@ -329,14 +338,14 @@ const CreateRoom = () => {
       </header>
 
       <div className="container">
-        {!isNameConfirmed && <h2>Bem-vindo, {userEmail}
+        {!isNameConfirmed && <h2>Bem-vindo, {displayName}
           <h1>Digite um nick que combine com você</h1>
           <ul className="benefits-list mt-2">
-            <li>
+            <li className='mb-3'>
               <FontAwesomeIcon icon={faShieldAlt} className="me-2" />
               Segurança robusta que garante a privacidade das suas conversas
             </li>
-            <li>
+            <li className='mb-3'>
               <FontAwesomeIcon icon={faEye} className="me-2" />
               Transparência total no uso e gerenciamento dos seus dados
             </li>
@@ -373,11 +382,11 @@ const CreateRoom = () => {
           <>
             <h1>Criar uma Sala</h1>
             <ul className="benefits-list mt-2">
-              <li>
+              <li className='mb-2'>
                 <FontAwesomeIcon icon={faLock} className="me-2" />
                 Não coletamos ou compartilhamos seus dados pessoais. Você tem controle total sobre as informações que decide compartilhar
               </li>
-              <li>
+              <li className='mb-3'>
                 <FontAwesomeIcon icon={faUserShield} className="me-2" />
                 Gerenciamento de permissões: Você pode controlar quem pode entrar na sua sala e quem pode participar das conversas
               </li>
