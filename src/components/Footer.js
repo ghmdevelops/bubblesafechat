@@ -12,7 +12,7 @@ const Footer = () => {
                 <div className="row">
                     <div className="col-md-4 col-lg-4 col-xl-4 mx-auto mb-4">
                         <img style={{ width: '  110px' }} src={iconPage} alt='OpenSecurityRoom' />
-                        <h6 className="text-uppercase fw-bold">Open Security Room</h6>
+                        <h6 className="text-uppercase fw-bold">Bubble Safe Chat</h6>
                         <p>Converse com segurança, controle com liberdade!</p>
                         <hr className="mb-4 mt-0 d-inline-block mx-auto" style={{ width: '60px' }} />
                         <p>Desenvolvendo soluções de chat seguras. Equipe pequena e dedicada, trabalhando remotamente de diferentes partes do Brasil e além. Inovação e segurança no centro de tudo o que fazemos.</p>
@@ -49,7 +49,7 @@ const Footer = () => {
                         <FontAwesomeIcon icon={faGithub} />
                     </a>
                 </section>
-                <p className="mt-3">© 2024 Open Security Room. All rights reserved.</p>
+                <p className="mt-3">© 2024 Bubble Safe Chat. All rights reserved.</p>
             </div>
         </footer>
     );

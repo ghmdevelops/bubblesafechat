@@ -12,7 +12,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPauseCircle, faDoorOpen, faSignInAlt, faUser, faClock, faSignOutAlt, faUserCircle, faPaperPlane, faMicrophone, faCheckCircle, faStopCircle, faTrashAlt, faPlayCircle, faClipboard, faQrcode, faShareAlt, faTrash, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp, faTelegram } from '@fortawesome/free-brands-svg-icons';
 import { Helmet } from 'react-helmet';
-import iconPage from './img/icon-page.png'
+import iconPage from './img/icon-menu.png'
 
 const Room = () => {
   const { roomId } = useParams();
@@ -303,6 +303,18 @@ const Room = () => {
     roomRef.on('value', (snapshot) => {
       const roomData = snapshot.val();
 
+      if (roomData && roomData.isClosed) {
+        Swal.fire({
+          title: 'Sala Encerrada',
+          text: 'A sala foi encerrada pelo criador. Redirecionando...',
+          icon: 'info',
+          confirmButtonText: 'Ok'
+        }).then(() => {
+          navigate('/');
+        });
+        return;
+      }
+
       if (roomData && roomData.isDestructionActive !== undefined) {
         setIsDestructionActive(roomData.isDestructionActive);
         setDestructionTime(roomData.destructionTime || 10);
@@ -313,7 +325,7 @@ const Room = () => {
     });
 
     return () => roomRef.off();
-  }, [roomId]);
+  }, [roomId, navigate]);
 
   useEffect(() => {
     const storedRoomAccess = localStorage.getItem(`hasJoined_${roomId}`);
@@ -446,6 +458,10 @@ const Room = () => {
 
   const deleteChat = async () => {
     try {
+      await database.ref(`rooms/${roomId}`).update({
+        isClosed: true,
+      });
+
       await database.ref(`rooms/${roomId}/messages`).push({
         text: `A sala foi encerrada pelo moderador.`,
         user: 'Sistema',
@@ -827,18 +843,18 @@ const Room = () => {
   return (
     <div>
       <Helmet>
-        <title>{`Open Security Room - ${roomName ? roomName : 'Carregando...'}`}</title>
-        <meta name="description" content="Entre no Open Security Room para criar ou acessar salas de chat seguras e privadas. Junte-se à comunidade e proteja suas conversas online." />
+        <title>{`Bubble Safe Chat - ${roomName ? roomName : 'Carregando...'}`}</title>
+        <meta name="description" content="Entre no Bubble Safe Chat para criar ou acessar salas de chat seguras e privadas. Junte-se à comunidade e proteja suas conversas online." />
         <meta name="keywords" content="login, registro, chat seguro, privacidade, criptografia, comunidade online, segurança digital" />
-        <meta name="author" content="Open Security Room" />
-        <meta property="og:title" content='Open Security Room - Login Seguro' />
-        <meta property="og:description" content="Participe da Open Security Room para criar ou acessar salas de chat criptografadas. Segurança e privacidade são prioridades." />
+        <meta name="author" content="Bubble Safe Chat" />
+        <meta property="og:title" content='Bubble Safe Chat - Login Seguro' />
+        <meta property="og:description" content="Participe da Bubble Safe Chat para criar ou acessar salas de chat criptografadas. Segurança e privacidade são prioridades." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={window.location.href} />
         <meta property="og:image" content="URL_da_imagem_de_visualização" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content='Open Security Room - Login Seguro' />
-        <meta name="twitter:description" content="Junte-se ao Open Security Room e proteja suas conversas com segurança máxima." />
+        <meta name="twitter:title" content='Bubble Safe Chat - Login Seguro' />
+        <meta name="twitter:description" content="Junte-se ao Bubble Safe Chat e proteja suas conversas com segurança máxima." />
         <meta name="twitter:image" content="URL_da_imagem_de_visualização" />
         <link rel="canonical" href={window.location.href} />
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
@@ -847,7 +863,11 @@ const Room = () => {
       <header>
         <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
           <div class="container-fluid">
-            <a className="navbar-brand" href="#"><img src={iconPage} alt="OpenSecurityRoom" />Open Security Room</a>
+            <img
+              className="navbar-brand img-fluid responsive-img"
+              src={iconPage}
+              alt="OpenSecurityRoom"
+            />
             <button class="navbar-toggler  bg-black" type="button" data-toggle="collapse" data-target="#navbarCollapse"
               aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
               <span class="navbar-toggler-icon"></span>

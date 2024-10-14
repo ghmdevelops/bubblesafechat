@@ -40,22 +40,22 @@ const IntroPage = ({ onContinue }) => {
     return (
         <div className="intro-container">
             <Helmet>
-                <title>{'Open Security Room'}</title>
-                <meta name="description" content="Entre no Open Security Room para criar ou acessar salas de chat seguras e privadas. Junte-se à comunidade e proteja suas conversas online." />
+                <title>{'Bubble Safe Chat'}</title>
+                <meta name="description" content="Entre no Bubble Safe Chat para criar ou acessar salas de chat seguras e privadas. Junte-se à comunidade e proteja suas conversas online." />
                 <meta name="keywords" content="login, registro, chat seguro, privacidade, criptografia, comunidade online, segurança digital" />
-                <meta name="author" content="Open Security Room" />
-                <meta property="og:title" content='Open Security Room - Login Seguro' />
-                <meta property="og:description" content="Participe da Open Security Room para criar ou acessar salas de chat criptografadas. Segurança e privacidade são prioridades." />
+                <meta name="author" content="Bubble Safe Chat" />
+                <meta property="og:title" content='Bubble Safe Chat - Login Seguro' />
+                <meta property="og:description" content="Participe da Bubble Safe Chat para criar ou acessar salas de chat criptografadas. Segurança e privacidade são prioridades." />
                 <meta property="og:type" content="website" />
                 <meta property="og:url" content={window.location.href} />
                 <meta property="og:image" content="URL_da_imagem_de_visualização" />
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content='Open Security Room - Login Seguro' />
-                <meta name="twitter:description" content="Junte-se ao Open Security Room e proteja suas conversas com segurança máxima." />
+                <meta name="twitter:title" content='Bubble Safe Chat - Login Seguro' />
+                <meta name="twitter:description" content="Junte-se ao Bubble Safe Chat e proteja suas conversas com segurança máxima." />
                 <meta name="twitter:image" content="URL_da_imagem_de_visualização" />
                 <link rel="canonical" href={window.location.href} />
-                <img src="URL_da_imagem_de_visualização" alt="Login seguro no Open Security Room" />
-                <img src="URL_da_imagem_de_visualização" alt="Registro seguro no Open Security Room" />
+                <img src="URL_da_imagem_de_visualização" alt="Login seguro no Bubble Safe Chat" />
+                <img src="URL_da_imagem_de_visualização" alt="Registro seguro no Bubble Safe Chat" />
                 <link rel="sitemap" type="application/xml" href="sitemap.xml" />
                 <meta name="robots" content="index, follow" />
                 User-agent: *
@@ -66,9 +66,9 @@ const IntroPage = ({ onContinue }) => {
 
             <div className="intro-content mt-4 mb-4">
                 <div className="content-left mt-4">
-                    <h2>Bem-vindo ao Open Security Room!</h2>
+                    <h2>Bem-vindo ao Bubble Safe Chat!</h2>
                     <p>
-                        Descubra uma nova era de segurança digital! No Open Security Room, sua privacidade não é apenas garantida, é nossa prioridade máxima. Nossa plataforma oferece as ferramentas mais avançadas para proteger suas conversas e garantir que você tenha total controle sobre quem acessa suas informações. Aqui, você navega com tranquilidade, sabendo que está em um ambiente seguro e confiável.
+                        Descubra uma nova era de segurança digital! No Bubble Safe Chat, sua privacidade não é apenas garantida, é nossa prioridade máxima. Nossa plataforma oferece as ferramentas mais avançadas para proteger suas conversas e garantir que você tenha total controle sobre quem acessa suas informações. Aqui, você navega com tranquilidade, sabendo que está em um ambiente seguro e confiável.
                     </p>
                     <button className="btn btn-outline-warning w-100" onClick={onContinue}>
                         <FontAwesomeIcon icon={faCube} className="me-2" />

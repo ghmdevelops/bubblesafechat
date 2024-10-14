@@ -9,7 +9,6 @@ import { faGoogle } from '@fortawesome/free-brands-svg-icons';
 import Swal from 'sweetalert2';
 import '@sweetalert2/theme-dark/dark.css';
 import logo from './img/name.png';
-import icon from './img/icon-page.png';
 import googleIcon from './img/icon-google.png';
 import './AuthExample.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -351,22 +350,22 @@ const AuthExample = () => {
     return (
         <div className="auth-container">
             <Helmet>
-                <title>{isLogin ? 'Open Security Room - Login' : 'Open Security Room - Registro'}</title>
-                <meta name="description" content="Entre no Open Security Room para criar ou acessar salas de chat seguras e privadas. Junte-se à comunidade e proteja suas conversas online." />
+                <title>{isLogin ? 'Bubble Safe Chat - Login' : 'Bubble Safe Chat - Registro'}</title>
+                <meta name="description" content="Entre no Bubble Safe Chat para criar ou acessar salas de chat seguras e privadas. Junte-se à comunidade e proteja suas conversas online." />
                 <meta name="keywords" content="login, registro, chat seguro, privacidade, criptografia, comunidade online, segurança digital" />
-                <meta name="author" content="Open Security Room" />
-                <meta property="og:title" content={isLogin ? 'Open Security Room - Login Seguro' : 'Open Security Room - Registro Seguro'} />
-                <meta property="og:description" content="Participe da Open Security Room para criar ou acessar salas de chat criptografadas. Segurança e privacidade são prioridades." />
+                <meta name="author" content="Bubble Safe Chat" />
+                <meta property="og:title" content={isLogin ? 'Bubble Safe Chat - Login Seguro' : 'Bubble Safe Chat - Registro Seguro'} />
+                <meta property="og:description" content="Participe da Bubble Safe Chat para criar ou acessar salas de chat criptografadas. Segurança e privacidade são prioridades." />
                 <meta property="og:type" content="website" />
                 <meta property="og:url" content={window.location.href} />
                 <meta property="og:image" content="URL_da_imagem_de_visualização" />
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content={isLogin ? 'Open Security Room - Login Seguro' : 'Open Security Room - Registro Seguro'} />
-                <meta name="twitter:description" content="Junte-se ao Open Security Room e proteja suas conversas com segurança máxima." />
+                <meta name="twitter:title" content={isLogin ? 'Bubble Safe Chat - Login Seguro' : 'Bubble Safe Chat - Registro Seguro'} />
+                <meta name="twitter:description" content="Junte-se ao Bubble Safe Chat e proteja suas conversas com segurança máxima." />
                 <meta name="twitter:image" content="URL_da_imagem_de_visualização" />
                 <link rel="canonical" href={window.location.href} />
-                <img src="URL_da_imagem_de_visualização" alt="Login seguro no Open Security Room" />
-                <img src="URL_da_imagem_de_visualização" alt="Registro seguro no Open Security Room" />
+                <img src="URL_da_imagem_de_visualização" alt="Login seguro no Bubble Safe Chat" />
+                <img src="URL_da_imagem_de_visualização" alt="Registro seguro no Bubble Safe Chat" />
                 <link rel="sitemap" type="application/xml" href="sitemap.xml" />
                 <meta name="robots" content="index, follow" />
                 User-agent: *
@@ -377,8 +376,7 @@ const AuthExample = () => {
                 <IntroPage onContinue={handleContinue} />
             ) : (
                 <>
-                    <img id="icon-img" src={icon} alt="OpenSecurityRoom" />
-                    <img src={logo} alt="OpenSecurityRoom" />
+                    <img style={{ width: "300px" }} src={logo} alt="OpenSecurityRoom" />
                     <h1>{isResetPassword ? 'Redefinir Senha' : (isLogin ? 'Login' : 'Registrar')}</h1>
 
                     {lockoutMessage && <p className="error-message">{lockoutMessage}</p>}

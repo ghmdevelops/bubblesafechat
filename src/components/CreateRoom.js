@@ -9,7 +9,7 @@ import '@sweetalert2/theme-dark/dark.css';
 import './CreateRoom.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLock, faUserShield, faShieldAlt, faEye, faSpinner, faPlus, faTimes, faCheck, faPowerOff, faUserCircle, faDoorOpen } from '@fortawesome/free-solid-svg-icons';
-import iconPage from './img/icon-page.png';
+import iconPage from './img/icon-menu.png';
 import { EmailAuthProvider } from 'firebase/auth';
 
 const CreateRoom = () => {
@@ -35,7 +35,7 @@ const CreateRoom = () => {
         Swal.fire({
           title: '🔒 Proteção Máxima e Controle Total!',
           html: `<p style="text-align: left; font-size: 1em; color: #ffffff; line-height: 1.5;">
-                    Bem-vindo à <strong>Open Security Room</strong>, sua plataforma com o mais alto nível de <strong>privacidade</strong> e <strong>segurança</strong>. Todas as salas são protegidas por <strong>criptografia de ponta</strong>, garantindo que você permaneça completamente anônimo e no controle.
+                    Bem-vindo à <strong>Bubble Safe Chat</strong>, sua plataforma com o mais alto nível de <strong>privacidade</strong> e <strong>segurança</strong>. Todas as salas são protegidas por <strong>criptografia de ponta</strong>, garantindo que você permaneça completamente anônimo e no controle.
                   </p>
                   <p style="text-align: left; font-size: 1em; color: #ffffff; line-height: 1.5;">
                     Seus dados pessoais são armazenados por no máximo <strong>24 horas</strong> e podem ser excluídos permanentemente a qualquer momento. Após esse período, realizamos um <strong>reset diário</strong> para garantir que nenhuma informação permaneça armazenada.
@@ -296,18 +296,18 @@ const CreateRoom = () => {
   return (
     <div className="auth-container">
       <Helmet>
-        <title>Open Security Room - Rooms</title>
-        <meta name="description" content="Entre no Open Security Room para criar ou acessar salas de chat seguras e privadas. Junte-se à comunidade e proteja suas conversas online." />
+        <title>Bubble Safe Chat - Rooms</title>
+        <meta name="description" content="Entre no Bubble Safe Chat para criar ou acessar salas de chat seguras e privadas. Junte-se à comunidade e proteja suas conversas online." />
         <meta name="keywords" content="login, registro, chat seguro, privacidade, criptografia, comunidade online, segurança digital" />
-        <meta name="author" content="Open Security Room" />
-        <meta property="og:title" content='Open Security Room - Login Seguro' />
-        <meta property="og:description" content="Participe da Open Security Room para criar ou acessar salas de chat criptografadas. Segurança e privacidade são prioridades." />
+        <meta name="author" content="Bubble Safe Chat" />
+        <meta property="og:title" content='Bubble Safe Chat - Login Seguro' />
+        <meta property="og:description" content="Participe da Bubble Safe Chat para criar ou acessar salas de chat criptografadas. Segurança e privacidade são prioridades." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={window.location.href} />
         <meta property="og:image" content="URL_da_imagem_de_visualização" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content='Open Security Room - Login Seguro' />
-        <meta name="twitter:description" content="Junte-se ao Open Security Room e proteja suas conversas com segurança máxima." />
+        <meta name="twitter:title" content='Bubble Safe Chat - Login Seguro' />
+        <meta name="twitter:description" content="Junte-se ao Bubble Safe Chat e proteja suas conversas com segurança máxima." />
         <meta name="twitter:image" content="URL_da_imagem_de_visualização" />
         <link rel="canonical" href={window.location.href} />
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
@@ -316,7 +316,11 @@ const CreateRoom = () => {
       <header>
         <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
           <div class="container-fluid">
-            <a className="navbar-brand" href="#"><img src={iconPage} alt="OpenSecurityRoom" />Open Security Room</a>
+            <img
+              className="navbar-brand img-fluid responsive-img"
+              src={iconPage}
+              alt="OpenSecurityRoom"
+            />
             <button class="navbar-toggler bg-black" type="button" data-toggle="collapse" data-target="#navbarCollapse"
               aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
               <span class="navbar-toggler-icon"></span>

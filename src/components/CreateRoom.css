@@ -182,3 +182,40 @@ button:hover {
 .button-pulse {
   animation: pulse 1s infinite;
 }
+
+.responsive-img {
+  max-width: 440px;
+  width: 100%;
+}
+
+@media (max-width: 1200px) {
+  .responsive-img {
+    max-width: 400px;
+  }
+}
+
+@media (max-width: 992px) {
+  .responsive-img {
+    max-width: 350px;
+  }
+}
+
+@media (max-width: 768px) {
+  .responsive-img {
+    max-width: 300px;
+  }
+
+  li{
+    font-size: 14px;
+  }
+
+  span{
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 476px) {
+  .responsive-img {
+    max-width: 200px;
+  }
+}
