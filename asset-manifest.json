@@ -1,16 +1,17 @@
 {
   "files": {
-    "main.css": "/opensecurityroom/static/css/main.d979d713.css",
-    "main.js": "/opensecurityroom/static/js/main.98a728c0.js",
+    "main.css": "/opensecurityroom/static/css/main.5cca0719.css",
+    "main.js": "/opensecurityroom/static/js/main.fde59064.js",
     "static/media/Background_Blue_1500.png": "/opensecurityroom/static/media/Background_Blue_1500.2ea5c132994a40a32e60.png",
+    "static/media/StockCake-Cybersecurity.jpg": "/opensecurityroom/static/media/StockCake-Cybersecurity.5db3be0e0613a14113ca.jpg",
     "static/media/name.png": "/opensecurityroom/static/media/name.911a3ddcfd4335e9d577.png",
     "static/media/icon-page.png": "/opensecurityroom/static/media/icon-page.262e307ee0001b18f84e.png",
     "index.html": "/opensecurityroom/index.html",
-    "main.d979d713.css.map": "/opensecurityroom/static/css/main.d979d713.css.map",
-    "main.98a728c0.js.map": "/opensecurityroom/static/js/main.98a728c0.js.map"
+    "main.5cca0719.css.map": "/opensecurityroom/static/css/main.5cca0719.css.map",
+    "main.fde59064.js.map": "/opensecurityroom/static/js/main.fde59064.js.map"
   },
   "entrypoints": [
-    "static/css/main.d979d713.css",
-    "static/js/main.98a728c0.js"
+    "static/css/main.5cca0719.css",
+    "static/js/main.fde59064.js"
   ]
 }
