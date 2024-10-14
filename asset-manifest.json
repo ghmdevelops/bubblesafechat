@@ -1,18 +1,18 @@
 {
   "files": {
-    "main.css": "/bubblesafechat/static/css/main.904facd2.css",
-    "main.js": "/bubblesafechat/static/js/main.246741a2.js",
-    "static/media/Background_Blue_1500.png": "/bubblesafechat/static/media/Background_Blue_1500.2ea5c132994a40a32e60.png",
-    "static/media/StockCake-Cybersecurity.jpg": "/bubblesafechat/static/media/StockCake-Cybersecurity.5db3be0e0613a14113ca.jpg",
-    "static/media/name.png": "/bubblesafechat/static/media/name.940f87222c16cb4ec6a3.png",
-    "static/media/icon-page.png": "/bubblesafechat/static/media/icon-page.dca094892d0c33c69489.png",
-    "static/media/icon-menu.png": "/bubblesafechat/static/media/icon-menu.5eb1eae06d3a7b3ff0bb.png",
-    "index.html": "/bubblesafechat/index.html",
-    "main.904facd2.css.map": "/bubblesafechat/static/css/main.904facd2.css.map",
-    "main.246741a2.js.map": "/bubblesafechat/static/js/main.246741a2.js.map"
+    "main.css": "/static/css/main.719f3fcc.css",
+    "main.js": "/static/js/main.62691593.js",
+    "static/media/Background_Blue_1500.png": "/static/media/Background_Blue_1500.2ea5c132994a40a32e60.png",
+    "static/media/StockCake-Cybersecurity.jpg": "/static/media/StockCake-Cybersecurity.5db3be0e0613a14113ca.jpg",
+    "static/media/name.png": "/static/media/name.940f87222c16cb4ec6a3.png",
+    "static/media/icon-page.png": "/static/media/icon-page.dca094892d0c33c69489.png",
+    "static/media/icon-menu.png": "/static/media/icon-menu.5eb1eae06d3a7b3ff0bb.png",
+    "index.html": "/index.html",
+    "main.719f3fcc.css.map": "/static/css/main.719f3fcc.css.map",
+    "main.62691593.js.map": "/static/js/main.62691593.js.map"
   },
   "entrypoints": [
-    "static/css/main.904facd2.css",
-    "static/js/main.246741a2.js"
+    "static/css/main.719f3fcc.css",
+    "static/js/main.62691593.js"
   ]
 }
