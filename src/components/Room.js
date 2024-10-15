@@ -44,7 +44,7 @@ const Room = () => {
   const [loading, setLoading] = useState(false);
   const [playingAudioId, setPlayingAudioId] = useState(null);
 
-  const shareLink = `${window.location.origin}/opensecurityroom/#/room/${roomId}`;
+  const shareLink = `${window.location.origin}/bubblesafechat/#/room/${roomId}`;
 
   useEffect(() => {
     const roomRef = database.ref(`rooms/${roomId}`);
