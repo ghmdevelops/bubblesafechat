@@ -1,3 +1,4 @@
-# https://www.bubblesafechat.com.br/robotstxt.html
 User-agent: *
 Disallow:
+
+Sitemap: https://www.bubblesafechat.com.br/sitemap.xml
