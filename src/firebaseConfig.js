@@ -1,8 +1,8 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
-import 'firebase/compat/database';  // Para Realtime Database
-import 'firebase/compat/storage'; // Para Firebase Storage
+import 'firebase/compat/database'; 
+import 'firebase/compat/storage';
 import { getMessaging } from 'firebase/messaging';
 
 const firebaseConfig = {
@@ -15,13 +15,12 @@ const firebaseConfig = {
     appId: "1:100768688093:web:39e42da6d5e35258acb834"
 };
 
-// Inicializa o Firebase
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 
-export const db = firebase.firestore();  // Para Firestore
-export const auth = firebase.auth();  // Para autenticação
-export const database = firebase.database();  // Para Realtime Database
-export const storage = firebase.storage(); // Para Firebase Storage
-export const messaging = getMessaging(firebase.app()); // Inicializa o Messaging com a app do Firebase
+export const db = firebase.firestore(); 
+export const auth = firebase.auth();  
+export const database = firebase.database(); 
+export const storage = firebase.storage(); 
+export const messaging = getMessaging(firebase.app());

@@ -16,7 +16,7 @@ const Footer = () => {
                         <p>Converse com segurança, controle com liberdade!</p>
                         <hr className="mb-4 mt-0 d-inline-block mx-auto" style={{ width: '60px' }} />
                         <p>Desenvolvendo soluções de chat seguras. Equipe pequena e dedicada, trabalhando remotamente de diferentes partes do Brasil e além. Inovação e segurança no centro de tudo o que fazemos.</p>
-                        <p className='mt-4'><FontAwesomeIcon icon={faEnvelope} /> Email: info@example.com</p>
+                        <p className='mt-4'><FontAwesomeIcon icon={faEnvelope} /> Email: contato@bubblesafechat.com.br</p>
                     </div>
 
                     <div className="col-md-4 col-lg-4 col-xl-4 mx-auto mb-4 d-none">
