@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { auth } from '../firebaseConfig';
-import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
-import { database } from '../firebaseConfig';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
@@ -14,7 +12,7 @@ import logo from './img/name.png';
 import googleIcon from './img/icon-google.png';
 import './AuthExample.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { faPhone, faPaperPlane, faArrowLeft, faSignInAlt, faUserPlus, faSpinner, faUser, faEnvelope, faLock, faEye, faEyeSlash, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import { faPaperPlane, faArrowLeft, faSignInAlt, faUserPlus, faSpinner, faUser, faEnvelope, faLock, faEye, faEyeSlash, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import IntroPage from './IntroPage';
 
@@ -40,81 +38,8 @@ const AuthExample = () => {
     const [passwordsMatch, setPasswordsMatch] = useState(true);
     const [showIntro, setShowIntro] = useState(true);
     const [isValidName, setIsValidName] = useState(true);
-    const [phoneNumber, setPhoneNumber] = useState('');
-    const [verificationCode, setVerificationCode] = useState('');
-    const [isCodeSent, setIsCodeSent] = useState(false);
-    const [confirmationResult, setConfirmationResult] = useState(null);
-    const [isPhoneLogin, setIsPhoneLogin] = useState(false); // Novo estado para o login por telefone
 
     const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
-
-    const setUpRecaptcha = () => {
-        if (!window.recaptchaVerifier) {
-            window.recaptchaVerifier = new RecaptchaVerifier(
-                'recaptcha-container',  // Certifique-se de que esse id está no DOM
-                {
-                    size: 'invisible',  // O Recaptcha será invisível
-                    callback: (response) => {
-                        console.log('Recaptcha verificado com sucesso!');
-                    },
-                },
-                auth
-            );
-        }
-    };
-
-    const sendVerificationCode = async () => {
-        setIsLoading(true);
-        setUpRecaptcha(); // Certifique-se de chamar a função de configuração do Recaptcha
-    
-        const appVerifier = window.recaptchaVerifier;
-    
-        try {
-            const confirmation = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
-            setConfirmationResult(confirmation);
-            setIsCodeSent(true);
-            Swal.fire({
-                icon: 'success',
-                title: 'Código Enviado!',
-                text: 'Um código de verificação foi enviado para o seu número de celular.',
-                confirmButtonText: 'Ok',
-            });
-        } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Erro',
-                text: 'Erro ao enviar o código de verificação. Tente novamente.',
-                confirmButtonText: 'Ok',
-            });
-            console.error('Erro ao enviar o código:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    
-    const verifyCode = async () => {
-        setIsLoading(true);
-        try {
-            await confirmationResult.confirm(verificationCode);
-            Swal.fire({
-                icon: 'success',
-                title: 'Login bem-sucedido!',
-                text: 'Você foi autenticado com sucesso.',
-                confirmButtonText: 'Ok',
-            });
-            navigate('/');  // Navega para a página inicial ou página desejada após o login
-        } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Erro de Verificação',
-                text: 'O código de verificação está incorreto. Tente novamente.',
-                confirmButtonText: 'Ok',
-            });
-            console.error('Erro ao verificar o código:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };    
 
     useEffect(() => {
         const lastIntroShownTime = localStorage.getItem('lastIntroShownTime');
@@ -270,13 +195,6 @@ const AuthExample = () => {
 
             await user.updateProfile({
                 displayName: firstName,
-            });
-
-            const userRef = database.ref('users/' + user.uid);
-            await userRef.set({
-                phoneNumber,
-                firstName,
-                email,
             });
 
             await user.sendEmailVerification();
@@ -446,10 +364,12 @@ const AuthExample = () => {
                 <meta name="twitter:description" content="Junte-se ao Bubble Safe Chat e proteja suas conversas com segurança máxima." />
                 <meta name="twitter:image" content="URL_da_imagem_de_visualização" />
                 <link rel="canonical" href={window.location.href} />
-                <link rel="sitemap" type="application/xml" href="sitemap.xml" />
-                <meta name="robots" content="index, follow" />
                 <img src="URL_da_imagem_de_visualização" alt="Login seguro no Bubble Safe Chat" />
                 <img src="URL_da_imagem_de_visualização" alt="Registro seguro no Bubble Safe Chat" />
+                <link rel="sitemap" type="application/xml" href="sitemap.xml" />
+                <meta name="robots" content="index, follow" />
+                User-agent: *
+                Allow: /
             </Helmet>
 
             {showIntro ? (
@@ -466,7 +386,6 @@ const AuthExample = () => {
 
                     {!isResetPassword ? (
                         <form onSubmit={isLogin ? handleLogin : handleRegister}>
-                            {/* Nome e sobrenome */}
                             {!isLogin && (
                                 <div className="input-icon-container">
                                     <div className="icon-background">
@@ -488,48 +407,6 @@ const AuthExample = () => {
                                 </div>
                             )}
 
-                            {/* Número de celular */}
-                            {!isLogin && (
-                                <div className="input-icon-container">
-                                    <div className="icon-background">
-                                        <FontAwesomeIcon icon={faPhone} className="input-icon" />
-                                    </div>
-                                    <input
-                                        type="tel"
-                                        value={phoneNumber}
-                                        onChange={(e) => setPhoneNumber(e.target.value)}
-                                        placeholder="Número de Celular"
-                                        required
-                                        className='mt-2'
-                                    />
-                                    <button type="button" onClick={sendVerificationCode} className="btn btn-primary" style={{ marginTop: '10px' }}>
-                                        Enviar Código
-                                    </button>
-                                </div>
-                            )}
-
-                            {/* Campo de código de verificação */}
-                            {isCodeSent && (
-                                <div className="input-icon-container">
-                                    <div className="icon-background">
-                                        <FontAwesomeIcon icon={faLock} className="input-icon" />
-                                    </div>
-                                    <input
-                                        type="text"
-                                        value={verificationCode}
-                                        onChange={(e) => setVerificationCode(e.target.value)}
-                                        placeholder="Digite o código recebido"
-                                        required
-                                        className="mt-2"
-                                    />
-                                    <button type="button" onClick={verifyCode} className="btn btn-primary" style={{ marginTop: '10px' }}>
-                                        Verificar Código
-                                    </button>
-                                </div>
-                            )}
-                            <div id="recaptcha-container"></div>
-
-                            {/* Campos de e-mail e senha */}
                             <div className="input-icon-container">
                                 <div className="icon-background">
                                     <FontAwesomeIcon icon={faEnvelope} className="input-icon" />
@@ -563,7 +440,6 @@ const AuthExample = () => {
                                 </span>
                             </div>
 
-                            {/* Confirmação de senha */}
                             {!isLogin && (
                                 <div className={`input-icon-container ${confirmPassword ? checkPasswordStrength(confirmPassword).toLowerCase() : ''}`}>
                                     <div className="icon-background">
@@ -584,12 +460,17 @@ const AuthExample = () => {
                                 </div>
                             )}
 
-                            {/* Exibir mensagem de erro se as senhas não correspondem */}
                             {!passwordsMatch && !isLogin && (
                                 <p className="error-message">As senhas não correspondem. Por favor, tente novamente.</p>
                             )}
 
-                            {/* Botão de enviar */}
+                            {/*{!isLogin && password && (
+                                <p className={`password-strength ${checkPasswordStrength(password)}`}>
+                                    <FontAwesomeIcon icon={faLock} className="me-2" />
+                                    Senha {checkPasswordStrength(password)}
+                                </p>
+                            )}*/}
+
                             <button type="submit" style={{ height: '50px' }} className="btn btn-primary" disabled={isLoading || isLockedOut}>
                                 {isLoading ? (
                                     <div className="spinner-container">
