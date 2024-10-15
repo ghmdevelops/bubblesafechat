@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/static/css/main.719f3fcc.css",
-    "main.js": "/static/js/main.d62f5235.js",
+    "main.js": "/static/js/main.130b5cdf.js",
     "static/media/Background_Blue_1500.png": "/static/media/Background_Blue_1500.2ea5c132994a40a32e60.png",
     "static/media/StockCake-Cybersecurity.jpg": "/static/media/StockCake-Cybersecurity.5db3be0e0613a14113ca.jpg",
     "static/media/name.png": "/static/media/name.940f87222c16cb4ec6a3.png",
@@ -9,10 +9,10 @@
     "static/media/icon-menu.png": "/static/media/icon-menu.5eb1eae06d3a7b3ff0bb.png",
     "index.html": "/index.html",
     "main.719f3fcc.css.map": "/static/css/main.719f3fcc.css.map",
-    "main.d62f5235.js.map": "/static/js/main.d62f5235.js.map"
+    "main.130b5cdf.js.map": "/static/js/main.130b5cdf.js.map"
   },
   "entrypoints": [
     "static/css/main.719f3fcc.css",
-    "static/js/main.d62f5235.js"
+    "static/js/main.130b5cdf.js"
   ]
 }
