@@ -4,6 +4,7 @@ import CreateRoom from './components/CreateRoom';
 import Room from './components/Room';
 import AuthExample from './components/AuthExample';
 import NotFound from './components/NotFound';
+import AvatarSelection from './components/AvatarSelection';
 import { auth } from './firebaseConfig';
 import Footer from './components/Footer';
 
@@ -41,6 +42,7 @@ function App() {
         <Route path="/login" element={<AuthExample />} />
         <Route path="/" element={user ? <CreateRoom /> : <Navigate to="/login" />} />
         <Route path="/room/:roomId" element={<Room />} />
+        <Route path="/avatar-selection" element={user ? <AvatarSelection /> : <Navigate to="/login" />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Footer />

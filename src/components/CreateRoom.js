@@ -243,8 +243,7 @@ const CreateRoom = () => {
         encryptionKey: encryptionKey
       });
 
-      // Navega para a sala recém-criada
-      navigate(`/room/${roomRef.key}`, { state: { roomName: roomName, encryptionKey } });
+      navigate(`/avatar-selection`, { state: { roomName: roomRef.key, encryptionKey } });
       setSuccessMessage('Sala criada com sucesso!');
       setErrorMessage('');
     } else {
@@ -314,7 +313,7 @@ const CreateRoom = () => {
       </Helmet>
 
       <header>
-        <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+        <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-black">
           <div class="container-fluid">
             <img
               className="navbar-brand img-fluid responsive-img"

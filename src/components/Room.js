@@ -43,6 +43,8 @@ const Room = () => {
   const [usersWithExpelButton, setUsersWithExpelButton] = useState(new Set());
   const [loading, setLoading] = useState(false);
   const [playingAudioId, setPlayingAudioId] = useState(null);
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [creatorAvatar, setCreatorAvatar] = useState(null);
 
   const shareLink = `${window.location.origin}/bubblesafechat/#/room/${roomId}`;
 
@@ -65,6 +67,8 @@ const Room = () => {
         const roomData = snapshot.val();
         setRoomName(roomData.name);
         setCreatorName(roomData.creatorName || 'Moderador');
+        setCreatorAvatar(roomData.avatar || null); // Adicionei a linha para pegar o avatar
+
         if (currentUser && roomData.creator === currentUser.uid) {
           setIsCreator(true);
           setUserName(roomData.creatorName || 'Moderador');
@@ -89,13 +93,19 @@ const Room = () => {
   useEffect(() => {
     const handleUserExit = () => {
       if (!isCreator) {
-        const chatMessage = document.createElement('div');
-        chatMessage.textContent = `${userName} saiu da sala.`;
-        chatMessage.style.color = 'red';
-        document.getElementById('chat-container').appendChild(chatMessage);
+        const messageRef = database.ref(`rooms/${roomId}/messages`).push();
+        messageRef.set({
+          text: `${userName} saiu da sala.`,
+          user: 'Sistema',
+          timestamp: new Date().toISOString(),
+        });
       }
     };
+    window.addEventListener('beforeunload', handleUserExit);
+
     return () => {
+      window.removeEventListener('beforeunload', handleUserExit);
+
     };
   }, [userName, roomId, isCreator]);
 
@@ -413,14 +423,32 @@ const Room = () => {
       const deletionTime = Date.now() + destructionTime * 1000;
       const messageRef = database.ref(`rooms/${roomId}/messages`).push();
 
+      const newMessage = {
+        text: message,
+        user: userName || creatorName,
+        timestamp: new Date().toISOString(),
+        deletionTime: isDestructionActive ? deletionTime : null,
+      };
+
+      if (replyingTo) {
+        newMessage.replyTo = {
+          id: replyingTo.id,
+          user: replyingTo.user,
+          text: replyingTo.text,
+        };
+      }
+
       messageRef.set({
         text: message,
         user: userName || creatorName,
         timestamp: new Date().toISOString(),
         deletionTime: isDestructionActive ? deletionTime : null,
       });
+
+      messageRef.set(newMessage);
       setMessage('');
       setTyping(false);
+      setReplyingTo(null);
     }
   };
 
@@ -752,6 +780,24 @@ const Room = () => {
     }
   };
 
+  const messageStyles = (isSentByUser) => ({
+    padding: '4px',
+    borderRadius: '15px',
+    margin: isSentByUser ? '10px 0 5px auto' : '10px auto 5px 0',
+    backgroundColor: isSentByUser ? '#d6eaff' : '#f1f1f1',
+    maxWidth: '80%',
+    textAlign: isSentByUser ? 'right' : 'left',
+    position: 'relative',
+    color: '#000',
+  });
+
+  const replyPreviewStyles = {
+    fontSize: '12px',
+    borderLeft: '2px solid #007bff',
+    paddingLeft: '10px',
+    marginBottom: '5px',
+  };
+
   const QRCodeModal = ({ shareLink }) => (
     <div style={{
       borderRadius: '10px',
@@ -861,7 +907,7 @@ const Room = () => {
       </Helmet>
 
       <header>
-        <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+        <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-black">
           <div class="container-fluid">
             <img
               className="navbar-brand img-fluid responsive-img"
@@ -996,30 +1042,46 @@ const Room = () => {
           const remainingTime = timeLeft[msg.id];
 
           return (
-            <div className='message'
-              key={msg.id}
-              style={{
-                padding: '4px',
-                borderRadius: '15px',
-                margin: isSentByUser ? '10px 0 5px auto' : '10px auto 5px 0',
-                backgroundColor: isSentByUser ? '#d6eaff' : '#f1f1f1',
-                maxWidth: '80%',
-                textAlign: isSentByUser ? 'right' : 'left',
-                position: 'relative',
-                color: '#000',
-              }}
-            >
-              <strong style={{ display: 'block', fontSize: '0.85em', color: '#555' }}><FontAwesomeIcon icon={faUserCircle} /> {msg.user}</strong>
-              <span style={{ fontSize: '11.7px', fontWeight: '400', marginBottom: '20px' }}>
-                {msg.text ? msg.text : <button style={{ color: "#fff", fontSize: "20px" }}
-                  className="play-button"
-                  onClick={() => togglePlayPause(msg.audioUrl, msg.id)}
-                >
-                  <FontAwesomeIcon
-                    icon={playingAudioId === msg.id ? faPauseCircle : faPlayCircle}
+            <div className='message' key={msg.id} style={messageStyles(isSentByUser)}>
+              <strong style={{ display: 'block', fontSize: '0.85em', color: '#555' }}>
+                {msg.user === creatorName && creatorAvatar ? (
+                  <img
+                    src={creatorAvatar}
+                    alt={`${msg.user}'s avatar`}
+                    style={{
+                      width: '20px',
+                      height: '20px',
+                      borderRadius: '50%',
+                      display: 'inline-block',
+                      marginRight: '1px',
+                    }}
                   />
-                </button>}
+                ) : (
+                  <FontAwesomeIcon icon={faUserCircle} />
+                )}
+                {msg.user}
+              </strong>
+
+              {msg.replyTo && (
+                <div className="reply-preview" style={replyPreviewStyles}>
+                  <strong>Respondendo a {msg.replyTo.user}:</strong> {msg.replyTo.text}
+                </div>
+              )}
+
+              <span style={{ fontSize: '11.7px', fontWeight: '400', marginBottom: '20px' }}>
+                {msg.text ? msg.text : (
+                  <button style={{ color: "#fff", fontSize: "20px" }}
+                    className="play-button"
+                    onClick={() => togglePlayPause(msg.audioUrl, msg.id)}
+                    aria-label={`Play áudio da mensagem de ${msg.user}`}
+                  >
+                    <FontAwesomeIcon
+                      icon={playingAudioId === msg.id ? faPauseCircle : faPlayCircle}
+                    />
+                  </button>
+                )}
               </span>
+
               {msg.readBy && (
                 <div className='sub-textMsg'>
                   <small>lido por: {msg.readBy.join(', ')}</small>
@@ -1031,11 +1093,31 @@ const Room = () => {
                   <small>Destrói em: {Math.max(timeRemaining.toFixed(0), 0)}s</small>
                 </div>
               )}
+
+              {msg.user !== 'Sistema' && (
+                <button
+                  className="btn btn-link"
+                  onClick={() => setReplyingTo(msg)}
+                  style={{ fontSize: '12px', color: '#007bff' }}
+                  aria-label={`Responder a mensagem de ${msg.user}`}
+                >
+                  Responder
+                </button>
+              )}
             </div>
           );
         })}
         <div ref={messagesEndRef} />
       </div>
+
+      {replyingTo && (
+        <div className="replying-to mb-2" style={{ borderLeft: '3px solid #007bff', paddingLeft: '10px' }}>
+          <span><strong>Respondendo a {replyingTo.user}:</strong> {replyingTo.text}</span>
+          <button className="btn btn-sm btn-outline-danger ms-2" onClick={() => setReplyingTo(null)}>
+            Cancelar
+          </button>
+        </div>
+      )}
 
       {typingUsers.length > 0 && (
         <div className='ms-2' style={{ fontSize: '10px' }}>
