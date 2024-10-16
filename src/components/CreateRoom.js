@@ -21,7 +21,7 @@ const CreateRoom = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
-  const [displayName, setDisplayName] = useState(''); // Armazena o nome para a saudação
+  const [displayName, setDisplayName] = useState('');
 
   const LOGOUT_TIMEOUT = 60 * 60 * 1000;
   let logoutTimer;

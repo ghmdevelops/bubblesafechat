@@ -6,10 +6,12 @@ import { Helmet } from 'react-helmet';
 import iconPageVisual from './img/StockCake-Cybersecurity.jpg';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCube } from '@fortawesome/free-solid-svg-icons';
+import { useNavigate } from 'react-router-dom';
 
 const IntroPage = ({ onContinue }) => {
     const [showCookieConsent, setShowCookieConsent] = useState(false);
     const [pageBlocked, setPageBlocked] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const consentGiven = localStorage.getItem('cookieConsent');
@@ -36,6 +38,9 @@ const IntroPage = ({ onContinue }) => {
         localStorage.setItem('cookieConsent', 'false');
     };
 
+    const handleLogin = () => {
+        navigate('/login');
+    };
 
     return (
         <div className="intro-container">
@@ -70,11 +75,10 @@ const IntroPage = ({ onContinue }) => {
                     <p>
                         Descubra uma nova era de segurança digital! No Bubble Safe Chat, sua privacidade não é apenas garantida, é nossa prioridade máxima. Nossa plataforma oferece as ferramentas mais avançadas para proteger suas conversas e garantir que você tenha total controle sobre quem acessa suas informações. Aqui, você navega com tranquilidade, sabendo que está em um ambiente seguro e confiável.
                     </p>
-                    <button className="btn btn-outline-warning w-100" onClick={onContinue}>
-                        <FontAwesomeIcon icon={faCube} className="me-2" />
+                    <button style={{ height: '50px' }} className="btn btn-outline-warning w-100 secure-experience-btn" onClick={onContinue}>
+                        <FontAwesomeIcon icon={faCube} className="me-2 cube-icon" />
                         Inicie sua Experiência Segura
                     </button>
-
                 </div>
 
                 <div className="content-right">

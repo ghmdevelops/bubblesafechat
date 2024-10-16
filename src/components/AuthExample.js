@@ -376,7 +376,7 @@ const AuthExample = () => {
                 <IntroPage onContinue={handleContinue} />
             ) : (
                 <>
-                    <img style={{ width: "300px" }} src={logo} alt="OpenSecurityRoom" />
+                    <img onClick={() => setShowIntro(true)} style={{ cursor: 'pointer', width: "300px" }} src={logo} alt="OpenSecurityRoom" />
                     <h1>{isResetPassword ? 'Redefinir Senha' : (isLogin ? 'Login' : 'Registrar')}</h1>
 
                     {lockoutMessage && <p className="error-message">{lockoutMessage}</p>}

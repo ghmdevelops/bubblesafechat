@@ -284,3 +284,9 @@ h3 {
   color: white;
   font-size: 10rem;
 }
+
+@media (max-width: 768px) {
+  h3.title-bloq {
+    text-align: center;
+  }
+}

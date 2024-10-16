@@ -9,7 +9,7 @@ import Swal from 'sweetalert2';
 import '@sweetalert2/theme-dark/dark.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPauseCircle, faDoorOpen, faSignInAlt, faUser, faClock, faSignOutAlt, faUserCircle, faPaperPlane, faMicrophone, faCheckCircle, faStopCircle, faTrashAlt, faPlayCircle, faClipboard, faQrcode, faShareAlt, faTrash, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faUserSlash, faPauseCircle, faDoorOpen, faSignInAlt, faUser, faClock, faSignOutAlt, faUserCircle, faPaperPlane, faMicrophone, faCheckCircle, faStopCircle, faTrashAlt, faPlayCircle, faClipboard, faQrcode, faShareAlt, faTrash, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp, faTelegram } from '@fortawesome/free-brands-svg-icons';
 import { Helmet } from 'react-helmet';
 import iconPage from './img/icon-menu.png'
@@ -966,7 +966,7 @@ const Room = () => {
       {isCreator && (
         <div className="mb-4 mt-4">
           <div className="d-flex">
-            <div className="form-check form-switch me-3">
+            <div className="form-check form-switch me-3 label-autodestruction">
               <input
                 type="checkbox"
                 checked={isDestructionActive}
@@ -1057,13 +1057,13 @@ const Room = () => {
                     }}
                   />
                 ) : (
-                  <FontAwesomeIcon icon={faUserCircle} />
+                  <FontAwesomeIcon icon={faUserCircle} className='me-1' />
                 )}
                 {msg.user}
               </strong>
 
               {msg.replyTo && (
-                <div className="reply-preview" style={replyPreviewStyles}>
+                <div className="reply-preview mt-1" style={replyPreviewStyles}>
                   <strong>Respondendo a {msg.replyTo.user}:</strong> {msg.replyTo.text}
                 </div>
               )}
@@ -1098,7 +1098,7 @@ const Room = () => {
                 <button
                   className="btn btn-link"
                   onClick={() => setReplyingTo(msg)}
-                  style={{ fontSize: '12px', color: '#007bff' }}
+                  style={{ fontSize: '11px', color: '#007bff', padding: '1px 1px' }}
                   aria-label={`Responder a mensagem de ${msg.user}`}
                 >
                   Responder
@@ -1186,7 +1186,7 @@ const Room = () => {
 
       {isCreator && (
         <div>
-          <h3 className='ms-2'>Expulsar Usuários</h3>
+          <h3 className='ms-2 title-bloq'><FontAwesomeIcon icon={faUserSlash} /> Expulsar Usuários</h3>
           {Array.from(usersWithExpelButton).map((user) => (
             <div key={user}>
               <button className='mb-4 btn-exitUser btn btn-danger' onClick={() => expelUser(user)}>
