@@ -9,7 +9,7 @@ import Swal from 'sweetalert2';
 import '@sweetalert2/theme-dark/dark.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserSlash, faPauseCircle, faDoorOpen, faSignInAlt, faUser, faClock, faSignOutAlt, faUserCircle, faPaperPlane, faMicrophone, faCheckCircle, faStopCircle, faTrashAlt, faPlayCircle, faClipboard, faQrcode, faShareAlt, faTrash, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faPen, faUserSlash, faPauseCircle, faDoorOpen, faSignInAlt, faUser, faClock, faSignOutAlt, faUserCircle, faPaperPlane, faMicrophone, faCheckCircle, faStopCircle, faTrashAlt, faPlayCircle, faClipboard, faQrcode, faShareAlt, faTrash, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp, faTelegram } from '@fortawesome/free-brands-svg-icons';
 import { Helmet } from 'react-helmet';
 import iconPage from './img/icon-menu.png'
@@ -45,8 +45,50 @@ const Room = () => {
   const [playingAudioId, setPlayingAudioId] = useState(null);
   const [replyingTo, setReplyingTo] = useState(null);
   const [creatorAvatar, setCreatorAvatar] = useState(null);
+  const [recognitionActive, setRecognitionActive] = useState(false);
+  const recognitionRef = useRef(null);
 
   const shareLink = `${window.location.origin}/bubblesafechat/#/room/${roomId}`;
+
+  const startRecognition = () => {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      alert('Seu navegador não suporta reconhecimento de voz.');
+      return;
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'pt-BR'; // Definindo a língua para português do Brasil
+    recognition.interimResults = false;
+    recognitionRef.current = recognition;
+
+    recognition.onstart = () => {
+      setRecognitionActive(true);
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setMessage((prevMessage) => prevMessage + ' ' + transcript);
+    };
+
+    recognition.onend = () => {
+      setRecognitionActive(false);
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Erro no reconhecimento de voz:', event.error);
+      setRecognitionActive(false);
+    };
+
+    recognition.start();
+  };
+
+  const stopRecognition = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      setRecognitionActive(false);
+    }
+  };
 
   useEffect(() => {
     const roomRef = database.ref(`rooms/${roomId}`);
@@ -1170,6 +1212,9 @@ const Room = () => {
             />
             <button onClick={sendMessage} disabled={!message.trim()} className="btn btn-primary me-2">
               <FontAwesomeIcon icon={faPaperPlane} />
+            </button>
+            <button onClick={recognitionActive ? stopRecognition : startRecognition} className="btn btn-warning me-2">
+              <FontAwesomeIcon icon={faPen} />
             </button>
             <button onClick={startRecording} disabled={recording} className="btn btn-secondary me-2">
               <FontAwesomeIcon icon={faMicrophone} />

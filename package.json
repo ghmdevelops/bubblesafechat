@@ -9,6 +9,7 @@
     "@fortawesome/free-regular-svg-icons": "^6.6.0",
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
     "@fortawesome/react-fontawesome": "^0.2.2",
+    "@google-cloud/text-to-speech": "^5.5.0",
     "@sweetalert2/theme-dark": "^5.0.18",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
@@ -30,6 +31,7 @@
     "react-helmet": "^6.1.0",
     "react-router-dom": "^6.26.2",
     "react-scripts": "5.0.1",
+    "speech-synthesis": "^0.3.2",
     "sweetalert2": "^11.14.2",
     "swiper": "^11.1.14",
     "web-vitals": "^2.1.4"
