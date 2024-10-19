@@ -9,7 +9,7 @@ import Swal from 'sweetalert2';
 import '@sweetalert2/theme-dark/dark.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPen, faUserSlash, faPauseCircle, faDoorOpen, faSignInAlt, faUser, faClock, faSignOutAlt, faUserCircle, faPaperPlane, faMicrophone, faCheckCircle, faStopCircle, faTrashAlt, faPlayCircle, faClipboard, faQrcode, faShareAlt, faTrash, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faLock, faPen, faUserSlash, faPauseCircle, faDoorOpen, faSignInAlt, faUser, faClock, faSignOutAlt, faUserCircle, faPaperPlane, faMicrophone, faCheckCircle, faStopCircle, faTrashAlt, faPlayCircle, faClipboard, faQrcode, faShareAlt, faTrash, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp, faTelegram } from '@fortawesome/free-brands-svg-icons';
 import { Helmet } from 'react-helmet';
 import iconPage from './img/icon-menu.png'
@@ -50,6 +50,83 @@ const Room = () => {
 
   const shareLink = `${window.location.origin}/bubblesafechat/#/room/${roomId}`;
 
+  const sendMessageWithPassword = (password) => {
+    if (message.trim()) {
+      const messageRef = database.ref(`rooms/${roomId}/messages`).push();
+
+      const newMessage = {
+        text: message,
+        user: userName || creatorName,
+        timestamp: new Date().toISOString(),
+        requiresPassword: true,
+        password: password, 
+        attempts: 0, 
+        deletionTime: isDestructionActive ? Date.now() + destructionTime * 1000 : null,
+      };
+
+      messageRef.set(newMessage);
+      setMessage('');
+      setReplyingTo(null);
+    }
+  };
+
+  const promptPasswordAndDisplayMessage = (msg) => {
+    let attemptCount = 0;
+
+    const checkPassword = async () => {
+      const { value: enteredPassword } = await Swal.fire({
+        title: 'Digite a senha para ver a mensagem',
+        input: 'password',
+        inputLabel: 'Senha',
+        inputPlaceholder: 'Digite a senha',
+        inputAttributes: {
+          maxlength: 10,
+          autocapitalize: 'off',
+          autocorrect: 'off'
+        },
+        showCancelButton: true,
+      });
+
+      if (enteredPassword) {
+        if (enteredPassword === msg.password) {
+          Swal.fire('Correto!', 'Aqui está sua mensagem: ' + msg.text, 'success');
+        } else {
+          attemptCount++;
+
+          if (attemptCount >= 3) {
+            const messageRef = database.ref(`rooms/${roomId}/messages/${msg.id}`);
+            messageRef.remove();
+            Swal.fire('Erro!', 'A senha estava incorreta 3 vezes. A mensagem foi excluída.', 'error');
+          } else {
+            Swal.fire('Erro!', 'Senha incorreta. Tente novamente.', 'error').then(checkPassword);
+          }
+        }
+      }
+    };
+
+    checkPassword();
+  };
+
+  const sendProtectedMessage = () => {
+    Swal.fire({
+      title: 'Digite uma senha para proteger a mensagem',
+      input: 'password',
+      inputLabel: 'Senha',
+      inputPlaceholder: 'Digite uma senha',
+      inputAttributes: {
+        maxlength: 10,
+        autocapitalize: 'off',
+        autocorrect: 'off'
+      },
+      showCancelButton: true,
+      confirmButtonText: 'Enviar',
+    }).then((result) => {
+      if (result.value) {
+        sendMessageWithPassword(result.value);
+      }
+    });
+  };
+
   const startRecognition = () => {
     if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
       alert('Seu navegador não suporta reconhecimento de voz.');
@@ -58,7 +135,7 @@ const Room = () => {
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
-    recognition.lang = 'pt-BR'; // Definindo a língua para português do Brasil
+    recognition.lang = 'pt-BR';
     recognition.interimResults = false;
     recognitionRef.current = recognition;
 
@@ -109,7 +186,7 @@ const Room = () => {
         const roomData = snapshot.val();
         setRoomName(roomData.name);
         setCreatorName(roomData.creatorName || 'Moderador');
-        setCreatorAvatar(roomData.avatar || null); // Adicionei a linha para pegar o avatar
+        setCreatorAvatar(roomData.avatar || null);
 
         if (currentUser && roomData.creator === currentUser.uid) {
           setIsCreator(true);
@@ -520,7 +597,7 @@ const Room = () => {
       setTimeout(() => {
         localStorage.removeItem('hasJoined');
         navigate('/');
-      }, 2000);
+      }, 1000);
     }).catch((error) => {
       console.error('Erro ao enviar mensagem de saída:', error);
     });
@@ -1083,6 +1160,44 @@ const Room = () => {
           const isSentByUser = msg.user === userName;
           const remainingTime = timeLeft[msg.id];
 
+          const promptPasswordAndDisplayMessage = async () => {
+            let attemptCount = 0;
+            const checkPassword = async () => {
+              const { value: enteredPassword } = await Swal.fire({
+                title: 'Digite a senha para ver a mensagem',
+                input: 'password',
+                inputLabel: 'Senha',
+                inputPlaceholder: 'Digite a senha',
+                inputAttributes: {
+                  maxlength: 10,
+                  autocapitalize: 'off',
+                  autocorrect: 'off'
+                },
+                showCancelButton: true,
+              });
+
+              if (enteredPassword) {
+                if (enteredPassword === msg.password) {
+                  // Se a senha estiver correta, exibe a mensagem
+                  Swal.fire('Correto!', 'Aqui está sua mensagem: ' + msg.text, 'success');
+                } else {
+                  // Incrementa o contador de tentativas
+                  attemptCount++;
+                  if (attemptCount >= 3) {
+                    // Se as tentativas chegarem a 3, apaga a mensagem do banco de dados
+                    const messageRef = database.ref(`rooms/${roomId}/messages/${msg.id}`);
+                    messageRef.remove();
+                    Swal.fire('Erro!', 'A senha estava incorreta 3 vezes. A mensagem foi excluída.', 'error');
+                  } else {
+                    // Se ainda não atingiu 3 tentativas, tenta novamente
+                    Swal.fire('Erro!', 'Senha incorreta. Tente novamente.', 'error').then(checkPassword);
+                  }
+                }
+              }
+            };
+            checkPassword();
+          };
+
           return (
             <div className='message' key={msg.id} style={messageStyles(isSentByUser)}>
               <strong style={{ display: 'block', fontSize: '0.85em', color: '#555' }}>
@@ -1111,16 +1226,26 @@ const Room = () => {
               )}
 
               <span style={{ fontSize: '11.7px', fontWeight: '400', marginBottom: '20px' }}>
-                {msg.text ? msg.text : (
-                  <button style={{ color: "#fff", fontSize: "20px" }}
-                    className="play-button"
-                    onClick={() => togglePlayPause(msg.audioUrl, msg.id)}
-                    aria-label={`Play áudio da mensagem de ${msg.user}`}
+                {msg.requiresPassword ? (
+                  <button
+                    onClick={promptPasswordAndDisplayMessage}
+                    className="btn btn-link"
+                    style={{ fontSize: '11px', color: '#007bff' }}
                   >
-                    <FontAwesomeIcon
-                      icon={playingAudioId === msg.id ? faPauseCircle : faPlayCircle}
-                    />
+                    <FontAwesomeIcon icon={faLock} /> Mensagem Protegida (Clique para digitar senha)
                   </button>
+                ) : (
+                  msg.text ? msg.text : (
+                    <button style={{ color: "#fff", fontSize: "20px" }}
+                      className="play-button"
+                      onClick={() => togglePlayPause(msg.audioUrl, msg.id)}
+                      aria-label={`Play áudio da mensagem de ${msg.user}`}
+                    >
+                      <FontAwesomeIcon
+                        icon={playingAudioId === msg.id ? faPauseCircle : faPlayCircle}
+                      />
+                    </button>
+                  )
                 )}
               </span>
 
@@ -1212,6 +1337,9 @@ const Room = () => {
             />
             <button onClick={sendMessage} disabled={!message.trim()} className="btn btn-primary me-2">
               <FontAwesomeIcon icon={faPaperPlane} />
+            </button>
+            <button onClick={sendProtectedMessage} className="btn btn-warning me-2">
+              <FontAwesomeIcon icon={faLock} />
             </button>
             <button onClick={recognitionActive ? stopRecognition : startRecognition} className="btn btn-warning me-2">
               <FontAwesomeIcon icon={faPen} />

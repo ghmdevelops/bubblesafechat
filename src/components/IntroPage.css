@@ -9,8 +9,8 @@
   align-items: center;
   animation: fadeIn 1s ease-in-out;
   box-sizing: border-box;
-  overflow: auto; 
-  scrollbar-width: none; 
+  overflow: auto;
+  scrollbar-width: none;
   -ms-overflow-style: none;
 }
 
@@ -209,4 +209,43 @@
     height: auto;
     object-fit: contain;
   }
+
+  .login-section h3 {
+    text-align: center;
+  }
+}
+
+.btn-cooki button.ac {
+  background-color: #037297;
+}
+
+.btn-cooki button.rc {
+  background-color: #d50505;
+}
+
+.btn-cooki button.ac:active,
+.btn-cooki button.rc:active {
+  background-color: #3a3a3a;
+  border: 2px solid transparent;
+}
+
+.card-title {
+  font-size: 40px;
+}
+
+.cards-section {
+  background-color: transparent;
+}
+
+.card-text {
+  font-size: 19px;
+}
+
+.cards-section img {
+  width: 100%;
+}
+
+.card-td:hover {
+  transform: scale(1.00);
+  box-shadow: 0 1px 10px rgba(232, 223, 223, 0.8);
 }

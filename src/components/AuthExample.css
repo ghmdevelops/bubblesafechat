@@ -194,7 +194,7 @@ label#check:hover {
 }
 
 body::-webkit-scrollbar {
-  width: 13px;
+  width: 9px;
 }
 
 body::-webkit-scrollbar-track {
@@ -204,12 +204,12 @@ body::-webkit-scrollbar-track {
 body::-webkit-scrollbar-thumb {
   background-color: #050407;
   border-radius: 5px;
-  border: 2px solid #1578e8;
+  border: 1px solid #1578e8;
   transition: background-color 0.3s ease;
 }
 
 body::-webkit-scrollbar-thumb:hover {
-  background-color: #1578e8;
+  background-color: #102845;
 }
 
 .swal2-confirm {

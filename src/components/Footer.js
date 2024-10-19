@@ -15,7 +15,9 @@ const Footer = () => {
                         <h6 className="text-uppercase fw-bold">Bubble Safe Chat</h6>
                         <p>Converse com segurança, controle com liberdade!</p>
                         <hr className="mb-4 mt-0 d-inline-block mx-auto" style={{ width: '60px' }} />
-                        <p>Desenvolvendo soluções de chat seguras. Equipe pequena e dedicada, trabalhando remotamente de diferentes partes do Brasil e além. Inovação e segurança no centro de tudo o que fazemos.</p>
+                        <p>
+                            Estamos revolucionando a forma de se comunicar com soluções de chat ultrasseguras. Com uma equipe enxuta e altamente dedicada, trabalhando remotamente de diversas regiões do Brasil e do mundo, nossa missão é clara: colocar a inovação e a segurança no coração de cada interação, protegendo suas conversas e garantindo total privacidade.
+                        </p>
                         <p className='mt-4'><FontAwesomeIcon icon={faEnvelope} /> Email: contato@bubblesafechat.com.br</p>
                     </div>
 
