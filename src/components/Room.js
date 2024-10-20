@@ -49,6 +49,8 @@ const Room = () => {
   const recognitionRef = useRef(null);
 
   const shareLink = `${window.location.origin}/bubblesafechat/#/room/${roomId}`;
+  const shareLink2 = `${window.location.origin}/#/room/${roomId}`;
+
 
   const sendMessageWithPassword = (password) => {
     if (message.trim()) {
@@ -841,7 +843,7 @@ const Room = () => {
       showConfirmButton: false,
       didOpen: () => {
         document.getElementById('copyLink').addEventListener('click', () => {
-          navigator.clipboard.writeText(shareLink)
+          navigator.clipboard.writeText(shareLink2)
             .then(() => {
               Swal.fire({
                 title: 'Sucesso!',
@@ -855,17 +857,17 @@ const Room = () => {
         });
 
         document.getElementById('emailLink').addEventListener('click', () => {
-          window.open(`mailto:?subject=Compartilhe este link&body=Confira este link do chat: ${shareLink}`, '_blank', 'noopener,noreferrer');
+          window.open(`mailto:?subject=Compartilhe este link&body=Confira este link do chat: ${shareLink2}`, '_blank', 'noopener,noreferrer');
           Swal.close();
         });
 
         document.getElementById('whatsappLink').addEventListener('click', () => {
-          window.open(`https://api.whatsapp.com/send?text=Confira este link do chat: ${shareLink}`, '_blank', 'noopener,noreferrer');
+          window.open(`https://api.whatsapp.com/send?text=Confira este link do chat: ${shareLink2}`, '_blank', 'noopener,noreferrer');
           Swal.close();
         });
 
         document.getElementById('telegramLink').addEventListener('click', () => {
-          window.open(`https://t.me/share/url?url=${shareLink}`, '_blank', 'noopener,noreferrer');
+          window.open(`https://t.me/share/url?url=${shareLink2}`, '_blank', 'noopener,noreferrer');
           Swal.close();
         });
       },
@@ -942,7 +944,7 @@ const Room = () => {
 
   const showQRCode = () => {
     const modalContent = document.createElement('div');
-    ReactDOM.render(<QRCodeModal shareLink={shareLink} />, modalContent);
+    ReactDOM.render(<QRCodeModal shareLink={shareLink2} />, modalContent);
 
     Swal.fire({
       title: 'QR Code',
@@ -1358,11 +1360,11 @@ const Room = () => {
       )}
 
       {isCreator && (
-        <div>
+        <div className='div-title-expul'>
           <h3 className='ms-2 title-bloq'><FontAwesomeIcon icon={faUserSlash} /> Expulsar Usuários</h3>
           {Array.from(usersWithExpelButton).map((user) => (
             <div key={user}>
-              <button className='mb-4 btn-exitUser btn btn-danger' onClick={() => expelUser(user)}>
+              <button className='mb-4 mt-3 btn-exitUser btn btn-danger' onClick={() => expelUser(user)}>
                 Expulsar {user}
               </button>
             </div>

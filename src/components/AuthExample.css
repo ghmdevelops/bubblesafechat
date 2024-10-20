@@ -58,15 +58,15 @@ body {
 }
 
 .input-icon-container.fraca {
-  border: 3px solid rgb(255, 0, 0);
+  border: 2px solid rgb(255, 0, 0);
 }
 
 .input-icon-container.media {
-  border: 3px solid rgb(255, 166, 0);
+  border: 2px solid rgb(255, 166, 0);
 }
 
 .input-icon-container.forte {
-  border: 3px solid rgb(6, 245, 6);
+  border: 2px solid rgba(0, 210, 119, 0.78);
 }
 
 img#icon-img {
