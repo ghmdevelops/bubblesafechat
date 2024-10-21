@@ -358,7 +358,6 @@ const CreateRoom = () => {
         {!isNameConfirmed ? (
           <div>
             <label>
-              <FontAwesomeIcon icon={faUserCircle} style={{ color: '#00a6e8' }} />
               <span className='ms-1 mb-1'>
                 Escolha um apelido que represente você
               </span>
@@ -367,7 +366,7 @@ const CreateRoom = () => {
                   type="text"
                   value={userName}
                   onChange={(e) => setUserName(e.target.value)}
-                  placeholder="ex: Qu@ntumJumperTest2"
+                  placeholder="ex: Qu@ntumJumper13"
                   className="form-control w-100"
                 />
                 <button
@@ -396,9 +395,6 @@ const CreateRoom = () => {
             </ul>
 
             <label>
-              <span>
-                <FontAwesomeIcon icon={faDoorOpen} style={{ color: '#00a6e8' }} />
-              </span>
               <span className='ms-2'>
                 Escolha um nome exclusivo para a sua sala
               </span>

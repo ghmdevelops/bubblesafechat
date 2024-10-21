@@ -5,13 +5,16 @@ import { motion } from 'framer-motion';
 import iconPage from './img/icon-page.png';
 import iconPageVisual from './img/StockCake-Cybersecurity.jpg';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSignInAlt } from '@fortawesome/free-solid-svg-icons';
+import { faUserCircle, faUser } from '@fortawesome/free-solid-svg-icons';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
+import iconNavLarge from './img/icon-menu.png';
+import iconNavSmall from './img/icon-page.png';
 
 const IntroPage = ({ onContinue }) => {
     const [showCookieConsent, setShowCookieConsent] = useState(false);
     const [pageBlocked, setPageBlocked] = useState(true);
+    const [iconNav, setIconNav] = useState(iconNavLarge);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -117,6 +120,8 @@ const IntroPage = ({ onContinue }) => {
                 <link rel="canonical" href="https://www.bubblesafechat.com" />
                 <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
                 <meta name="robots" content="index, follow" />
+                User-agent: *
+                Allow: /
             </Helmet>
 
             {pageBlocked && <div className="page-blocker"></div>}
@@ -127,20 +132,30 @@ const IntroPage = ({ onContinue }) => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: 'easeInOut' }}
             >
+                <div className="header-section">
+                    <img src={iconNav} alt="Logo" className="logo-image" />
+                </div>
+            </motion.div>
+
+            <motion.div
+                className="intro-content mt-2 mb-4"
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: 'easeInOut' }}
+            >
                 <motion.div
-                    className="content-left mt-4"
+                    className="content-left"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.2, duration: 1 }}
                 >
-                    <h2>Bem-vindo ao Bubble Safe Chat!</h2>
-                    <p>
+                    <h2 className='mt-5'>
                         Experimente o futuro da comunicação segura com o Bubble Safe Chat. Sua privacidade não é apenas
                         garantida, é nossa prioridade número um. Com tecnologia de ponta, garantimos que todas as suas
                         conversas sejam protegidas por criptografia avançada, permitindo que você controle completamente
                         quem tem acesso às suas informações. Entre em um ambiente digital seguro e aproveite a
                         tranquilidade ao conversar online.
-                    </p>
+                    </h2>
                     <motion.div
                         className="login-section mt-5"
                         whileHover={{ scale: 1.05 }}
@@ -148,17 +163,16 @@ const IntroPage = ({ onContinue }) => {
                     >
                         <h3>Já tem uma conta?</h3>
                         <p>Junte-se a nós e faça parte da revolução na comunicação segura. No Bubble Safe Chat, sua
-                            privacidade é levada a sério!</p>
-                        <motion.button
-                            style={{ height: '50px' }}
-                            className="btn btn-primary w-100"
-                            onClick={onContinue}
-                            whileHover={{ backgroundColor: '#0056b3' }}
-                            transition={{ duration: 0.3 }}
-                        >
-                            <FontAwesomeIcon icon={faSignInAlt} className="me-3" style={{ fontSize: '1.2em' }} />
-                            Acessar Minha Conta
-                        </motion.button>
+                            privacidade é levada a sério!
+                            <motion.button
+                                className="btn-access btn btn-outline-warning"
+                                onClick={onContinue}
+                                transition={{ duration: 0.3 }}
+                            >
+                                <FontAwesomeIcon icon={faUserCircle} className="me-1" />
+                                Entrar
+                            </motion.button>
+                        </p>
                     </motion.div>
                 </motion.div>
 
@@ -172,7 +186,7 @@ const IntroPage = ({ onContinue }) => {
                 </motion.div>
             </motion.div>
 
-            <motion.div className='mb-2'>
+            <motion.div className='cub-cong mb-2'>
                 <b>Sua privacidade, nosso compromisso: comunique-se com segurança, rapidez e total controle</b>
             </motion.div>
 
@@ -206,39 +220,36 @@ const IntroPage = ({ onContinue }) => {
                 ))}
             </div>
 
-            {
-                showCookieConsent && (
-                    <motion.div
-                        className="cookie-consent shadow-lg p-3 mb-5 bg-black rounded"
-                        initial={{ opacity: 0, y: 50 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, ease: 'easeInOut' }}
-                    >
-                        <img src={iconPage} alt="Logo" className="cookie-logo" />
-                        <p className="mt-3">
-                            Este site utiliza cookies para otimizar sua experiência. Ao aceitar, você concorda com a nossa{' '}
-                            <a href="/cookie-policy" target="_blank">
-                                Política de Cookies
-                            </a>
-                            .
-                        </p>
-                        <ul>
-                            <li>Garantir que sua sessão seja mantida de forma segura.</li>
-                            <li>Analisar o tráfego para entender como você utiliza nosso site.</li>
-                            <li>Personalizar conteúdo e melhorar a experiência do usuário.</li>
-                        </ul>
-                        <div className="cookie-buttons mt-4 d-flex justify-content-between btn-cooki">
-                            <button onClick={handleCookieConsent} className="btn btn-primary ac">
-                                Aceitar Cookies
-                            </button>
-                            <button onClick={handleCookieDecline} className="btn btn-primary rc">
-                                Recusar Cookies
-                            </button>
-                        </div>
-                    </motion.div>
-                )
-            }
-        </div >
+            {showCookieConsent && (
+                <motion.div
+                    className="cookie-consent shadow-lg p-3 mb-5 bg-black rounded"
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, ease: 'easeInOut' }}
+                >
+                    <img src={iconPage} alt="Logo" className="cookie-logo" />
+                    <p className="mt-3">
+                        Este site utiliza cookies para otimizar sua experiência. Ao aceitar, você concorda com a nossa{' '}
+                        <a href="/cookie-policy" target="_blank">
+                            Política de Cookies
+                        </a>.
+                    </p>
+                    <ul>
+                        <li>Garantir que sua sessão seja mantida de forma segura.</li>
+                        <li>Analisar o tráfego para entender como você utiliza nosso site.</li>
+                        <li>Personalizar conteúdo e melhorar a experiência do usuário.</li>
+                    </ul>
+                    <div className="cookie-buttons mt-4 d-flex justify-content-between btn-cooki">
+                        <button onClick={handleCookieConsent} className="btn btn-primary ac">
+                            Aceitar Cookies
+                        </button>
+                        <button onClick={handleCookieDecline} className="btn btn-primary rc">
+                            Recusar Cookies
+                        </button>
+                    </div>
+                </motion.div>
+            )}
+        </div>
     );
 };
 
