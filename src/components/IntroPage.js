@@ -96,15 +96,26 @@ const IntroPage = ({ onContinue }) => {
                     transition={{ delay: 0.2, duration: 1 }}
                 >
                     <h2 className='mt-2'>
-                        Experimente o futuro da comunicação segura com o Bubble Safe Chat. Sua privacidade não é apenas garantida, é nossa prioridade número um.
-                        {/* Botão "Saiba Mais" */}
+                        Experimente o futuro da comunicação segura com o Bubble Safe Chat. Sua privacidade não é apenas
+                        garantida, é nossa prioridade número um. Com tecnologia de ponta, garantimos que todas as suas
+                        conversas sejam protegidas por criptografia avançada, permitindo que você controle completamente
+                        quem tem acesso às suas informações. Entre em um ambiente digital seguro e aproveite a
+                        tranquilidade ao conversar online.
                     </h2>
-                    <motion.div className="login-section mt-5">
-                        <h3>Já tem uma conta?</h3>
-                        <p>Junte-se a nós e faça parte da revolução na comunicação segura.</p>
+                    <motion.div className="login-section">
                         <motion.button
-                            className="btn-access btn btn-outline-warning w-100"
+                            className="btn btn-outline-info btn-acess-learn"
+                            onClick={handleLearnMore}
+                            whileHover={{ scale: 1.05 }}
+                            transition={{ duration: 0.3 }}
+                        >
+                            Saiba Mais
+                        </motion.button>
+                        <motion.button
+                            className="btn btn-outline-success btn-acess-enter"
                             onClick={onContinue}
+                            whileHover={{ scale: 1.05 }}
+                            transition={{ duration: 0.3 }}
                         >
                             <FontAwesomeIcon icon={faUserCircle} className="me-1" />
                             Entrar

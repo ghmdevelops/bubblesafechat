@@ -16,6 +16,43 @@
   backdrop-filter: blur(10px);
 }
 
+.login-section button {
+  width: 10rem;
+  height: 3rem;
+}
+
+.login-section .btn-acess-learn {
+  background-color: #058bdf;
+  color: #fff;
+  border: 2px solid #058bdf;
+  padding: 2px 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: transform 0.3s ease;
+}
+
+.login-section .btn-acess-learn:hover {
+  background-color: #065687;
+  color: #fff;
+  transform: scale(1.05);
+}
+
+.login-section .btn-acess-enter {
+  background-color: #0bbd52;
+  color: #fff;
+  border: 2px solid #078238;
+  padding: 2px 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: transform 0.3s ease;
+}
+
+.login-section .btn-acess-enter:hover {
+  background-color: #078238;
+  color: #fff;
+  transform: scale(1.05);
+}
+
 .logo-image {
   width: 50rem;
 }
@@ -58,7 +95,7 @@
 }
 
 .content-left h2 {
-  font-size: 1.8rem;
+  font-size: 1.6rem;
   font-weight: 700;
   margin-bottom: 1rem;
   text-align: left;
