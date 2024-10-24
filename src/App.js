@@ -7,6 +7,7 @@ import NotFound from './components/NotFound';
 import AvatarSelection from './components/AvatarSelection';
 import { auth } from './firebaseConfig';
 import Footer from './components/Footer';
+import LearnMorePage from './LearnMorePage';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -41,6 +42,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<AuthExample />} />
         <Route path="/" element={user ? <CreateRoom /> : <Navigate to="/login" />} />
+        <Route path="/learn-more" element={<LearnMorePage />} />
         <Route path="/room/:roomId" element={<Room />} />
         <Route path="/avatar-selection" element={user ? <AvatarSelection /> : <Navigate to="/login" />} />
         <Route path="*" element={<NotFound />} />
