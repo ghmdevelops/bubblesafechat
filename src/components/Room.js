@@ -47,10 +47,11 @@ const Room = () => {
   const [creatorAvatar, setCreatorAvatar] = useState(null);
   const [recognitionActive, setRecognitionActive] = useState(false);
   const recognitionRef = useRef(null);
+  const [allUsers, setAllUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState('');
 
   const shareLink = `${window.location.origin}/bubblesafechat/#/room/${roomId}`;
   const shareLink2 = `${window.location.origin}/#/room/${roomId}`;
-
 
   const sendMessageWithPassword = (password) => {
     if (message.trim()) {
@@ -61,8 +62,8 @@ const Room = () => {
         user: userName || creatorName,
         timestamp: new Date().toISOString(),
         requiresPassword: true,
-        password: password, 
-        attempts: 0, 
+        password: password,
+        attempts: 0,
         deletionTime: isDestructionActive ? Date.now() + destructionTime * 1000 : null,
       };
 
@@ -198,6 +199,32 @@ const Room = () => {
       setIsRoomLoaded(true);
     });
   }, [roomId]);
+
+  useEffect(() => {
+    const allowedUsersRef = database.ref(`rooms/${roomId}/allowedUsers`);
+    const expelledUsersRef = database.ref(`rooms/${roomId}/expelledUsers`);
+
+    allowedUsersRef.on('value', (snapshot) => {
+      const usersData = snapshot.val() || {};
+      const allowedUsers = Object.keys(usersData);
+
+      expelledUsersRef.once('value', (expelledSnapshot) => {
+        const expelledData = expelledSnapshot.val() || {};
+        const expelledUsers = Object.keys(expelledData);
+
+        const filteredUsers = allowedUsers.filter(user => !expelledUsers.includes(user));
+        setAllUsers(filteredUsers);
+      });
+    });
+
+    return () => {
+      allowedUsersRef.off();
+    };
+  }, [roomId]);
+
+  const handleUserSelect = (e) => {
+    setSelectedUser(e.target.value);
+  };
 
   useEffect(() => {
     const expelledRef = database.ref(`rooms/${roomId}/expelledUsers`);
@@ -535,7 +562,10 @@ const Room = () => {
         timestamp: new Date().toISOString(),
       });
 
-      setUsersWithExpelButton((prevUsers) => new Set([...prevUsers].filter((user) => user !== userName)));
+      setAllUsers((prevUsers) => prevUsers.filter(user => user !== userName));
+      setSelectedUser('');
+    }).catch((error) => {
+      console.error('Erro ao expulsar usuário:', error);
     });
   };
 
@@ -1139,14 +1169,12 @@ const Room = () => {
                     onClick={() => handleRequest(request.id, 'accept')}
                   >
                     <FontAwesomeIcon icon={faCheck} className="me-1" />
-                    Aceitar
                   </button>
                   <button
                     className="btn btn-outline-danger btn-sm"
                     onClick={() => handleRequest(request.id, 'deny')}
                   >
                     <FontAwesomeIcon icon={faTimes} className="me-1" />
-                    Negar
                   </button>
                 </div>
               </li>
@@ -1180,18 +1208,14 @@ const Room = () => {
 
               if (enteredPassword) {
                 if (enteredPassword === msg.password) {
-                  // Se a senha estiver correta, exibe a mensagem
                   Swal.fire('Correto!', 'Aqui está sua mensagem: ' + msg.text, 'success');
                 } else {
-                  // Incrementa o contador de tentativas
                   attemptCount++;
                   if (attemptCount >= 3) {
-                    // Se as tentativas chegarem a 3, apaga a mensagem do banco de dados
                     const messageRef = database.ref(`rooms/${roomId}/messages/${msg.id}`);
                     messageRef.remove();
                     Swal.fire('Erro!', 'A senha estava incorreta 3 vezes. A mensagem foi excluída.', 'error');
                   } else {
-                    // Se ainda não atingiu 3 tentativas, tenta novamente
                     Swal.fire('Erro!', 'Senha incorreta. Tente novamente.', 'error').then(checkPassword);
                   }
                 }
@@ -1360,15 +1384,28 @@ const Room = () => {
       )}
 
       {isCreator && (
-        <div className='div-title-expul'>
-          <h3 className='ms-2 title-bloq'><FontAwesomeIcon icon={faUserSlash} /> Expulsar Usuários</h3>
-          {Array.from(usersWithExpelButton).map((user) => (
-            <div key={user}>
-              <button className='mb-4 mt-3 btn-exitUser btn btn-danger' onClick={() => expelUser(user)}>
-                Expulsar {user}
-              </button>
-            </div>
-          ))}
+        <div className='div-title-expul bg-light p-4 rounded shadow'>
+          <h5 className='ms-2 title-bloq me-3 mt-4 text-primary'>
+            <FontAwesomeIcon icon={faUserSlash} /> Expulsar Usuários
+          </h5>
+          <div className="d-flex align-items-center mb-3">
+            <select value={selectedUser} onChange={handleUserSelect} className="form-select me-2 border border-primary">
+              <option value="">Selecione um usuário</option>
+              {allUsers.map((user) => (
+                <option key={user} value={user}>{user}</option>
+              ))}
+            </select>
+            <button
+              className='btn-exitUser btn btn-danger'
+              onClick={() => expelUser(selectedUser)}
+              disabled={!selectedUser}
+              style={{ transition: 'background-color 0.3s' }}
+              onMouseOver={e => e.currentTarget.style.backgroundColor = '#c82333'}
+              onMouseOut={e => e.currentTarget.style.backgroundColor = ''}
+            >
+              <FontAwesomeIcon icon={faTrashAlt} />
+            </button>
+          </div>
         </div>
       )}
 
