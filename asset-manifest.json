@@ -1,18 +1,18 @@
 {
   "files": {
-    "main.css": "/static/css/main.e6d67246.css",
-    "main.js": "/static/js/main.351f9056.js",
+    "main.css": "/static/css/main.c27f1d06.css",
+    "main.js": "/static/js/main.b1db412d.js",
     "static/media/Background_Blue_1500.png": "/static/media/Background_Blue_1500.2ea5c132994a40a32e60.png",
     "static/media/StockCake-Cybersecurity.jpg": "/static/media/StockCake-Cybersecurity.5db3be0e0613a14113ca.jpg",
     "static/media/name.png": "/static/media/name.940f87222c16cb4ec6a3.png",
     "static/media/icon-page.png": "/static/media/icon-page.dca094892d0c33c69489.png",
     "static/media/icon-menu.png": "/static/media/icon-menu.5eb1eae06d3a7b3ff0bb.png",
     "index.html": "/index.html",
-    "main.e6d67246.css.map": "/static/css/main.e6d67246.css.map",
-    "main.351f9056.js.map": "/static/js/main.351f9056.js.map"
+    "main.c27f1d06.css.map": "/static/css/main.c27f1d06.css.map",
+    "main.b1db412d.js.map": "/static/js/main.b1db412d.js.map"
   },
   "entrypoints": [
-    "static/css/main.e6d67246.css",
-    "static/js/main.351f9056.js"
+    "static/css/main.c27f1d06.css",
+    "static/js/main.b1db412d.js"
   ]
 }
