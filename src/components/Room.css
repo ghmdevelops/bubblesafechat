@@ -212,6 +212,18 @@ h3 {
   display: block;
 }
 
+.audio-controls-container-22 {
+  background-color: #fff;
+  border-radius: 10rem;
+  width: 100%;
+  justify-content: center;
+}
+
+.audio-controls-container-22 audio {
+  flex: 1;
+  max-width: 100%;
+}
+
 .dropdown-menu {
   background-color: #002c3f;
   border: 1px solid #005a8b;
@@ -281,6 +293,14 @@ h3 {
   font-size: 10rem;
 }
 
+.div-title-expul {
+  background-color: #182c41;
+}
+
+.colorful-spinner {
+  color: #3498db;
+}
+
 @media (max-width: 768px) {
   h3.title-bloq {
     text-align: center;
@@ -290,4 +310,54 @@ h3 {
     margin: auto;
     text-align: center;
   }
+
+  .audio-controls-container-22 button {
+    border-radius: 10rem;
+  }
+}
+
+.btn-container {
+  position: relative;
+}
+
+.btn-group {
+  flex-wrap: nowrap;
+}
+
+@media (max-width: 768px) {
+  .btn-group.d-none {
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 10;
+    background: white;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    border-radius: 8px;
+  }
+}
+
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.form-control {
+  width: 100%;
+  height: 40px;
+  border-radius: 4rem;
+  padding-right: 10px;
+}
+
+.btn-icon {
+  cursor: pointer;
+  font-size: 1.2em;
+  color: #007bff;
+}
+
+.btn-icon:hover {
+  border: none;
+  box-shadow: 0px 4px 10px rgb(255, 255, 255);
 }

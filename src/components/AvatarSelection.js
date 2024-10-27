@@ -6,6 +6,7 @@ import '@sweetalert2/theme-dark/dark.css';
 import Swal from 'sweetalert2';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlay } from '@fortawesome/free-solid-svg-icons';
 import iconPage from './img/icon-menu.png';
 import { Helmet } from 'react-helmet';
 
@@ -23,6 +24,15 @@ const AvatarSelection = () => {
         'https://img.icons8.com/color/48/vulcan-head.png',
         'https://img.icons8.com/color/48/luke-skywalker.png',
         'https://img.icons8.com/external-flat-icons-inmotus-design/67/external-droid-star-wars-flat-icons-inmotus-design.png',
+        'https://img.icons8.com/emoji/48/man.png',
+        'https://img.icons8.com/fluency/48/businessman--v1.png',
+        'https://img.icons8.com/office/40/businesswoman.png',
+        'https://img.icons8.com/color/48/person-female-skin-type-7.png',
+        'https://img.icons8.com/stickers/50/storm-marvel--v6.png',
+        'https://img.icons8.com/avantgarde/100/cyclop-marvel.png',
+        'https://img.icons8.com/color/48/cyclop-marvel.png',
+        'https://img.icons8.com/color/48/spiderman-head.png',
+        'https://img.icons8.com/color/48/thanos.png'
     ];
 
     const handleAvatarSelection = (avatar) => {
@@ -49,7 +59,7 @@ const AvatarSelection = () => {
     };
 
     const handleBack = () => {
-        navigate(-1); // Navega para a página anterior
+        navigate(-1);
     };
 
     return (
@@ -102,7 +112,7 @@ const AvatarSelection = () => {
 
             <div className="container mt-5 pt-5">
                 <div className="text-center mb-4 animated-title">
-                    <h2 style={{fontWeight: "500"}} className="display-6 animated fadeInUp">Escolha seu Avatar</h2>
+                    <h2 style={{ fontWeight: "500" }} className="display-6 animated fadeInUp">Escolha seu Avatar</h2>
                     <p className="lead animated fadeInLeft delay-1s">Selecione um avatar para personalizar sua experiência no chat.</p>
                 </div>
 
@@ -113,8 +123,9 @@ const AvatarSelection = () => {
                                 key={index}
                                 src={avatar}
                                 alt={`Avatar ${index + 1}`}
-                                className={`avatar-item rounded-circle shadow ${selectedAvatar === avatar ? 'selected990 border border-primary' : ''}`}
+                                className={`avatar-item rounded-circle shadow ${selectedAvatar === avatar ? 'selected990' : ''}`}
                                 onClick={() => handleAvatarSelection(avatar)}
+                                style={selectedAvatar === avatar ? { border: '4px solid #6495ED' } : {}}
                             />
                         ))}
                     </div>
@@ -122,11 +133,12 @@ const AvatarSelection = () => {
 
                 <div className="text-center mt-4 animated-button">
                     <button
-                        className="btn btn-outline-info btn-lg animate__animated animate__pulse animate__infinite"
+                        className="btn btn-outline-danger btn-lg animate__animated animate__pulse animate__infinite"
                         onClick={saveAvatarSelection}
                         disabled={!selectedAvatar}
                     >
-                        Confirmar Escolha
+                        <FontAwesomeIcon icon={faPlay} className="me-2" />
+                        Start
                     </button>
                 </div>
             </div>

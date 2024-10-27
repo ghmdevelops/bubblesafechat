@@ -11,7 +11,7 @@ const Footer = () => {
             <div className="container text-center text-md-left">
                 <div className="row">
                     <div className="col-md-4 col-lg-4 col-xl-4 mx-auto mb-4">
-                        <img style={{ width: '  110px' }} src={iconPage} alt='OpenSecurityRoom' />
+                        <img style={{ width: '  80px' }} src={iconPage} alt='OpenSecurityRoom' />
                         <h6 className="text-uppercase fw-bold">Bubble Safe Chat</h6>
                         <p>Converse com segurança, controle com liberdade!</p>
                         <hr className="mb-4 mt-0 d-inline-block mx-auto" style={{ width: '60px' }} />

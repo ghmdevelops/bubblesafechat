@@ -9,10 +9,11 @@ import Swal from 'sweetalert2';
 import '@sweetalert2/theme-dark/dark.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faLock, faPen, faUserSlash, faPauseCircle, faDoorOpen, faSignInAlt, faUser, faClock, faSignOutAlt, faUserCircle, faPaperPlane, faMicrophone, faCheckCircle, faStopCircle, faTrashAlt, faPlayCircle, faClipboard, faQrcode, faShareAlt, faTrash, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faMinus, faPlus, faUserSecret, faBell, faLock, faPen, faUserSlash, faPauseCircle, faDoorOpen, faSignInAlt, faUser, faClock, faSignOutAlt, faUserCircle, faPaperPlane, faMicrophone, faCheckCircle, faStopCircle, faTrashAlt, faPlayCircle, faClipboard, faQrcode, faShareAlt, faTrash, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp, faTelegram } from '@fortawesome/free-brands-svg-icons';
 import { Helmet } from 'react-helmet';
 import iconPage from './img/icon-menu.png'
+import { motion } from 'framer-motion';
 
 const Room = () => {
   const { roomId } = useParams();
@@ -49,6 +50,8 @@ const Room = () => {
   const recognitionRef = useRef(null);
   const [allUsers, setAllUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState('');
+  const [showOptions, setShowOptions] = useState(false);
+  const [showPlusButton, setShowPlusButton] = useState(false);
 
   const shareLink = `${window.location.origin}/bubblesafechat/#/room/${roomId}`;
   const shareLink2 = `${window.location.origin}/#/room/${roomId}`;
@@ -128,6 +131,11 @@ const Room = () => {
         sendMessageWithPassword(result.value);
       }
     });
+  };
+
+  const toggleOptions = () => {
+    setShowOptions(!showOptions);
+    setShowPlusButton(!showOptions);
   };
 
   const startRecognition = () => {
@@ -614,8 +622,15 @@ const Room = () => {
   };
 
   const handleTyping = (e) => {
-    setMessage(e.target.value);
-    setTyping(true);
+    const input = e.target.value;
+    setMessage(input);
+
+    if (input.trim() !== "") {
+      setShowPlusButton(true);
+      setShowOptions(false);
+    } else {
+      setShowPlusButton(false);
+    }
   };
 
   const leaveRoom = () => {
@@ -936,7 +951,7 @@ const Room = () => {
     borderRadius: '15px',
     margin: isSentByUser ? '10px 0 5px auto' : '10px auto 5px 0',
     backgroundColor: isSentByUser ? '#d6eaff' : '#f1f1f1',
-    maxWidth: '80%',
+    maxWidth: '90%',
     textAlign: isSentByUser ? 'right' : 'left',
     position: 'relative',
     color: '#000',
@@ -988,47 +1003,90 @@ const Room = () => {
   if (!hasJoined && !isCreator) {
     return (
       <div className="container mt-5 d-flex justify-content-center mb-5">
-        <div className="card p-4 shadow bg-dark text-light mt-5 mb-5" style={{ width: '100%', maxWidth: '600px' }}>
-          <img className='col-md-4 col-lg-4 col-xl-4 mx-auto mb-4' style={{ width: '  110px' }} src={iconPage} alt='OpenSecurityRoom' />
-          <h1 className="text-center mb-4">Solicitação de Entrada</h1>
-          <p className="text-center">
-            <FontAwesomeIcon icon={faUser} className="me-2" style={{ color: '#00a6e8' }} />
-            Insira seu nome para solicitar acesso à sala
-          </p>
+        <motion.div
+          className="card p-4 shadow bg-dark text-light mt-5 mb-5"
+          style={{ width: '100%', maxWidth: '800px' }}
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <motion.img
+            className="col-md-4 col-lg-4 col-xl-4 mx-auto mb-4 img-fluid"
+            style={{ maxWidth: '280px' }}
+            src={iconPage}
+            alt="OpenSecurityRoom"
+            animate={{ scale: [1, 1.1, 1] }}
+            transition={{ repeat: Infinity, duration: 1.5 }}
+          />
+          <motion.h1
+            className="text-center mb-4"
+            initial={{ opacity: 0, y: -30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+          >
+            Solicitação de Entrada
+          </motion.h1>
+          <motion.p
+            className="text-center"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+          >
+            <FontAwesomeIcon icon={faUser} className="me-2" style={{ color: '#F1E5AC' }} />
+            Insira seu nome ou nick para solicitação de acesso à sala
+          </motion.p>
           <div className="d-flex justify-content-center">
-            <input
+            <motion.input
               type="text"
               value={userName}
               onChange={(e) => setUserName(e.target.value)}
-              placeholder="Digite seu nome"
-              className="form-control mt-1 mb-1"
-              style={{ maxWidth: '100%', width: '100%', height: '45px' }}
+              placeholder="Digite seu nome ou nick"
+              className="form-control"
+              style={{ maxWidth: '100%', width: '100%' }}
+              autoFocus
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.7 }}
             />
-          </div>
-          <div className="d-grid gap-2 mt-3">
-            <button
+            <motion.button
               onClick={requestAccess}
               disabled={!userName.trim() || loading}
-              className="btn btn-primary w-100 mt-3 mb-2"
-              style={{ height: '50px' }}
+              className="btn btn-primary ms-2"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.9 }}
             >
-              <FontAwesomeIcon icon={faSignInAlt} className="me-2" />
-              Solicitar Acesso
-            </button>
+              <FontAwesomeIcon icon={faSignInAlt} />
+            </motion.button>
           </div>
+
           {loading && (
-            <div className="d-flex justify-content-center mt-3">
-              <div className="spinner-border" role="status">
+            <motion.div
+              className="d-flex justify-content-center mt-3"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="spinner-border colorful-spinner" role="status">
                 <span className="visually-hidden">Carregando...</span>
               </div>
-            </div>
+            </motion.div>
           )}
+
           {statusMessage && (
-            <div className="alert alert-info text-center mt-3" role="alert">
+            <motion.div
+              className="alert alert-info text-center mt-3"
+              role="alert"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            >
               {statusMessage}
-            </div>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
       </div>
     );
   }
@@ -1104,8 +1162,8 @@ const Room = () => {
         </nav>
       </header>
 
-      <div className="title-container">
-        <h1 className="text-center mb-2 mt-4"><FontAwesomeIcon icon={faDoorOpen} /> Room {roomName}</h1>
+      <div className="title-container mt-3">
+        <h1 className="text-center mb-2 mt-4"><FontAwesomeIcon icon={faDoorOpen} /> {roomName}</h1>
       </div>
 
       {isDestructionActive && (
@@ -1152,15 +1210,17 @@ const Room = () => {
 
       {isCreator && pendingRequests.length > 0 && (
         <div className="mb-3">
-          <h5 className="text-light text-center">Solicitações de entradas no chat</h5>
           <ul className="list-group bg-dark">
+            <h5 className="text-light text-center">
+              <FontAwesomeIcon icon={faBell} className="me-2" style={{ color: "#F75D59" }} />
+              Solicitações de entradas no chat</h5>
             {pendingRequests.map((request) => (
               <li
                 key={request.id}
                 className="list-group-item d-flex justify-content-between align-items-center bg-dark text-light border-dark"
               >
                 <div className="d-flex align-items-center">
-                  <FontAwesomeIcon icon={faUser} className="me-2" />
+                  <FontAwesomeIcon icon={faUserSecret} className="me-2" style={{ color: "#FFA62F" }} />
                   {request.userName}
                 </div>
                 <div>
@@ -1168,13 +1228,13 @@ const Room = () => {
                     className="btn btn-outline-info btn-sm me-2"
                     onClick={() => handleRequest(request.id, 'accept')}
                   >
-                    <FontAwesomeIcon icon={faCheck} className="me-1" />
+                    <FontAwesomeIcon icon={faCheck} />
                   </button>
                   <button
                     className="btn btn-outline-danger btn-sm"
                     onClick={() => handleRequest(request.id, 'deny')}
                   >
-                    <FontAwesomeIcon icon={faTimes} className="me-1" />
+                    <FontAwesomeIcon icon={faTimes} />
                   </button>
                 </div>
               </li>
@@ -1336,43 +1396,78 @@ const Room = () => {
             <span className="text-warning ms-2">Gravando...</span>
           </>
         ) : audioFile ? (
-          <div className="d-flex align-items-center">
-            <audio controls src={URL.createObjectURL(audioFile)} style={{ width: '200px', marginRight: '10px' }} />
-            <button onClick={sendAudioMessage} disabled={!audioFile} className="btn btn-primary me-2">
+          <div className="audio-controls-container-22 d-flex align-items-center flex-wrap">
+            <audio
+              controls
+              src={URL.createObjectURL(audioFile)}
+              style={{ width: '100%', maxWidth: '200px', marginRight: '10px' }}
+            />
+            <button onClick={sendAudioMessage} disabled={!audioFile} className="btn btn-outline-primary me-2">
               <FontAwesomeIcon icon={faPaperPlane} />
             </button>
-            <button onClick={() => setAudioFile(null)} className="btn btn-danger">
+            <button onClick={() => setAudioFile(null)} className="btn btn-outline-danger">
               <FontAwesomeIcon icon={faTrashAlt} />
             </button>
           </div>
         ) : (
           <>
-            <input
-              type="text"
-              value={message}
-              onChange={handleTyping}
-              placeholder="Escreva sua mensagem"
-              onFocus={markAllMessagesAsRead}
-              className="form-control me-2"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && message.trim()) {
-                  e.preventDefault();
-                  sendMessage();
-                }
-              }}
-            />
-            <button onClick={sendMessage} disabled={!message.trim()} className="btn btn-primary me-2">
-              <FontAwesomeIcon icon={faPaperPlane} />
-            </button>
-            <button onClick={sendProtectedMessage} className="btn btn-warning me-2">
-              <FontAwesomeIcon icon={faLock} />
-            </button>
-            <button onClick={recognitionActive ? stopRecognition : startRecognition} className="btn btn-warning me-2">
-              <FontAwesomeIcon icon={faPen} />
-            </button>
-            <button onClick={startRecording} disabled={recording} className="btn btn-secondary me-2">
-              <FontAwesomeIcon icon={faMicrophone} />
-            </button>
+            <div className="input-with-icon w-100">
+              <input
+                type="text"
+                value={message}
+                onChange={handleTyping}
+                placeholder="Escreva sua mensagem"
+                onFocus={markAllMessagesAsRead}
+                className="form-control"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && message.trim()) {
+                    e.preventDefault();
+                    sendMessage();
+                  }
+                }}
+                style={{ paddingRight: '40px' }}
+              />
+
+              <button
+                onClick={startRecording}
+                disabled={recording}
+                className="btn-icon"
+                style={{
+                  position: 'absolute',
+                  right: '0.8px',
+                  top: '40%',
+                  transform: 'translateY(-50%)',
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#007bff',
+                }}
+              >
+                <FontAwesomeIcon icon={faMicrophone} />
+              </button>
+            </div>
+
+            <div className="d-flex align-items-center">
+              <button onClick={sendMessage} disabled={!message.trim()} className="btn btn-primary me-2">
+                <FontAwesomeIcon icon={faPaperPlane} />
+              </button>
+
+              {showPlusButton && !showOptions ? (
+                <button onClick={toggleOptions} className="btn btn-outline-info">
+                  <FontAwesomeIcon icon={faPlus} />
+                </button>
+              ) : null}
+
+              {!showPlusButton || showOptions ? (
+                <div className="btn-group d-flex">
+                  <button onClick={sendProtectedMessage} className="btn btn-outline-info me-2">
+                    <FontAwesomeIcon icon={faLock} />
+                  </button>
+                  <button onClick={recognitionActive ? stopRecognition : startRecognition} className="btn btn-outline-info me-2">
+                    <FontAwesomeIcon icon={faPen} />
+                  </button>
+                </div>
+              ) : null}
+            </div>
           </>
         )}
       </div>
@@ -1384,8 +1479,8 @@ const Room = () => {
       )}
 
       {isCreator && (
-        <div className='div-title-expul bg-light p-4 rounded shadow'>
-          <h5 className='ms-2 title-bloq me-3 mt-4 text-primary'>
+        <div className='div-title-expul p-4 rounded shadow'>
+          <h5 className='ms-2 title-bloq me-3 mt-4 text-warning'>
             <FontAwesomeIcon icon={faUserSlash} /> Expulsar Usuários
           </h5>
           <div className="d-flex align-items-center mb-3">

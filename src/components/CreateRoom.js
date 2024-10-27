@@ -11,6 +11,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLock, faUserShield, faShieldAlt, faEye, faSpinner, faPlus, faTimes, faCheck, faPowerOff, faUserCircle, faDoorOpen } from '@fortawesome/free-solid-svg-icons';
 import iconPage from './img/icon-menu.png';
 import { EmailAuthProvider } from 'firebase/auth';
+import { motion } from 'framer-motion';
 
 const CreateRoom = () => {
   const [roomName, setRoomName] = useState('');
@@ -330,6 +331,8 @@ const CreateRoom = () => {
                   <button className="btn btn-outline-info" onClick={deleteAccount}>
                     Excluir Conta e Todos os Dados
                   </button>
+                </li>
+                <li class="nav-item">
                   <button className="logout-button btn btn-outline-danger" onClick={handleLogout}>
                     <FontAwesomeIcon icon={faPowerOff} />
                   </button>
@@ -356,72 +359,185 @@ const CreateRoom = () => {
         </h2>}
 
         {!isNameConfirmed ? (
-          <div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
             <label>
-              <span className='ms-1 mb-1'>
+              <motion.span
+                className="ms-1 mb-1"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
                 Escolha um apelido que represente você
-              </span>
+              </motion.span>
               <div className="input-group mb-2">
-                <input
+                <motion.input
                   type="text"
                   value={userName}
                   onChange={(e) => setUserName(e.target.value)}
                   placeholder="ex: Qu@ntumJumper13"
                   className="form-control w-100"
+                  style={{
+                    border: '2px solid #17a2b8',
+                    borderRadius: '5px',
+                    padding: '10px',
+                    fontSize: '1rem',
+                  }}
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.5, delay: 0.4 }}
+                  autoFocus // Foca automaticamente o input ao carregar
                 />
-                <button
+                <motion.button
                   className="btn btn-outline-info w-100 w-md-auto"
                   onClick={handleConfirmName}
-                  disabled={!userName.trim()}>
+                  disabled={!userName.trim()}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  style={{
+                    padding: '10px 20px',
+                    fontWeight: 'bold',
+                    boxShadow: '0px 4px 10px rgba(23, 162, 184, 0.3)',
+                  }}
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.5, delay: 0.6 }}
+                >
                   <FontAwesomeIcon icon={faCheck} className="me-2" />
                   Confirmar
-                </button>
+                </motion.button>
               </div>
             </label>
-
-          </div>
+          </motion.div>
         ) : (
           <>
-            <h1>Criar uma Sala</h1>
-            <ul className="benefits-list mt-2">
-              <li className='mb-2'>
-                <FontAwesomeIcon icon={faLock} className="me-2" />
-                Não coletamos ou compartilhamos seus dados pessoais. Você tem controle total sobre as informações que decide compartilhar
-              </li>
-              <li className='mb-3'>
-                <FontAwesomeIcon icon={faUserShield} className="me-2" />
-                Gerenciamento de permissões: Você pode controlar quem pode entrar na sua sala e quem pode participar das conversas
-              </li>
-            </ul>
+            <div>
+              <motion.h1
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+              >
+                Criar uma Sala
+              </motion.h1>
+              <motion.ul
+                className="benefits-list mt-2"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
+                <motion.li
+                  className="mb-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.6, delay: 0.3 }}
+                >
+                  <FontAwesomeIcon icon={faLock} className="me-2" />
+                  Não coletamos ou compartilhamos seus dados pessoais. Você tem controle total sobre as informações que decide compartilhar
+                </motion.li>
+                <motion.li
+                  className="mb-3"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.6, delay: 0.4 }}
+                >
+                  <FontAwesomeIcon icon={faUserShield} className="me-2" />
+                  Gerenciamento de permissões: Você pode controlar quem pode entrar na sua sala e quem pode participar das conversas
+                </motion.li>
+              </motion.ul>
 
-            <label>
-              <span className='ms-2'>
-                Escolha um nome exclusivo para a sua sala
-              </span>
-              <div className="input-group mb-2">
-                <input
-                  type="text"
-                  value={roomName}
-                  onChange={(e) => setRoomName(e.target.value)}
-                  placeholder="ex: TurmaCerveja"
-                  className="form-control mb-3"
-                />
-                <button className="btn btn-outline-info w-100 w-md-auto" onClick={createRoom} disabled={!roomName.trim() || loading}>
-                  {loading ? (
-                    <>
-                      <FontAwesomeIcon icon={faSpinner} className="me-2" spin />
-                      Criando...
-                    </>
-                  ) : (
-                    <>
-                      <FontAwesomeIcon icon={faPlus} />                </>
-                  )} Confirmar
-                </button>
-                <button className="btn btn-outline-danger w-100 w-md-auto cancroom" onClick={handleCancelName}>
-                  <FontAwesomeIcon icon={faTimes} /> Cancelar
-                </button>
-              </div>
-            </label>
+              <label>
+                <motion.span
+                  className="ms-1"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.6, delay: 0.5 }}
+                >
+                  Escolha um nome exclusivo para a sua sala
+                </motion.span>
+                <div className="input-group mb-2">
+                  <motion.input
+                    type="text"
+                    value={roomName}
+                    onChange={(e) => setRoomName(e.target.value)}
+                    placeholder="ex: TurmaCerveja"
+                    className="form-control mb-3"
+                    autoFocus
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, delay: 0.6 }}
+                    style={{
+                      border: '2px solid #17a2b8',
+                      borderRadius: '8px',
+                      padding: '10px 15px',
+                      boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+                      fontSize: '1rem',
+                      transition: 'box-shadow 0.3s ease',
+                      outline: 'none',
+                    }}
+                    whileFocus={{
+                      boxShadow: '0px 4px 12px rgba(23, 162, 184, 0.4)',
+                      borderColor: '#007bff',
+                    }}
+                  />
+                  <motion.button
+                    className="btn btn-outline-info w-100 w-md-auto"
+                    onClick={createRoom}
+                    disabled={!roomName.trim() || loading}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.7 }}
+                    style={{
+                      borderWidth: '2px',
+                      borderRadius: '8px',
+                      padding: '10px 20px',
+                      fontWeight: 'bold',
+                      boxShadow: '0px 4px 10px rgba(23, 162, 184, 0.3)',
+                      transition: 'box-shadow 0.3s ease',
+                    }}
+                  >
+                    {loading ? (
+                      <>
+                        <FontAwesomeIcon icon={faSpinner} className="me-2" spin />
+                        Criando...
+                      </>
+                    ) : (
+                      <>
+                        <FontAwesomeIcon icon={faPlus} className="me-2" />
+                        Confirmar
+                      </>
+                    )}
+                  </motion.button>
+
+                  {roomName.trim() && (
+                    <motion.button
+                      className="btn btn-outline-danger w-100 w-md-auto cancroom"
+                      onClick={handleCancelName}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5, delay: 0.8 }}
+                      style={{
+                        borderWidth: '2px',
+                        borderRadius: '8px',
+                        padding: '10px 20px',
+                        fontWeight: 'bold',
+                        boxShadow: '0px 4px 10px rgba(220, 53, 69, 0.3)',
+                        transition: 'box-shadow 0.3s ease',
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faTimes} className="me-2" />
+                      Cancelar
+                    </motion.button>
+                  )}
+                </div>
+              </label>
+            </div>
           </>
         )}
 

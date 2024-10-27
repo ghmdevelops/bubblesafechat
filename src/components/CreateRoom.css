@@ -51,8 +51,8 @@ button:hover {
 }
 
 .text-animated {
-  opacity: 0; /* Inicia invisível */
-  animation: fadeInUp 0.5s forwards, whisper 2s infinite alternate; /* Adiciona o efeito de sussurro */
+  opacity: 0;
+  animation: fadeInUp 0.5s forwards, whisper 2s infinite alternate;
 }
 
 .swal-popup-dark {
@@ -193,11 +193,11 @@ button:hover {
     width: 227px;
   }
 
-  li{
+  li {
     font-size: 14px;
   }
 
-  span{
+  span {
     font-size: 12px;
   }
 }

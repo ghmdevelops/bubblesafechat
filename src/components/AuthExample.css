@@ -86,7 +86,7 @@ label#check:hover {
 }
 
 .btn-redpass span {
-  color: #007bff;
+  color: #0088ff;
   cursor: pointer;
 }
 
@@ -113,6 +113,12 @@ label#check:hover {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .btn-redpass span{
+    font-size: 15px;
   }
 }
 
