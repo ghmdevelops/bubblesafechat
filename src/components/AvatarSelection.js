@@ -133,7 +133,7 @@ const AvatarSelection = () => {
 
                 <div className="text-center mt-4 animated-button">
                     <button
-                        className="btn btn-outline-danger btn-lg animate__animated animate__pulse animate__infinite"
+                        className="btn btn-outline-warning btn-lg animate__animated animate__pulse animate__infinite"
                         onClick={saveAvatarSelection}
                         disabled={!selectedAvatar}
                     >

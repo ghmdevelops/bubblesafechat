@@ -294,7 +294,7 @@ h3 {
 }
 
 .div-title-expul {
-  background-color: #182c41;
+  background-color: transparent;
 }
 
 .colorful-spinner {
@@ -344,7 +344,7 @@ h3 {
   align-items: center;
 }
 
-.form-control {
+.msg-user1 {
   width: 100%;
   height: 40px;
   border-radius: 4rem;

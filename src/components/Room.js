@@ -52,6 +52,8 @@ const Room = () => {
   const [selectedUser, setSelectedUser] = useState('');
   const [showOptions, setShowOptions] = useState(false);
   const [showPlusButton, setShowPlusButton] = useState(false);
+  const [showExpelModal, setShowExpelModal] = useState(false);
+  const toggleExpelModal = () => setShowExpelModal(!showExpelModal);
 
   const shareLink = `${window.location.origin}/bubblesafechat/#/room/${roomId}`;
   const shareLink2 = `${window.location.origin}/#/room/${roomId}`;
@@ -724,7 +726,7 @@ const Room = () => {
   const toggleDestruction = async () => {
     if (!isDestructionActive) {
       const { value: destructionTime } = await Swal.fire({
-        title: 'Escolha o tempo de destruição (segundos):',
+        title: 'Escolha o tempo de destruição (segundos)',
         input: 'number',
         inputAttributes: {
           min: 1,
@@ -1042,24 +1044,27 @@ const Room = () => {
               onChange={(e) => setUserName(e.target.value)}
               placeholder="Digite seu nome ou nick"
               className="form-control"
-              style={{ maxWidth: '100%', width: '100%' }}
+              style={{ maxWidth: '100%', width: '100%', borderRadius: "10rem" }}
               autoFocus
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.7 }}
             />
-            <motion.button
-              onClick={requestAccess}
-              disabled={!userName.trim() || loading}
-              className="btn btn-primary ms-2"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.9 }}
-            >
-              <FontAwesomeIcon icon={faSignInAlt} />
-            </motion.button>
+            {userName.trim() && (
+              <motion.button
+                onClick={requestAccess}
+                disabled={!userName.trim() || loading}
+                className="btn btn-primary ms-2"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                style={{ borderRadius: "10rem" }}
+              >
+                <FontAwesomeIcon icon={faSignInAlt} />
+              </motion.button>
+            )}
           </div>
 
           {loading && (
@@ -1138,13 +1143,13 @@ const Room = () => {
                       </button>
                     </li>
                     <li class="nav-item">
-                      <button className="dropdown-item" onClick={() => confirmAction('delete')}>
-                        <FontAwesomeIcon icon={faTrash} /> Excluir Chat
+                      <button className="dropdown-item" onClick={() => confirmAction('qr')}>
+                        <FontAwesomeIcon icon={faQrcode} /> QR Code
                       </button>
                     </li>
                     <li class="nav-item">
-                      <button className="dropdown-item" onClick={() => confirmAction('qr')}>
-                        <FontAwesomeIcon icon={faQrcode} /> QR Code
+                      <button className="dropdown-item" onClick={() => confirmAction('delete')}>
+                        <FontAwesomeIcon icon={faTrash} /> Excluir Chat
                       </button>
                     </li>
                   </>
@@ -1418,7 +1423,7 @@ const Room = () => {
                 onChange={handleTyping}
                 placeholder="Escreva sua mensagem"
                 onFocus={markAllMessagesAsRead}
-                className="form-control"
+                className="form-control msg-user1"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && message.trim()) {
                     e.preventDefault();
@@ -1465,6 +1470,11 @@ const Room = () => {
                   <button onClick={recognitionActive ? stopRecognition : startRecognition} className="btn btn-outline-info me-2">
                     <FontAwesomeIcon icon={faPen} />
                   </button>
+                  {isCreator && (
+                    <button className="btn btn-outline-info" onClick={toggleExpelModal}>
+                      <FontAwesomeIcon icon={faUserSlash} />
+                    </button>
+                  )}
                 </div>
               ) : null}
             </div>
@@ -1478,28 +1488,46 @@ const Room = () => {
         </div>
       )}
 
-      {isCreator && (
-        <div className='div-title-expul p-4 rounded shadow'>
-          <h5 className='ms-2 title-bloq me-3 mt-4 text-warning'>
-            <FontAwesomeIcon icon={faUserSlash} /> Expulsar Usuários
-          </h5>
-          <div className="d-flex align-items-center mb-3">
-            <select value={selectedUser} onChange={handleUserSelect} className="form-select me-2 border border-primary">
-              <option value="">Selecione um usuário</option>
-              {allUsers.map((user) => (
-                <option key={user} value={user}>{user}</option>
-              ))}
-            </select>
-            <button
-              className='btn-exitUser btn btn-danger'
-              onClick={() => expelUser(selectedUser)}
-              disabled={!selectedUser}
-              style={{ transition: 'background-color 0.3s' }}
-              onMouseOver={e => e.currentTarget.style.backgroundColor = '#c82333'}
-              onMouseOut={e => e.currentTarget.style.backgroundColor = ''}
-            >
-              <FontAwesomeIcon icon={faTrashAlt} />
-            </button>
+      {showExpelModal && (
+        <div className="modal show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+          <div className="modal-dialog" role="document">
+            <div className="modal-content bg-dark">
+              <div className="modal-header">
+                <h5 className="modal-title">
+                  <FontAwesomeIcon icon={faUserSlash} /> Expulsar Usuários
+                </h5>
+                <button type="button" className="btn-close text-bg-light" aria-label="Close" onClick={toggleExpelModal}></button>
+              </div>
+              <div className="modal-body bg-dark">
+                <div className="d-flex align-items-center">
+                  <select
+                    value={selectedUser}
+                    onChange={(e) => setSelectedUser(e.target.value)}
+                    className="form-select my-2 border border-primary"
+                  >
+                    <option value="">Selecione um usuário</option>
+                    {allUsers.map((user) => (
+                      <option key={user} value={user}>
+                        {user}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    className="btn btn-danger"
+                    onClick={() => {
+                      expelUser(selectedUser);
+                      toggleExpelModal();
+                    }}
+                    disabled={!selectedUser}
+                    style={{ transition: 'background-color 0.3s' }}
+                    onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#c82333')}
+                    onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '')}
+                  >
+                    <FontAwesomeIcon icon={faTrashAlt} />
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
