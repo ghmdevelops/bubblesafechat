@@ -54,6 +54,7 @@ const Room = () => {
   const [showPlusButton, setShowPlusButton] = useState(false);
   const [showExpelModal, setShowExpelModal] = useState(false);
   const toggleExpelModal = () => setShowExpelModal(!showExpelModal);
+  const [isReloading, setIsReloading] = useState(false);
 
   const shareLink = `${window.location.origin}/bubblesafechat/#/room/${roomId}`;
   const shareLink2 = `${window.location.origin}/#/room/${roomId}`;
@@ -180,18 +181,25 @@ const Room = () => {
     }
   };
 
+  const sanitizeUserName2 = (userName) => {
+    return userName.replace(/[.#$[\]]/g, '_');
+  };
+
   useEffect(() => {
     const roomRef = database.ref(`rooms/${roomId}`);
     const allowedRef = roomRef.child('allowedUsers');
 
     const currentUser = auth.currentUser;
+
     if (currentUser) {
-      const sanitizedUserName = sanitizeUserName(currentUser.displayName || currentUser.email);
+      const sanitizedUserName = sanitizeUserName2(currentUser.displayName || currentUser.email);
       allowedRef.child(sanitizedUserName).once('value', (snapshot) => {
         if (snapshot.exists()) {
           setHasJoined(true);
         }
       });
+    } else {
+      console.warn("Usuário não autenticado. currentUser é null.");
     }
 
     roomRef.once('value', (snapshot) => {
@@ -204,11 +212,30 @@ const Room = () => {
         if (currentUser && roomData.creator === currentUser.uid) {
           setIsCreator(true);
           setUserName(roomData.creatorName || 'Moderador');
+
+          localStorage.setItem('isCreator', 'true');
+          localStorage.setItem('userName', roomData.creatorName || 'Moderador');
+        } else if (currentUser) {
+          const sanitizedUserName = sanitizeUserName2(currentUser.displayName || currentUser.email);
+          localStorage.setItem('isCreator', 'false');
+          localStorage.setItem('userName', sanitizedUserName || 'Usuário');
         }
       }
       setIsRoomLoaded(true);
     });
   }, [roomId]);
+
+  useEffect(() => {
+    const storedIsCreator = localStorage.getItem('isCreator') === 'true';
+    const storedUserName = localStorage.getItem('userName');
+    const storedCreatorName = localStorage.getItem('creatorName');
+
+    if (storedUserName) {
+      setIsCreator(storedIsCreator);
+      setUserName(storedUserName);
+      setCreatorName(storedCreatorName || 'Moderador');
+    }
+  }, []);
 
   useEffect(() => {
     const allowedUsersRef = database.ref(`rooms/${roomId}/allowedUsers`);
@@ -232,6 +259,31 @@ const Room = () => {
     };
   }, [roomId]);
 
+  const expelAllUsers = () => {
+    const allowedUsersRef = database.ref(`rooms/${roomId}/allowedUsers`);
+    const expelledRef = database.ref(`rooms/${roomId}/expelledUsers`);
+
+    allowedUsersRef.once('value', (snapshot) => {
+      const users = snapshot.val();
+      if (users) {
+        const expelPromises = Object.keys(users).map((userName) => {
+          return expelledRef.child(userName).set(true).then(() => {
+            allowedUsersRef.child(userName).remove();
+            return database.ref(`rooms/${roomId}/messages`).push({
+              text: `${userName} foi expulso da sala.`,
+              user: 'Sistema',
+              timestamp: new Date().toISOString(),
+            });
+          });
+        });
+
+        Promise.all(expelPromises)
+          .then(() => Swal.fire('Sucesso!', 'Todos os usuários foram expulsos.', 'success'))
+          .catch((error) => console.error('Erro ao expulsar usuários:', error));
+      }
+    });
+  };
+
   const handleUserSelect = (e) => {
     setSelectedUser(e.target.value);
   };
@@ -250,7 +302,7 @@ const Room = () => {
 
   useEffect(() => {
     const handleUserExit = () => {
-      if (!isCreator) {
+      if (!isReloading && !isCreator) {
         const messageRef = database.ref(`rooms/${roomId}/messages`).push();
         messageRef.set({
           text: `${userName} saiu da sala.`,
@@ -259,13 +311,23 @@ const Room = () => {
         });
       }
     };
-    window.addEventListener('beforeunload', handleUserExit);
+
+    const beforeUnloadHandler = (event) => {
+      setIsReloading(true);
+    };
+
+    window.addEventListener('beforeunload', beforeUnloadHandler);
+    window.addEventListener('unload', handleUserExit);
 
     return () => {
-      window.removeEventListener('beforeunload', handleUserExit);
-
+      window.removeEventListener('beforeunload', beforeUnloadHandler);
+      window.removeEventListener('unload', handleUserExit);
     };
-  }, [userName, roomId, isCreator]);
+  }, [userName, roomId, isCreator, isReloading]);
+
+  useEffect(() => {
+    setIsReloading(false);
+  }, []);
 
   useEffect(() => {
     const messagesRef = database.ref(`rooms/${roomId}/messages`);
@@ -1524,6 +1586,13 @@ const Room = () => {
                     onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '')}
                   >
                     <FontAwesomeIcon icon={faTrashAlt} />
+                  </button>
+                  <button
+                    className="btn btn-danger my-2"
+                    onClick={expelAllUsers}
+                    style={{ transition: 'background-color 0.3s' }}
+                  >
+                    Expulsar Todos os Usuários
                   </button>
                 </div>
               </div>
