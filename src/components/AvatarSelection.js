@@ -131,16 +131,18 @@ const AvatarSelection = () => {
                     </div>
                 </div>
 
-                <div className="text-center mt-4 animated-button">
-                    <button
-                        className="btn btn-outline-warning btn-lg animate__animated animate__pulse animate__infinite"
-                        onClick={saveAvatarSelection}
-                        disabled={!selectedAvatar}
-                    >
-                        <FontAwesomeIcon icon={faPlay} className="me-2" />
-                        Start
-                    </button>
-                </div>
+
+                {selectedAvatar && (
+                    <div className="text-center mt-4 animated-button">
+                        <button
+                            className="btn btn-outline-warning btn-lg animate__animated animate__pulse animate__infinite"
+                            onClick={saveAvatarSelection}
+                        >
+                            <FontAwesomeIcon icon={faPlay} className="me-2" />
+                            Start
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -389,26 +389,27 @@ const CreateRoom = () => {
                   initial={{ scale: 0.95, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.5, delay: 0.4 }}
-                  autoFocus // Foca automaticamente o input ao carregar
+                  autoFocus
                 />
-                <motion.button
-                  className="btn btn-outline-info w-100 w-md-auto"
-                  onClick={handleConfirmName}
-                  disabled={!userName.trim()}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  style={{
-                    padding: '10px 20px',
-                    fontWeight: 'bold',
-                    boxShadow: '0px 4px 10px rgba(23, 162, 184, 0.3)',
-                  }}
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 0.6 }}
-                >
-                  <FontAwesomeIcon icon={faCheck} className="me-2" />
-                  Confirmar
-                </motion.button>
+                {userName.trim() && (
+                  <motion.button
+                    className="btn btn-outline-info w-100 w-md-auto"
+                    onClick={handleConfirmName}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    style={{
+                      padding: '10px 20px',
+                      fontWeight: 'bold',
+                      boxShadow: '0px 4px 10px rgba(23, 162, 184, 0.3)',
+                    }}
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.6 }}
+                  >
+                    <FontAwesomeIcon icon={faCheck} className="me-2" />
+                    Confirmar
+                  </motion.button>
+                )}
               </div>
             </label>
           </motion.div>
@@ -482,37 +483,38 @@ const CreateRoom = () => {
                       borderColor: '#007bff',
                     }}
                   />
-                  <motion.button
-                    className="btn btn-outline-info w-100 w-md-auto"
-                    onClick={createRoom}
-                    disabled={!roomName.trim() || loading}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.5, delay: 0.7 }}
-                    style={{
-                      borderWidth: '2px',
-                      borderRadius: '8px',
-                      padding: '10px 20px',
-                      fontWeight: 'bold',
-                      boxShadow: '0px 4px 10px rgba(23, 162, 184, 0.3)',
-                      transition: 'box-shadow 0.3s ease',
-                    }}
-                  >
-                    {loading ? (
-                      <>
-                        <FontAwesomeIcon icon={faSpinner} className="me-2" spin />
-                        Criando...
-                      </>
-                    ) : (
-                      <>
-                        <FontAwesomeIcon icon={faPlus} className="me-2" />
-                        Confirmar
-                      </>
-                    )}
-                  </motion.button>
-
+                  {roomName.trim() && (
+                    <motion.button
+                      className="btn btn-outline-info w-100 w-md-auto"
+                      onClick={createRoom}
+                      disabled={!roomName.trim() || loading}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5, delay: 0.7 }}
+                      style={{
+                        borderWidth: '2px',
+                        borderRadius: '8px',
+                        padding: '10px 20px',
+                        fontWeight: 'bold',
+                        boxShadow: '0px 4px 10px rgba(23, 162, 184, 0.3)',
+                        transition: 'box-shadow 0.3s ease',
+                      }}
+                    >
+                      {loading ? (
+                        <>
+                          <FontAwesomeIcon icon={faSpinner} className="me-2" spin />
+                          Criando...
+                        </>
+                      ) : (
+                        <>
+                          <FontAwesomeIcon icon={faPlus} className="me-2" />
+                          Confirmar
+                        </>
+                      )}
+                    </motion.button>
+                  )}
                   {roomName.trim() && (
                     <motion.button
                       className="btn btn-outline-danger w-100 w-md-auto cancroom"
