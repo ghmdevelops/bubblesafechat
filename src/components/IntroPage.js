@@ -46,7 +46,7 @@ const IntroPage = ({ onContinue }) => {
     return (
         <motion.div className="intro-container">
             <Helmet>
-                <title>Bubble Safe Chat - Saiba Mais</title>
+                <title>Bubble Safe Chat - Segurança Total para Suas Conversas</title>
                 <meta name="description" content="Salas de chat seguras e privadas com criptografia avançada. Proteja suas conversas com total privacidade e segurança online." />
                 <meta name="keywords" content="chat seguro, privacidade, criptografia, salas de chat, segurança online, comunidade, criptografia avançada, conversas privadas" />
                 <meta name="author" content="Bubble Safe Chat" />
