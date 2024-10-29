@@ -275,6 +275,13 @@ h3 {
   margin-left: 1rem;
 }
 
+.text-bordered {
+  font-size: 34px;
+  font-family: Arial, Helvetica, sans-serif;
+  margin-left: 9px;
+  color: #00c3ffac; 
+}
+
 .play-button {
   background-color: #0059ac;
   border: none;
@@ -345,6 +352,10 @@ h3 {
   }
 
   .title-container h1 {
+    font-size: 1.1rem;
+  }
+
+  .text-bordered{
     font-size: 1.1rem;
   }
 }

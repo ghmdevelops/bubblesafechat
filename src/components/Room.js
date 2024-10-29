@@ -371,7 +371,7 @@ const Room = () => {
       messagesRef.off();
     };
   }, [roomId]);
-  
+
   useEffect(() => {
     if (hasInteracted && messages.length > previousMessageCount.current) {
       playNotificationSound();
@@ -1292,7 +1292,7 @@ const Room = () => {
       <div className="title-container mt-3 bg-black text-start">
         <h1 className="d-flex align-items-center mb-4 mt-4">
           <FontAwesomeIcon icon={faDoorOpen} className="icon-bordered me-2" />
-          Sala - {roomName}
+          Sala |<span className="text-bordered">{roomName}</span>
         </h1>
       </div>
 
