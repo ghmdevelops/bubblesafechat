@@ -14,6 +14,8 @@ import { faWhatsapp, faTelegram } from '@fortawesome/free-brands-svg-icons';
 import { Helmet } from 'react-helmet';
 import iconPage from './img/icon-menu.png'
 import { motion } from 'framer-motion';
+import { Spinner } from "react-bootstrap";
+import notificationSound from './sounds/notification.mp3';
 
 const Room = () => {
   const { roomId } = useParams();
@@ -55,6 +57,8 @@ const Room = () => {
   const [showExpelModal, setShowExpelModal] = useState(false);
   const toggleExpelModal = () => setShowExpelModal(!showExpelModal);
   const [isReloading, setIsReloading] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
+  const previousMessageCount = useRef(0);
 
   const shareLink = `${window.location.origin}/bubblesafechat/#/room/${roomId}`;
   const shareLink2 = `${window.location.origin}/#/room/${roomId}`;
@@ -329,6 +333,27 @@ const Room = () => {
     setIsReloading(false);
   }, []);
 
+  const playNotificationSound = () => {
+    const audio = new Audio(notificationSound);
+    audio.play().catch((error) => console.error('Erro ao reproduzir áudio:', error));
+  };
+
+  useEffect(() => {
+    const handleUserInteraction = () => {
+      setHasInteracted(true);
+      window.removeEventListener('click', handleUserInteraction);
+      window.removeEventListener('keydown', handleUserInteraction);
+    };
+
+    window.addEventListener('click', handleUserInteraction);
+    window.addEventListener('keydown', handleUserInteraction);
+
+    return () => {
+      window.removeEventListener('click', handleUserInteraction);
+      window.removeEventListener('keydown', handleUserInteraction);
+    };
+  }, []);
+
   useEffect(() => {
     const messagesRef = database.ref(`rooms/${roomId}/messages`);
     messagesRef.on('value', (snapshot) => {
@@ -346,6 +371,13 @@ const Room = () => {
       messagesRef.off();
     };
   }, [roomId]);
+  
+  useEffect(() => {
+    if (hasInteracted && messages.length > previousMessageCount.current) {
+      playNotificationSound();
+    }
+    previousMessageCount.current = messages.length;
+  }, [messages, hasInteracted]);
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -1159,7 +1191,24 @@ const Room = () => {
   }
 
   if (!isRoomLoaded) {
-    return <div>Carregando a sala...</div>;
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.5 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.5 }}
+        transition={{ duration: 0.5 }}
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          flexDirection: "column",
+        }}
+      >
+        <Spinner animation="border" role="status" variant="primary" />
+        <div className="mt-3">Carregando a sala...</div>
+      </motion.div>
+    );
   }
 
   return (
@@ -1194,84 +1243,62 @@ const Room = () => {
               aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
               <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse" id="navbarCollapse">
+            <div className="collapse navbar-collapse" id="navbarCollapse">
               <ul className="navbar-nav ms-auto mb-2 mb-md-0">
 
                 {isCreator ? (
                   <>
-                    <li class="nav-item">
+                    <li className="nav-item">
                       <button className="dropdown-item" onClick={() => confirmAction('share')}>
                         <FontAwesomeIcon icon={faShareAlt} /> Compartilhar
                       </button>
                     </li>
-                    <li class="nav-item">
+                    <li className="nav-item">
                       <button className="dropdown-item" onClick={() => confirmAction('qr')}>
                         <FontAwesomeIcon icon={faQrcode} /> QR Code
                       </button>
                     </li>
-                    <li class="nav-item">
+                    <li className="nav-item">
+                      <button className="dropdown-item" onClick={toggleDestruction}>
+                        <FontAwesomeIcon icon={faClock} className="icon-clock" /> Autodestruição
+                        <input
+                          type="checkbox"
+                          checked={isDestructionActive}
+                          onChange={toggleDestruction}
+                          id="destructionSwitch"
+                          className="ms-2 form-check-input"
+                        />
+                      </button>
+                    </li>
+                    <li className="nav-item">
                       <button className="dropdown-item" onClick={() => confirmAction('delete')}>
                         <FontAwesomeIcon icon={faTrash} /> Excluir Chat
                       </button>
                     </li>
                   </>
                 ) : (
-                  <li>
+                  <li className="nav-item">
                     <button className="dropdown-item" onClick={leaveRoom}>
                       <FontAwesomeIcon icon={faSignOutAlt} /> Sair do Chat
                     </button>
                   </li>
                 )}
-
               </ul>
             </div>
           </div>
         </nav>
       </header>
 
-      <div className="title-container mt-3">
-        <h1 className="text-center mb-2 mt-4"><FontAwesomeIcon icon={faDoorOpen} /> {roomName}</h1>
+      <div className="title-container mt-3 bg-black text-start">
+        <h1 className="d-flex align-items-center mb-4 mt-4">
+          <FontAwesomeIcon icon={faDoorOpen} className="icon-bordered me-2" />
+          Sala - {roomName}
+        </h1>
       </div>
 
       {isDestructionActive && (
         <div className="alert alert-warning text-center" role="alert">
           O Moderador ativou as mensagens autodestrutivas. Todas as mensagens serão excluídas a cada {destructionTime} segundos.
-        </div>
-      )}
-
-      {isCreator && (
-        <div className="mb-4 mt-4">
-          <div className="d-flex">
-            <div className="form-check form-switch me-3 label-autodestruction">
-              <input
-                type="checkbox"
-                checked={isDestructionActive}
-                onChange={toggleDestruction}
-                id="destructionSwitch"
-                className="form-check-input visually-hidden"
-              />
-              <label className="form-check-label label-checks" htmlFor="destructionSwitch">
-                <div className="toggle-container p-3 rounded d-flex flex-column align-items-center">
-                  <div className={`toggle-header d-flex align-items-center justify-content-center mb-2 ${isDestructionActive ? 'active' : 'inactive'}`}>
-                    <FontAwesomeIcon icon={faClock} className="me-2 icon-clock" />
-                    <strong className="toggle-title">Autodestruição</strong>
-                  </div>
-                </div>
-              </label>
-            </div>
-
-            <div>
-              <label className="d-none">
-                <strong>Tempo de destruição (segundos):</strong>
-                <input
-                  type="number"
-                  value={destructionTime}
-                  onChange={(e) => setDestructionTime(Number(e.target.value))}
-                  disabled={!isDestructionActive}
-                />
-              </label>
-            </div>
-          </div>
         </div>
       )}
 
@@ -1514,27 +1541,27 @@ const Room = () => {
             </div>
 
             <div className="d-flex align-items-center">
-              <button onClick={sendMessage} disabled={!message.trim()} className="btn btn-primary me-2">
+              <button onClick={sendMessage} disabled={!message.trim()} className="btn btn-primary me-2 rounded-5">
                 <FontAwesomeIcon icon={faPaperPlane} />
               </button>
 
               {showPlusButton && !showOptions ? (
-                <button onClick={toggleOptions} className="btn btn-outline-info">
+                <button onClick={toggleOptions} className="btn btn-warning rounded-5">
                   <FontAwesomeIcon icon={faPlus} />
                 </button>
               ) : null}
 
               {!showPlusButton || showOptions ? (
                 <div className="btn-group d-flex">
-                  <button onClick={sendProtectedMessage} className="btn btn-outline-info me-2">
+                  <button onClick={sendProtectedMessage} className="btn btn-warning me-2 rounded-5">
                     <FontAwesomeIcon icon={faLock} />
                   </button>
-                  <button onClick={recognitionActive ? stopRecognition : startRecognition} className="btn btn-outline-info me-2">
+                  <button style={{ borderRadius: "10rem" }} onClick={recognitionActive ? stopRecognition : startRecognition} className="btn btn-warning me-2">
                     <FontAwesomeIcon icon={faPen} />
                   </button>
                   {isCreator && (
-                    <button className="btn btn-outline-info" onClick={toggleExpelModal}>
-                      <FontAwesomeIcon icon={faUserSlash} />
+                    <button style={{ borderRadius: "30rem" }} className="btn btn-warning" onClick={toggleExpelModal}>
+                      <FontAwesomeIcon icon={faUserSlash} style={{ width: "0.9rem" }} />
                     </button>
                   )}
                 </div>
