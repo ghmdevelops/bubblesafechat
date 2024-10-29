@@ -247,7 +247,7 @@ const AuthExample = () => {
                     icon: 'success',
                     title: 'Login bem-sucedido',
                     html: 'Você foi logado com sucesso. Irei fechar em <b></b> milissegundos.',
-                    timer: 1400,
+                    timer: 900,
                     timerProgressBar: true,
                     didOpen: () => {
                         Swal.showLoading();
