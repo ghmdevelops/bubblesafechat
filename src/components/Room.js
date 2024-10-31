@@ -1259,14 +1259,20 @@ const Room = () => {
                       </button>
                     </li>
                     <li className="nav-item">
-                      <button className="dropdown-item" onClick={toggleDestruction}>
-                        <FontAwesomeIcon icon={faClock} className="icon-clock" /> Autodestruição
+                      <button
+                        className={`dropdown-item d-flex justify-content-between align-items-center ${isDestructionActive ? 'text-success' : 'text-white'}`}
+                        onClick={toggleDestruction}
+                      >
+                        <span>
+                          <FontAwesomeIcon icon={faClock} className={`me-2 ${isDestructionActive ? 'text-success' : 'text-white'}`} />
+                          Autodestruição
+                        </span>
                         <input
                           type="checkbox"
                           checked={isDestructionActive}
                           onChange={toggleDestruction}
                           id="destructionSwitch"
-                          className="ms-2 form-check-input"
+                          className="d-none"
                         />
                       </button>
                     </li>
@@ -1297,7 +1303,7 @@ const Room = () => {
       </div>
 
       {isDestructionActive && (
-        <div className="alert alert-warning text-center" role="alert">
+        <div className="alert alert-warning text-center alert-msg-rols" role="alert">
           O Moderador ativou as mensagens autodestrutivas. Todas as mensagens serão excluídas a cada {destructionTime} segundos.
         </div>
       )}
@@ -1337,7 +1343,7 @@ const Room = () => {
         </div>
       )}
 
-      <div className="message-container mb-1" style={{ height: '470px', overflowY: 'scroll', border: '1px solid #0059ac', borderRadius: '8px', padding: '10px' }}>
+      <div className="message-container mb-1" style={{ height: '320px', overflowY: 'scroll', border: '1px solid transparent', borderRadius: '8px', padding: '10px' }}>
         {messages.map((msg) => {
           const timeSinceCreation = (Date.now() - new Date(msg.timestamp).getTime()) / 1000;
           const timeRemaining = destructionTime - timeSinceCreation;

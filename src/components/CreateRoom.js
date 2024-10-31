@@ -389,7 +389,6 @@ const CreateRoom = () => {
                   initial={{ scale: 0.95, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.5, delay: 0.4 }}
-                  autoFocus
                 />
                 {userName.trim() && (
                   <motion.button
@@ -465,7 +464,6 @@ const CreateRoom = () => {
                     onChange={(e) => setRoomName(e.target.value)}
                     placeholder="ex: TurmaCerveja"
                     className="form-control mb-3"
-                    autoFocus
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5, delay: 0.6 }}

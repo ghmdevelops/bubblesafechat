@@ -78,7 +78,7 @@ const IntroPage = ({ onContinue }) => {
                         />
                         <div className="icon-enter-user d-flex justify-content-center align-items-center">
                             <b
-                                className="btn btn-outline-info btn-acess-enter me-2"
+                                className="btn btn-outline-info btn-acess-enter me-1"
                                 onClick={handleLearnMore}
                             >
                                 <FontAwesomeIcon icon={faQuestion} />

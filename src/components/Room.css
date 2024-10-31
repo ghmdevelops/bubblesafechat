@@ -353,10 +353,16 @@ h3 {
 
   .title-container h1 {
     font-size: 1.1rem;
+    height: 0.8rem;
   }
 
   .text-bordered{
     font-size: 1.1rem;
+  }
+
+  .alert-msg-rols{
+    font-size: 0.7rem;
+    font-weight: 400;
   }
 }
 
