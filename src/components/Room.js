@@ -9,7 +9,7 @@ import Swal from 'sweetalert2';
 import '@sweetalert2/theme-dark/dark.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMinus, faPlus, faUserSecret, faBell, faLock, faPen, faUserSlash, faPauseCircle, faDoorOpen, faSignInAlt, faUser, faClock, faSignOutAlt, faUserCircle, faPaperPlane, faMicrophone, faCheckCircle, faStopCircle, faTrashAlt, faPlayCircle, faClipboard, faQrcode, faShareAlt, faTrash, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faEllipsis, faPlus, faUserSecret, faBell, faLock, faPen, faUserSlash, faPauseCircle, faDoorOpen, faSignInAlt, faUser, faClock, faSignOutAlt, faUserCircle, faPaperPlane, faMicrophone, faCheckCircle, faStopCircle, faTrashAlt, faPlayCircle, faClipboard, faQrcode, faShareAlt, faTrash, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp, faTelegram } from '@fortawesome/free-brands-svg-icons';
 import { Helmet } from 'react-helmet';
 import iconPage from './img/icon-menu.png'
@@ -59,6 +59,9 @@ const Room = () => {
   const [isReloading, setIsReloading] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
   const previousMessageCount = useRef(0);
+  const [roomPassword, setRoomPassword] = useState('');
+  const [isPasswordEnabled, setIsPasswordEnabled] = useState(false);
+  const [attempts, setAttempts] = useState(0);
 
   const shareLink = `${window.location.origin}/bubblesafechat/#/room/${roomId}`;
   const shareLink2 = `${window.location.origin}/#/room/${roomId}`;
@@ -291,6 +294,86 @@ const Room = () => {
   const handleUserSelect = (e) => {
     setSelectedUser(e.target.value);
   };
+
+  const setRoomAccessPassword = async () => {
+    const { value: password } = await Swal.fire({
+      title: 'Definir senha para acesso à sala',
+      input: 'password',
+      inputLabel: 'Senha',
+      inputPlaceholder: 'Digite uma senha para a sala',
+      inputAttributes: {
+        maxlength: 10,
+        autocapitalize: 'off',
+        autocorrect: 'off'
+      },
+      showCancelButton: true,
+      confirmButtonText: 'Definir',
+    });
+
+    if (password) {
+      setRoomPassword(password);
+      setIsPasswordEnabled(true);
+
+      database.ref(`rooms/${roomId}`).update({
+        roomPassword: password,
+        isPasswordEnabled: true,
+      });
+
+      Swal.fire('Senha definida!', 'A senha foi configurada para a sala.', 'success');
+    }
+  };
+
+  const verifyRoomPassword = async () => {
+    const snapshot = await database.ref(`rooms/${roomId}`).once('value');
+    const roomData = snapshot.val();
+
+    if (roomData && roomData.isPasswordEnabled && roomData.roomPassword) {
+      let attemptCount = 0;
+
+      while (attemptCount < 3) {
+        const { value: enteredPassword } = await Swal.fire({
+          title: 'Digite a senha para acessar a sala',
+          input: 'password',
+          inputLabel: 'Senha',
+          inputPlaceholder: 'Digite a senha de acesso',
+          inputAttributes: {
+            maxlength: 10,
+            autocapitalize: 'off',
+            autocorrect: 'off'
+          },
+          showCancelButton: true,
+        });
+
+        if (enteredPassword === roomData.roomPassword) {
+          return true;
+        } else {
+          attemptCount++;
+          setAttempts(attemptCount);
+          if (attemptCount >= 3) {
+            Swal.fire('Acesso bloqueado', 'Você excedeu o número de tentativas.', 'error');
+            navigate('/'); // Redireciona após 3 tentativas incorretas
+            return false;
+          } else {
+            Swal.fire('Senha incorreta', `Você tem ${3 - attemptCount} tentativa(s) restante(s).`, 'error');
+          }
+        }
+      }
+    }
+    return true;
+  };
+
+  useEffect(() => {
+    const checkAccess = async () => {
+      const hasAccess = await verifyRoomPassword();
+      if (!hasAccess) {
+        navigate('/');
+      }
+    };
+
+    if (!isCreator && !hasJoined) {
+      checkAccess();
+    }
+  }, [isCreator, hasJoined, roomId, navigate]);
 
   useEffect(() => {
     const expelledRef = database.ref(`rooms/${roomId}/expelledUsers`);
@@ -1234,14 +1317,13 @@ const Room = () => {
       <header>
         <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-black">
           <div class="container-fluid">
-            <img
-              className="navbar-brand img-fluid responsive-img"
-              src={iconPage}
-              alt="OpenSecurityRoom"
-            />
-            <button class="navbar-toggler  bg-black" type="button" data-toggle="collapse" data-target="#navbarCollapse"
+            <h1 className="d-flex align-items-center mb-4 mt-4">
+              <FontAwesomeIcon icon={faDoorOpen} className="icon-bordered me-2" />
+              Sala <span className="text-bordered">{roomName}</span>
+            </h1>
+            <button className="navbar-toggler bg-black" type="button" data-toggle="collapse" data-target="#navbarCollapse"
               aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-              <span class="navbar-toggler-icon"></span>
+              <FontAwesomeIcon icon={faEllipsis} />
             </button>
             <div className="collapse navbar-collapse" id="navbarCollapse">
               <ul className="navbar-nav ms-auto mb-2 mb-md-0">
@@ -1277,6 +1359,11 @@ const Room = () => {
                       </button>
                     </li>
                     <li className="nav-item">
+                      <button onClick={setRoomAccessPassword} className="dropdown-item">
+                        <FontAwesomeIcon icon={faLock} /> Definir senha de acesso
+                      </button>
+                    </li>
+                    <li className="nav-item">
                       <button className="dropdown-item" onClick={() => confirmAction('delete')}>
                         <FontAwesomeIcon icon={faTrash} /> Excluir Chat
                       </button>
@@ -1297,8 +1384,6 @@ const Room = () => {
 
       <div className="title-container mt-3 bg-black text-start">
         <h1 className="d-flex align-items-center mb-4 mt-4">
-          <FontAwesomeIcon icon={faDoorOpen} className="icon-bordered me-2" />
-          Sala |<span className="text-bordered">{roomName}</span>
         </h1>
       </div>
 
@@ -1343,7 +1428,7 @@ const Room = () => {
         </div>
       )}
 
-      <div className="message-container mb-1" style={{ height: '320px', overflowY: 'scroll', border: '1px solid transparent', borderRadius: '8px', padding: '10px' }}>
+      <div className="message-container mb-1" style={{ height: '500px', overflowY: 'scroll', border: '1px solid transparent', borderRadius: '8px', padding: '10px' }}>
         {messages.map((msg) => {
           const timeSinceCreation = (Date.now() - new Date(msg.timestamp).getTime()) / 1000;
           const timeRemaining = destructionTime - timeSinceCreation;

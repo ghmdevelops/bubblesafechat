@@ -154,6 +154,12 @@
   scrollbar-color: #131e2b #0061df;
 }
 
+@media (max-width: 768px) {
+  .message-container {
+    max-height: 370px;
+  }
+}
+
 .custom-alert {
   background-color: #d4edda;
   border-color: #c3e6cb;
@@ -272,14 +278,13 @@ h3 {
   color: #000000;
   border-radius: 50%;
   padding: 5px;
-  margin-left: 1rem;
 }
 
 .text-bordered {
-  font-size: 34px;
+  font-size: 30px;
   font-family: Arial, Helvetica, sans-serif;
   margin-left: 9px;
-  color: #00c3ffac; 
+  color: #00c3ffac;
 }
 
 .play-button {
@@ -338,6 +343,11 @@ h3 {
   flex-wrap: nowrap;
 }
 
+.navbar-toggler .fa-ellipsis-v {
+  font-size: 1rem;
+  color: #fff;
+}
+
 @media (max-width: 768px) {
   .btn-group.d-none {
     flex-direction: column;
@@ -351,16 +361,16 @@ h3 {
     border-radius: 8px;
   }
 
-  .title-container h1 {
-    font-size: 1.1rem;
-    height: 0.8rem;
+  .container-fluid h1 {
+    font-size: 0.9rem;
+    height: 0.1rem;
   }
 
-  .text-bordered{
-    font-size: 1.1rem;
+  .text-bordered {
+    font-size: 0.9rem;
   }
 
-  .alert-msg-rols{
+  .alert-msg-rols {
     font-size: 0.7rem;
     font-weight: 400;
   }
