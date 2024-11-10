@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { auth } from '../firebaseConfig';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { GithubAuthProvider, GoogleAuthProvider, signInWithPopup} from 'firebase/auth';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { faGoogle } from '@fortawesome/free-brands-svg-icons';
@@ -15,6 +15,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { faPaperPlane, faArrowLeft, faSignInAlt, faUserPlus, faSpinner, faUser, faEnvelope, faLock, faEye, faEyeSlash, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import IntroPage from './IntroPage';
+import githubIcon from './img/icons8-github-64.png';
 
 library.add(faGoogle);
 
@@ -347,6 +348,34 @@ const AuthExample = () => {
         }
     };
 
+    const handleGithubLogin = async () => {
+        const provider = new GithubAuthProvider();
+        setIsLoading(true);
+
+        try {
+            const result = await signInWithPopup(auth, provider);
+            Swal.fire({
+                icon: 'success',
+                title: 'Login com GitHub bem-sucedido',
+                text: 'Você foi logado com sucesso usando sua conta GitHub.',
+                timer: 1600,
+                timerProgressBar: true,
+            }).then(() => {
+                navigate('/');
+            });
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro no login com GitHub',
+                text: 'Erro ao fazer login com GitHub. Tente novamente.',
+                confirmButtonText: 'Ok',
+            });
+            console.error('Erro ao fazer login com GitHub:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <div className="auth-container">
             <Helmet>
@@ -494,9 +523,37 @@ const AuthExample = () => {
                             </button>
 
                             {isLogin && (
-                                <button type="button" className="btn btn-primary" style={{ height: '50px' }} onClick={handleGoogleLogin} disabled={isLoading || isLockedOut}>
-                                    {isLoading ? ' Carregando...' : <><img src={googleIcon} alt="Google" style={{ width: '20px', marginRight: '5px' }} /> Cadastre-se com o Google</>}
-                                </button>
+                                <>
+                                    <button
+                                        type="button"
+                                        className="btn btn-primary"
+                                        style={{ height: '50px', marginTop: '10px' }}
+                                        onClick={handleGoogleLogin}
+                                        disabled={isLoading || isLockedOut}
+                                    >
+                                        {isLoading ? ' Carregando...' : (
+                                            <>
+                                                <img src={googleIcon} alt="Google" style={{ width: '20px', marginRight: '5px' }} />
+                                                Cadastre-se com o Google
+                                            </>
+                                        )}
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        className="btn btn-primary"
+                                        style={{ height: '50px', marginTop: '10px' }}
+                                        onClick={handleGithubLogin}
+                                        disabled={isLoading || isLockedOut}
+                                    >
+                                        {isLoading ? ' Carregando...' : (
+                                            <>
+                                                <img src={githubIcon} alt="GitHub" style={{ width: '35px', marginRight: '5px' }} />
+                                                Cadastre-se com o GitHub
+                                            </>
+                                        )}
+                                    </button>
+                                </>
                             )}
                         </form>
                     ) : (
