@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { auth } from '../firebaseConfig';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
-import { GithubAuthProvider, GoogleAuthProvider, signInWithPopup} from 'firebase/auth';
+import { FacebookAuthProvider, GithubAuthProvider, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { faGoogle } from '@fortawesome/free-brands-svg-icons';
@@ -16,6 +16,7 @@ import { faPaperPlane, faArrowLeft, faSignInAlt, faUserPlus, faSpinner, faUser, 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import IntroPage from './IntroPage';
 import githubIcon from './img/icons8-github-64.png';
+import facebookIcon from './img/icons8-github-64.png'; 
 
 library.add(faGoogle);
 
@@ -376,6 +377,34 @@ const AuthExample = () => {
         }
     };
 
+    const handleFacebookLogin = async () => {
+        const provider = new FacebookAuthProvider();
+        setIsLoading(true);
+
+        try {
+            const result = await signInWithPopup(auth, provider);
+            Swal.fire({
+                icon: 'success',
+                title: 'Login com Facebook bem-sucedido',
+                text: 'Você foi logado com sucesso usando sua conta do Facebook.',
+                timer: 1600,
+                timerProgressBar: true,
+            }).then(() => {
+                navigate('/');
+            });
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro no login com Facebook',
+                text: 'Erro ao fazer login com Facebook. Tente novamente.',
+                confirmButtonText: 'Ok',
+            });
+            console.error('Erro ao fazer login com Facebook:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <div className="auth-container">
             <Helmet>
@@ -550,6 +579,21 @@ const AuthExample = () => {
                                             <>
                                                 <img src={githubIcon} alt="GitHub" style={{ width: '35px', marginRight: '5px' }} />
                                                 Cadastre-se com o GitHub
+                                            </>
+                                        )}
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        className="btn btn-primary"
+                                        style={{ height: '50px', marginTop: '10px' }}
+                                        onClick={handleFacebookLogin}
+                                        disabled={isLoading || isLockedOut}
+                                    >
+                                        {isLoading ? ' Carregando...' : (
+                                            <>
+                                                <img src={facebookIcon} alt="Facebook" style={{ width: '20px', marginRight: '5px' }} />
+                                                Cadastre-se com o Facebook
                                             </>
                                         )}
                                     </button>
