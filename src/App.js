@@ -8,6 +8,8 @@ import AvatarSelection from './components/AvatarSelection';
 import { auth } from './firebaseConfig';
 import Footer from './components/Footer';
 import LearnMorePage from './LearnMorePage';
+import CookiePolicy from './CookiePolicy';
+import PrivacyPolicy from './PrivacyPolicy'
 
 function App() {
   const [user, setUser] = useState(null);
@@ -43,6 +45,8 @@ function App() {
         <Route path="/login" element={<AuthExample />} />
         <Route path="/" element={user ? <CreateRoom /> : <Navigate to="/login" />} />
         <Route path="/learn-more" element={<LearnMorePage />} />
+        <Route path="/cookie-policy" element={<CookiePolicy />} />
+        <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
         <Route path="/room/:roomId" element={<Room />} />
         <Route path="/avatar-selection" element={user ? <AvatarSelection /> : <Navigate to="/login" />} />
         <Route path="*" element={<NotFound />} />

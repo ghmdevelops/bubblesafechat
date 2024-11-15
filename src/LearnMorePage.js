@@ -32,23 +32,28 @@ const LearnMorePage = () => {
         >
             <Helmet>
                 <title>Bubble Safe Chat - Saiba Mais</title>
-                <meta name="description" content="Salas de chat seguras e privadas com criptografia avançada. Proteja suas conversas com total privacidade e segurança online." />
-                <meta name="keywords" content="chat seguro, privacidade, criptografia, salas de chat, segurança online, comunidade, criptografia avançada, conversas privadas" />
+                <meta name="description" content="Bubble Safe Chat oferece salas de chat seguras e privadas com criptografia de ponta a ponta. Garanta a confidencialidade de suas conversas, com segurança de nível empresarial e recursos avançados de proteção de dados, respeitando regulamentações de privacidade como o GDPR e a LGPD. Converse sem preocupações e com total controle sobre sua privacidade." />
+                <meta name="keywords" content="chat seguro, privacidade online, criptografia avançada, salas de chat privadas, segurança de dados, comunicação segura, proteção de dados pessoais, GDPR, LGPD, criptografia ponta a ponta, privacidade nas mensagens, comunicação confidencial, segurança digital, plataforma de chat segura, mensagem autodestrutiva" />
                 <meta name="author" content="Bubble Safe Chat" />
                 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
                 <meta httpEquiv="Content-Type" content="text/html; charset=UTF-8" />
+                <meta property="og:site_name" content="Bubble Safe Chat" />
                 <meta property="og:title" content="Bubble Safe Chat - Segurança Total para Suas Conversas" />
-                <meta property="og:description" content="Participe do Bubble Safe Chat para criar ou acessar salas de chat criptografadas. Segurança e privacidade são prioridades." />
+                <meta property="og:description" content="Salas de chat seguras e privadas com criptografia avançada. Proteja suas conversas com total privacidade e segurança online, em conformidade com regulamentações como o GDPR e a LGPD." />
                 <meta property="og:type" content="website" />
                 <meta property="og:url" content="https://www.bubblesafechat.com.br" />
-                <meta property="og:image" content="https://www.bubblesafechat.com.br/icon-page-200" />
+                <meta property="og:image" content="https://www.bubblesafechat.com.br/icon-page-200.jpg" />
                 <meta name="twitter:card" content="summary_large_image" />
                 <meta name="twitter:title" content="Bubble Safe Chat - Segurança Total para Suas Conversas" />
-                <meta name="twitter:description" content="Junte-se ao Bubble Safe Chat e proteja suas conversas com criptografia avançada." />
-                <meta name="twitter:image" content="https://www.bubblesafechat.com.br/icon-page-200" />
+                <meta name="twitter:description" content="Junte-se ao Bubble Safe Chat e proteja suas conversas com criptografia avançada. Segurança e privacidade são prioridades." />
+                <meta name="twitter:image" content="https://www.bubblesafechat.com.br/icon-page-200.jpg" />
                 <link rel="canonical" href="https://www.bubblesafechat.com.br" />
                 <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
                 <meta name="robots" content="index, follow" />
+                <meta property="og:image:type" content="image/jpeg" />
+                <meta property="og:image:width" content="200" />
+                <meta property="og:image:height" content="200" />
+                <meta name="twitter:image:alt" content="Bubble Safe Chat - Segurança Total" />
             </Helmet>
 
             <header>

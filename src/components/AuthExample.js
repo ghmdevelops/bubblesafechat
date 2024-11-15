@@ -15,8 +15,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { faPaperPlane, faArrowLeft, faSignInAlt, faUserPlus, faSpinner, faUser, faEnvelope, faLock, faEye, faEyeSlash, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import IntroPage from './IntroPage';
-import githubIcon from './img/icons8-github-64.png';
-import facebookIcon from './img/icons8-github-64.png'; 
+import githubIcon from './img/icons8-github-48.png';
+import facebookIcon from './img/icons8-github-48.png';
 
 library.add(faGoogle);
 
@@ -409,23 +409,28 @@ const AuthExample = () => {
         <div className="auth-container">
             <Helmet>
                 <title>{isLogin ? 'Bubble Safe Chat - Login' : 'Bubble Safe Chat - Registro'}</title>
-                <meta name="description" content="Entre no Bubble Safe Chat para criar ou acessar salas de chat seguras e privadas. Junte-se à comunidade e proteja suas conversas online." />
-                <meta name="keywords" content="login, registro, chat seguro, privacidade, criptografia, comunidade online, segurança digital" />
+                <meta name="description" content="Bubble Safe Chat oferece salas de chat seguras e privadas com criptografia de ponta a ponta. Garanta a confidencialidade de suas conversas, com segurança de nível empresarial e recursos avançados de proteção de dados, respeitando regulamentações de privacidade como o GDPR e a LGPD. Converse sem preocupações e com total controle sobre sua privacidade." />
+                <meta name="keywords" content="chat seguro, privacidade online, criptografia avançada, salas de chat privadas, segurança de dados, comunicação segura, proteção de dados pessoais, GDPR, LGPD, criptografia ponta a ponta, privacidade nas mensagens, comunicação confidencial, segurança digital, plataforma de chat segura, mensagem autodestrutiva" />
                 <meta name="author" content="Bubble Safe Chat" />
-                <meta property="og:title" content={isLogin ? 'Bubble Safe Chat - Login Seguro' : 'Bubble Safe Chat - Registro Seguro'} />
-                <meta property="og:description" content="Participe da Bubble Safe Chat para criar ou acessar salas de chat criptografadas. Segurança e privacidade são prioridades." />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <meta httpEquiv="Content-Type" content="text/html; charset=UTF-8" />
+                <meta property="og:site_name" content="Bubble Safe Chat" />
+                <meta property="og:title" content="Bubble Safe Chat - Segurança Total para Suas Conversas" />
+                <meta property="og:description" content="Salas de chat seguras e privadas com criptografia avançada. Proteja suas conversas com total privacidade e segurança online, em conformidade com regulamentações como o GDPR e a LGPD." />
                 <meta property="og:type" content="website" />
-                <meta property="og:url" content={window.location.href} />
-                <meta property="og:image" content="URL_da_imagem_de_visualização" />
+                <meta property="og:url" content="https://www.bubblesafechat.com.br" />
+                <meta property="og:image" content="https://www.bubblesafechat.com.br/icon-page-200.jpg" />
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content={isLogin ? 'Bubble Safe Chat - Login Seguro' : 'Bubble Safe Chat - Registro Seguro'} />
-                <meta name="twitter:description" content="Junte-se ao Bubble Safe Chat e proteja suas conversas com segurança máxima." />
-                <meta name="twitter:image" content="URL_da_imagem_de_visualização" />
-                <link rel="canonical" href={window.location.href} />
-                <img src="URL_da_imagem_de_visualização" alt="Login seguro no Bubble Safe Chat" />
-                <img src="URL_da_imagem_de_visualização" alt="Registro seguro no Bubble Safe Chat" />
-                <link rel="sitemap" type="application/xml" href="sitemap.xml" />
+                <meta name="twitter:title" content="Bubble Safe Chat - Segurança Total para Suas Conversas" />
+                <meta name="twitter:description" content="Junte-se ao Bubble Safe Chat e proteja suas conversas com criptografia avançada. Segurança e privacidade são prioridades." />
+                <meta name="twitter:image" content="https://www.bubblesafechat.com.br/icon-page-200.jpg" />
+                <link rel="canonical" href="https://www.bubblesafechat.com.br" />
+                <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
                 <meta name="robots" content="index, follow" />
+                <meta property="og:image:type" content="image/jpeg" />
+                <meta property="og:image:width" content="200" />
+                <meta property="og:image:height" content="200" />
+                <meta name="twitter:image:alt" content="Bubble Safe Chat - Segurança Total" />
                 User-agent: *
                 Allow: /
             </Helmet>
@@ -529,7 +534,7 @@ const AuthExample = () => {
                                 </p>
                             )}*/}
 
-                            <button type="submit" style={{ height: '50px' }} className="btn btn-primary" disabled={isLoading || isLockedOut}>
+                            <button type="submit" style={{ height: '50px', fontWeight: '500', fontSize: '16px' }} className="btn btn-primary" disabled={isLoading || isLockedOut}>
                                 {isLoading ? (
                                     <div className="spinner-container">
                                         <FontAwesomeIcon icon={faSpinner} spin className="spinner" />
@@ -538,8 +543,7 @@ const AuthExample = () => {
                                     <>
                                         {isLogin ? (
                                             <>
-                                                <FontAwesomeIcon icon={faSignInAlt} className="me-2" />
-                                                Login
+                                                Access Room
                                             </>
                                         ) : (
                                             <>
@@ -553,37 +557,37 @@ const AuthExample = () => {
 
                             {isLogin && (
                                 <>
-                                    <button
-                                        type="button"
-                                        className="btn btn-primary"
-                                        style={{ height: '50px', marginTop: '10px' }}
-                                        onClick={handleGoogleLogin}
-                                        disabled={isLoading || isLockedOut}
-                                    >
-                                        {isLoading ? ' Carregando...' : (
-                                            <>
-                                                <img src={googleIcon} alt="Google" style={{ width: '20px', marginRight: '5px' }} />
-                                                Cadastre-se com o Google
-                                            </>
-                                        )}
-                                    </button>
+                                    <div className="d-flex justify-content-center gap-2 mt-2 div-btn-log">
+                                        <button
+                                            type="button"
+                                            className="btn"
+                                            style={{ height: '50px' }}
+                                            onClick={handleGoogleLogin}
+                                            disabled={isLoading || isLockedOut}
+                                        >
+                                            {isLoading ? 'Carregando...' : (
+                                                <>
+                                                    <img src={googleIcon} alt="Google" style={{ width: '24px', marginRight: '5px' }} />
+                                                </>
+                                            )}
+                                        </button>
 
-                                    <button
-                                        type="button"
-                                        className="btn btn-primary"
-                                        style={{ height: '50px', marginTop: '10px' }}
-                                        onClick={handleGithubLogin}
-                                        disabled={isLoading || isLockedOut}
-                                    >
-                                        {isLoading ? ' Carregando...' : (
-                                            <>
-                                                <img src={githubIcon} alt="GitHub" style={{ width: '35px', marginRight: '5px' }} />
-                                                Cadastre-se com o GitHub
-                                            </>
-                                        )}
-                                    </button>
+                                        <button
+                                            type="button"
+                                            className="btn"
+                                            style={{ height: '50px' }}
+                                            onClick={handleGithubLogin}
+                                            disabled={isLoading || isLockedOut}
+                                        >
+                                            {isLoading ? 'Carregando...' : (
+                                                <>
+                                                    <img src={githubIcon} alt="GitHub" style={{ width: '30px', marginRight: '5px' }} />
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
 
-                                    <button
+                                    {/* <button
                                         type="button"
                                         className="btn btn-primary"
                                         style={{ height: '50px', marginTop: '10px' }}
@@ -596,7 +600,7 @@ const AuthExample = () => {
                                                 Cadastre-se com o Facebook
                                             </>
                                         )}
-                                    </button>
+                                    </button>*/}
                                 </>
                             )}
                         </form>

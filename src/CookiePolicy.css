@@ -1,0 +1,124 @@
+.cookie-policy-container {
+  background-color: transparent;
+  color: #e0e0e0;
+  padding: 30px;
+  border-radius: 12px;
+  margin: 10px auto;
+  font-family: "Arial", sans-serif;
+  box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.5);  transition: all 0.3s ease;
+}
+
+.cookie-policy-container:hover {
+  box-shadow: 0px 12px 20px rgba(0, 0, 0, 0.6);
+  transform: translateY(-5px);
+}
+
+.cookie-policy-header .btn {
+  border: 2px solid #00b4ff;
+  color: #00b4ff;
+  transition: color 0.3s, border-color 0.3s, box-shadow 0.3s;
+  padding: 10px 20px;
+  border-radius: 8px;
+}
+
+.cookie-policy-header .btn:hover {
+  color: #008ecc;
+  border-color: #008ecc;
+  box-shadow: 0px 0px 8px #00b4ff;
+}
+
+.policy-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #ffffff;
+  text-align: center;
+  margin-bottom: 25px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.policy-description {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  text-align: center;
+  color: #c0c0c0;
+  margin-bottom: 25px;
+  max-width: 800px;
+  margin: 0 auto 25px auto;
+}
+
+.section-title {
+  font-size: 1.8rem;
+  margin-top: 25px;
+  margin-bottom: 15px;
+  color: #f0f0f0;
+  border-bottom: 2px solid #333;
+  padding-bottom: 7px;
+}
+
+.sub-section-title {
+  font-size: 1.4rem;
+  color: #cccccc;
+  margin-top: 20px;
+}
+
+.cookie-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 15px 0;
+}
+
+.cookie-list li {
+  border: 2px solid transparent;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 8px;
+  transition: all 0.4s ease;
+  display: flex;
+  align-items: center;
+}
+
+.cookie-list li:before {
+  content: "🍪";
+  font-size: 1.2rem;
+  margin-right: 10px;
+  transition: transform 0.4s ease;
+}
+
+.cookie-list li:hover {
+  background: #0056b3;
+  border-color: #00b4ff;
+  transform: scale(1.02);
+}
+
+.cookie-list li:hover:before {
+  transform: rotate(20deg) scale(1.2);
+}
+
+a {
+  color: #00b4ff;
+  text-decoration: none;
+  transition: color 0.3s, text-shadow 0.3s;
+}
+
+a:hover {
+  color: #008ecc;
+  text-shadow: 0px 0px 5px #00b4ff;
+}
+
+@media (max-width: 768px) {
+  .policy-title {
+    font-size: 2rem;
+  }
+
+  .policy-description,
+  .section-title,
+  .sub-section-title {
+    font-size: 1rem;
+  }
+
+  .cookie-policy-header .btn {
+    padding: 8px 16px;
+  }
+}

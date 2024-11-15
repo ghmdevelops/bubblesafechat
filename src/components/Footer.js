@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFacebook, faTwitter, faGoogle, faInstagram, faLinkedin, faGithub } from '@fortawesome/free-brands-svg-icons';
 import { faEnvelope, faPhone, faHome } from '@fortawesome/free-solid-svg-icons';
@@ -6,6 +7,12 @@ import './Footer.css';
 import iconPage from './img/icon-page.png'
 
 const Footer = () => {
+    const navigate = useNavigate();
+
+    const handlePrivacyPolicyClick = () => {
+        navigate('/politica-de-privacidade');
+    }
+
     return (
         <footer className="footer text-light pt-4 mt-5 mb-4">
             <div className="container text-center text-md-left">
@@ -19,6 +26,9 @@ const Footer = () => {
                             Estamos revolucionando a forma de se comunicar com soluções de chat ultrasseguras. Com uma equipe enxuta e altamente dedicada, trabalhando remotamente de diversas regiões do Brasil e do mundo, nossa missão é clara: colocar a inovação e a segurança no coração de cada interação, protegendo suas conversas e garantindo total privacidade.
                         </p>
                         <p className='mt-4'><FontAwesomeIcon icon={faEnvelope} /> Email: contato@bubblesafechat.com.br</p>
+                        <p className="mt-2" style={{ cursor: 'pointer', color: '#007bff' }} onClick={handlePrivacyPolicyClick}>
+                            Política de Privacidade
+                        </p>
                     </div>
 
                     <div className="col-md-4 col-lg-4 col-xl-4 mx-auto mb-4 d-none">

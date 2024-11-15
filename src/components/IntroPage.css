@@ -124,7 +124,7 @@
 }
 
 .cookie-logo {
-  width: 80px;
+  width: 480px;
   margin-bottom: 20px;
 }
 
@@ -205,6 +205,11 @@ h2.page-text-ifo {
     height: 1.7rem;
     font-size: 0.8rem;
     padding: 1px 1px;
+  }
+
+  .cookie-logo {
+    width: 280px;
+    margin-bottom: 20px;
   }
 }
 
