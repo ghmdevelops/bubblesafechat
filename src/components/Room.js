@@ -16,6 +16,7 @@ import iconPage from './img/icon-menu.png'
 import { motion } from 'framer-motion';
 import { Spinner } from "react-bootstrap";
 import notificationSound from './sounds/notification.mp3';
+import Joyride from 'react-joyride';
 
 const Room = () => {
   const { roomId } = useParams();
@@ -63,6 +64,7 @@ const Room = () => {
   const [isPasswordEnabled, setIsPasswordEnabled] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [isRotated, setIsRotated] = useState(false);
+  const [isTourActive, setIsTourActive] = useState(false);
 
   const messageContainerRef = useRef(null);
   const inputRef = useRef(null);
@@ -94,6 +96,88 @@ const Room = () => {
   const handleToggle = () => {
     setIsRotated(!isRotated);
   };
+
+  useEffect(() => {
+    if (isTourActive && window.innerWidth <= 768) {
+      setTimeout(() => {
+        const menuToggleButton = document.querySelector('.navbar-toggler');
+
+        if (menuToggleButton) {
+          menuToggleButton.click();
+
+          setTimeout(() => {
+            const menu = document.querySelector('.navbar-collapse');
+            if (menu) {
+              menu.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }, 300);
+
+          setTimeout(() => {
+            const closeButton = document.querySelector('.navbar-toggler');
+            if (closeButton) {
+              closeButton.click();
+            }
+          }, 3000);
+        }
+      }, 500);
+    }
+  }, [isTourActive]);
+
+  useEffect(() => {
+    const tourAsked = localStorage.getItem('tourAsked');
+    
+    const askTour = () => {
+      Swal.fire({
+        title: 'Gostaria de fazer um tour pela sala?',
+        text: 'Nós mostraremos o que cada botão e opção do menu faz.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sim',
+        cancelButtonText: 'Não',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          setIsTourActive(true); 
+        }
+        localStorage.setItem('tourAsked', 'true');
+      });
+    };
+  
+    const onUserAuthorized = () => {
+      if (!tourAsked) {
+        askTour(); 
+      }
+    };
+  
+  }, []);
+  
+  const onUserAuthorized = () => {
+    const tourAsked = localStorage.getItem('tourAsked');
+    if (!tourAsked) {
+      Swal.fire({
+        title: 'Gostaria de fazer um tour pela sala?',
+        text: 'Nós mostraremos o que cada botão e opção do menu faz.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sim',
+        cancelButtonText: 'Não',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          setIsTourActive(true);
+        }
+        localStorage.setItem('tourAsked', 'true');
+      });
+    }
+  };
+  
+  useEffect(() => {
+    if (hasJoined) {
+      onUserAuthorized();
+    }
+  }, [hasJoined]);
+  
+  const startNewRoom = () => {
+    localStorage.removeItem('tourAsked');
+  };  
 
   const promptPasswordAndDisplayMessage = (msg) => {
     let attemptCount = 0;
@@ -478,31 +562,15 @@ const Room = () => {
     }
   }, [messages]);
 
-  /* useEffect(() => {
-     if (messagesEndRef.current) {
-       const messageContainer = document.querySelector('.message-container');
-       messageContainer.scrollTo({
-         top: messageContainer.scrollHeight,
-         behavior: 'smooth',
-       });
-     }
-   }, [messages]);*/
-
   useEffect(() => {
-    const messageContainer = messageContainerRef.current;
-
-    if (messageContainer) {
-      // Verifica se o usuário está na parte inferior do chat
-      const isAtBottom = messageContainer.scrollHeight - messageContainer.scrollTop === messageContainer.clientHeight;
-
-      if (isAtBottom) {
-        messageContainer.scrollTo({
-          top: messageContainer.scrollHeight,
-          behavior: 'smooth', // Transição suave
-        });
-      }
+    if (messagesEndRef.current) {
+      const messageContainer = document.querySelector('.message-container');
+      messageContainer.scrollTo({
+        top: messageContainer.scrollHeight,
+        behavior: 'smooth',
+      });
     }
-  }, [messages]); // A rolagem ocorrerá sempre que as mensagens mudarem  
+  }, [messages]);
 
   useEffect(() => {
     const handleFocus = () => setIsKeyboardVisible(true);
@@ -527,11 +595,9 @@ const Room = () => {
     const messageContainer = messageContainerRef.current;
     if (messageContainer) {
       if (isKeyboardVisible) {
-        // Ajuste a altura para dar espaço ao teclado
-        messageContainer.style.height = 'calc(100vh - 250px)'; // Ajuste conforme necessário
+        messageContainer.style.height = 'calc(100vh - 250px)';
       } else {
-        // Restaura a altura normal quando o teclado for escondido
-        messageContainer.style.height = 'calc(100vh - 60px)'; // Ajuste conforme necessário
+        messageContainer.style.height = 'calc(100vh - 60px)';
       }
     }
   }, [isKeyboardVisible]);
@@ -1361,8 +1427,64 @@ const Room = () => {
     );
   }
 
+  const steps = [
+    {
+      target: '.audusd',
+      content: 'Clique aqui para enviar áudio.',
+    },
+    {
+      target: '.sendmsgd',
+      content: 'Clique aqui para enviar sua mensagem de forma rápida e direta, facilitando a comunicação instantânea.',
+    },
+    {
+      target: '.blocks',
+      content: 'Ative a proteção por senha para que uma mensagem só seja liberada para visualização quando outro usuário que saiba a senha a digitar.',
+    },
+    {
+      target: '.audiosescri',
+      content: 'Clique aqui para gravar uma mensagem de áudio e deixar que o sistema converta automaticamente para texto, transcrevendo sua fala.',
+    },
+    {
+      target: '.excluiuserma',
+      content: 'Com este botão, você pode excluir qualquer usuário da sala de chat com um simples clique, removendo-o imediatamente.',
+    },
+  ];
+
   return (
     <div>
+      <Joyride
+        steps={steps}
+        run={isTourActive}
+        continuous={true}
+        showSkipButton={true}
+        showProgress={true}
+        scrollToFirstStep={true}
+        disableScrolling={true}
+        styles={{
+          options: {
+            zIndex: 10000,
+            backgroundColor: '#fff',
+            color: 'white !important',
+            arrowColor: 'white',
+          },
+          buttonSkip: {
+            color: '#DC143C',
+          },
+        }}
+        locale={{
+          back: 'Voltar',
+          close: 'Fechar',
+          last: 'Último',
+          next: 'Próximo',
+          skip: 'Pular',
+          stop: 'Parar',
+        }}
+        callback={(data) => {
+          if (data.status === 'finished' || data.status === 'skipped') {
+            setIsTourActive(false);
+          }
+        }}
+      />
       <Helmet>
         <title>{`Bubble Safe Chat - ${roomName ? roomName : 'Carregando...'}`}</title>
         <meta name="description" content="Entre no Bubble Safe Chat para criar ou acessar salas de chat seguras e privadas. Junte-se à comunidade e proteja suas conversas online." />
@@ -1389,7 +1511,7 @@ const Room = () => {
               Sala <span className="text-bordered">{roomName}</span>
             </h1>
             <button
-              className="navbar-toggler bg-black"
+              className="navbar-toggler bg-black btn-menv"
               type="button"
               data-toggle="collapse"
               data-target="#navbarCollapse"
@@ -1409,12 +1531,12 @@ const Room = () => {
                 {isCreator ? (
                   <>
                     <li className="nav-item">
-                      <button className="dropdown-item" onClick={() => confirmAction('share')}>
+                      <button className="dropdown-item compart" onClick={() => confirmAction('share')}>
                         <FontAwesomeIcon icon={faShareAlt} /> Compartilhar
                       </button>
                     </li>
                     <li className="nav-item">
-                      <button className="dropdown-item" onClick={() => confirmAction('qr')}>
+                      <button className="dropdown-item qrcode" onClick={() => confirmAction('qr')}>
                         <FontAwesomeIcon icon={faQrcode} /> QR Code
                       </button>
                     </li>
@@ -1424,7 +1546,7 @@ const Room = () => {
                         onClick={toggleDestruction}
                       >
                         <span>
-                          <FontAwesomeIcon icon={faClock} className={`me-2 ${isDestructionActive ? 'text-success' : 'text-white'}`} />
+                          <FontAwesomeIcon icon={faClock} className={`me-2 ${isDestructionActive ? 'text-success' : 'text-white'} autodesc`} />
                           Autodestruição
                         </span>
                         <input
@@ -1437,18 +1559,18 @@ const Room = () => {
                       </button>
                     </li>
                     <li className="nav-item">
-                      <button onClick={setRoomAccessPassword} className="dropdown-item">
+                      <button onClick={setRoomAccessPassword} className="dropdown-item defpass">
                         <FontAwesomeIcon icon={faLock} /> Definir senha de acesso
                       </button>
                     </li>
                     <li className="nav-item">
-                      <button className="dropdown-item" onClick={() => confirmAction('delete')}>
+                      <button className="dropdown-item excchat" onClick={() => confirmAction('delete')}>
                         <FontAwesomeIcon icon={faTrash} /> Excluir Chat
                       </button>
                     </li>
                   </>
                 ) : (
-                  <li className="nav-item">
+                  <li className="nav-item exitchatsd">
                     <button className="dropdown-item" onClick={leaveRoom}>
                       <FontAwesomeIcon icon={faSignOutAlt} /> Sair do Chat
                     </button>
@@ -1506,16 +1628,7 @@ const Room = () => {
         </div>
       )}
 
-      <div
-        className="message-container"
-        ref={messageContainerRef}
-        style={{
-          overflowY: 'scroll',
-          padding: '10px',
-          position: 'relative',
-          transition: 'height 0.3s ease',
-        }}
-      >
+      <div className="message-container mb-1" style={{ height: '500px', overflowY: 'scroll', border: '1px solid transparent', borderRadius: '8px', padding: '10px' }}>
         {messages.map((msg) => {
           const timeSinceCreation = (Date.now() - new Date(msg.timestamp).getTime()) / 1000;
           const timeRemaining = destructionTime - timeSinceCreation;
@@ -1657,9 +1770,9 @@ const Room = () => {
               type="text"
               value={message}
               onChange={handleTyping}
-              placeholder="Digite sua mensagem..."
+              placeholder="Escreva sua mensagem"
               onFocus={markAllMessagesAsRead}
-              className="form-control me-2"
+              className="form-control me-2 msg-user2"
               disabled
             />
             <button onClick={stopRecording} className="btn btn-warning me-2">
@@ -1686,10 +1799,9 @@ const Room = () => {
             <div className="input-with-icon w-100">
               <input
                 type="text"
-                ref={inputRef}
                 value={message}
                 onChange={handleTyping}
-                placeholder="Digite sua mensagem..."
+                placeholder="Escreva sua mensagem"
                 onFocus={markAllMessagesAsRead}
                 className="form-control msg-user1"
                 onKeyDown={(e) => {
@@ -1698,17 +1810,17 @@ const Room = () => {
                     sendMessage();
                   }
                 }}
-                style={{ width: '100%', padding: '10px', marginTop: '10px', paddingRight: '40px' }}
+                style={{ paddingRight: '40px' }}
               />
 
               <button
                 onClick={startRecording}
                 disabled={recording}
-                className="btn-icon"
+                className="btn-icon audusd"
                 style={{
                   position: 'absolute',
                   right: '0.8px',
-                  top: '50%',
+                  top: '40%',
                   transform: 'translateY(-50%)',
                   background: 'transparent',
                   border: 'none',
@@ -1720,7 +1832,7 @@ const Room = () => {
             </div>
 
             <div className="d-flex align-items-center">
-              <button onClick={sendMessage} disabled={!message.trim()} className="btn btn-primary me-2 rounded-5">
+              <button onClick={sendMessage} disabled={!message.trim()} className="btn btn-primary me-2 rounded-5 sendmsgd">
                 <FontAwesomeIcon icon={faPaperPlane} />
               </button>
 
@@ -1732,14 +1844,14 @@ const Room = () => {
 
               {!showPlusButton || showOptions ? (
                 <div className="btn-group d-flex">
-                  <button onClick={sendProtectedMessage} className="btn btn-warning me-2 rounded-5">
+                  <button onClick={sendProtectedMessage} className="btn btn-warning me-2 rounded-5 blocks">
                     <FontAwesomeIcon icon={faLock} />
                   </button>
-                  <button style={{ borderRadius: "10rem" }} onClick={recognitionActive ? stopRecognition : startRecognition} className="btn btn-warning me-2">
+                  <button style={{ borderRadius: "10rem" }} onClick={recognitionActive ? stopRecognition : startRecognition} className="btn btn-warning me-2 audiosescri">
                     <FontAwesomeIcon icon={faPen} />
                   </button>
                   {isCreator && (
-                    <button style={{ borderRadius: "30rem" }} className="btn btn-warning" onClick={toggleExpelModal}>
+                    <button style={{ borderRadius: "30rem" }} className="btn btn-warning excluiuserma" onClick={toggleExpelModal}>
                       <FontAwesomeIcon icon={faUserSlash} style={{ width: "0.9rem" }} />
                     </button>
                   )}
