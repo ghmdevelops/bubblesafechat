@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './LearnMorePage.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faLock, faShieldAlt, faCommentDots, faQrcode } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faUser, faLock, faShieldAlt, faCommentDots, faQrcode } from '@fortawesome/free-solid-svg-icons';
 import { Helmet } from 'react-helmet';
 import { motion } from 'framer-motion';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -61,9 +61,15 @@ const LearnMorePage = () => {
                     <div className="container-fluid">
                         <img className="navbar-brand img-fluid responsive-img" src={iconPage} alt="Bubble Safe Chat" />
                         <div className="collapse navbar-collapse" id="navbarCollapse"></div>
-                        <b className="logout-button-op btn btn-outline-info ms-auto" onClick={goToLogin}>
-                            <FontAwesomeIcon icon={faUser} />
-                        </b>
+                        <motion.button
+                            className="btn btn-outline-info ms-auto"
+                            onClick={goToLogin}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.3, duration: 0.5 }}
+                        >
+                            <FontAwesomeIcon icon={faArrowLeft} />
+                        </motion.button>
                     </div>
                 </nav>
             </header>

@@ -6,7 +6,7 @@ import '@sweetalert2/theme-dark/dark.css';
 import Swal from 'sweetalert2';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlay } from '@fortawesome/free-solid-svg-icons';
+import { faDoorOpen } from '@fortawesome/free-solid-svg-icons';
 import iconPage from './img/icon-menu.png';
 import { Helmet } from 'react-helmet';
 
@@ -138,8 +138,8 @@ const AvatarSelection = () => {
                             className="btn btn-outline-warning btn-lg animate__animated animate__pulse animate__infinite"
                             onClick={saveAvatarSelection}
                         >
-                            <FontAwesomeIcon icon={faPlay} className="me-2" />
-                            Start
+                            <FontAwesomeIcon icon={faDoorOpen} className="me-2" />
+                            Go Room
                         </button>
                     </div>
                 )}

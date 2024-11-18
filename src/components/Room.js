@@ -62,6 +62,11 @@ const Room = () => {
   const [roomPassword, setRoomPassword] = useState('');
   const [isPasswordEnabled, setIsPasswordEnabled] = useState(false);
   const [attempts, setAttempts] = useState(0);
+  const [isRotated, setIsRotated] = useState(false);
+
+  const messageContainerRef = useRef(null);
+  const inputRef = useRef(null);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
   const shareLink = `${window.location.origin}/bubblesafechat/#/room/${roomId}`;
   const shareLink2 = `${window.location.origin}/#/room/${roomId}`;
@@ -84,6 +89,10 @@ const Room = () => {
       setMessage('');
       setReplyingTo(null);
     }
+  };
+
+  const handleToggle = () => {
+    setIsRotated(!isRotated);
   };
 
   const promptPasswordAndDisplayMessage = (msg) => {
@@ -468,6 +477,64 @@ const Room = () => {
       messageContainer.scrollTop = messageContainer.scrollHeight;
     }
   }, [messages]);
+
+  /* useEffect(() => {
+     if (messagesEndRef.current) {
+       const messageContainer = document.querySelector('.message-container');
+       messageContainer.scrollTo({
+         top: messageContainer.scrollHeight,
+         behavior: 'smooth',
+       });
+     }
+   }, [messages]);*/
+
+  useEffect(() => {
+    const messageContainer = messageContainerRef.current;
+
+    if (messageContainer) {
+      // Verifica se o usuário está na parte inferior do chat
+      const isAtBottom = messageContainer.scrollHeight - messageContainer.scrollTop === messageContainer.clientHeight;
+
+      if (isAtBottom) {
+        messageContainer.scrollTo({
+          top: messageContainer.scrollHeight,
+          behavior: 'smooth', // Transição suave
+        });
+      }
+    }
+  }, [messages]); // A rolagem ocorrerá sempre que as mensagens mudarem  
+
+  useEffect(() => {
+    const handleFocus = () => setIsKeyboardVisible(true);
+    const handleBlur = () => setIsKeyboardVisible(false);
+
+    const inputElement = inputRef.current;
+
+    if (inputElement) {
+      inputElement.addEventListener('focus', handleFocus);
+      inputElement.addEventListener('blur', handleBlur);
+    }
+
+    return () => {
+      if (inputElement) {
+        inputElement.removeEventListener('focus', handleFocus);
+        inputElement.removeEventListener('blur', handleBlur);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const messageContainer = messageContainerRef.current;
+    if (messageContainer) {
+      if (isKeyboardVisible) {
+        // Ajuste a altura para dar espaço ao teclado
+        messageContainer.style.height = 'calc(100vh - 250px)'; // Ajuste conforme necessário
+      } else {
+        // Restaura a altura normal quando o teclado for escondido
+        messageContainer.style.height = 'calc(100vh - 60px)'; // Ajuste conforme necessário
+      }
+    }
+  }, [isKeyboardVisible]);
 
   const markMessageAsRead = (messageId) => {
     const readByRef = database.ref(`rooms/${roomId}/messages/${messageId}/readBy`);
@@ -1321,9 +1388,20 @@ const Room = () => {
               <FontAwesomeIcon icon={faDoorOpen} className="icon-bordered me-2" />
               Sala <span className="text-bordered">{roomName}</span>
             </h1>
-            <button className="navbar-toggler bg-black" type="button" data-toggle="collapse" data-target="#navbarCollapse"
-              aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-              <FontAwesomeIcon icon={faEllipsis} />
+            <button
+              className="navbar-toggler bg-black"
+              type="button"
+              data-toggle="collapse"
+              data-target="#navbarCollapse"
+              aria-controls="navbarCollapse"
+              aria-expanded="false"
+              aria-label="Toggle navigation"
+              onClick={handleToggle}
+            >
+              <FontAwesomeIcon
+                icon={faEllipsis}
+                className={`transition-icon ${isRotated ? 'rotated' : ''}`}
+              />
             </button>
             <div className="collapse navbar-collapse" id="navbarCollapse">
               <ul className="navbar-nav ms-auto mb-2 mb-md-0">
@@ -1428,7 +1506,16 @@ const Room = () => {
         </div>
       )}
 
-      <div className="message-container mb-1" style={{ height: '500px', overflowY: 'scroll', border: '1px solid transparent', borderRadius: '8px', padding: '10px' }}>
+      <div
+        className="message-container"
+        ref={messageContainerRef}
+        style={{
+          overflowY: 'scroll',
+          padding: '10px',
+          position: 'relative',
+          transition: 'height 0.3s ease',
+        }}
+      >
         {messages.map((msg) => {
           const timeSinceCreation = (Date.now() - new Date(msg.timestamp).getTime()) / 1000;
           const timeRemaining = destructionTime - timeSinceCreation;
@@ -1570,7 +1657,7 @@ const Room = () => {
               type="text"
               value={message}
               onChange={handleTyping}
-              placeholder="Escreva sua mensagem"
+              placeholder="Digite sua mensagem..."
               onFocus={markAllMessagesAsRead}
               className="form-control me-2"
               disabled
@@ -1599,9 +1686,10 @@ const Room = () => {
             <div className="input-with-icon w-100">
               <input
                 type="text"
+                ref={inputRef}
                 value={message}
                 onChange={handleTyping}
-                placeholder="Escreva sua mensagem"
+                placeholder="Digite sua mensagem..."
                 onFocus={markAllMessagesAsRead}
                 className="form-control msg-user1"
                 onKeyDown={(e) => {
@@ -1610,7 +1698,7 @@ const Room = () => {
                     sendMessage();
                   }
                 }}
-                style={{ paddingRight: '40px' }}
+                style={{ width: '100%', padding: '10px', marginTop: '10px', paddingRight: '40px' }}
               />
 
               <button
@@ -1620,7 +1708,7 @@ const Room = () => {
                 style={{
                   position: 'absolute',
                   right: '0.8px',
-                  top: '40%',
+                  top: '50%',
                   transform: 'translateY(-50%)',
                   background: 'transparent',
                   border: 'none',
