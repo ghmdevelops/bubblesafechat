@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { database, auth } from '../firebaseConfig';
 import './AvatarSelection.css';
@@ -15,24 +15,25 @@ const AvatarSelection = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { roomName, encryptionKey } = location.state;
+    const goRoomButtonRef = useRef(null);
 
     const avatarOptions = [
-        'https://img.icons8.com/fluency/48/apple-arcade.png',
-        'https://img.icons8.com/color/48/ghost--v1.png',
-        'https://img.icons8.com/color/48/legolas.png',
-        'https://img.icons8.com/color/48/gollum.png',
-        'https://img.icons8.com/color/48/vulcan-head.png',
-        'https://img.icons8.com/color/48/luke-skywalker.png',
-        'https://img.icons8.com/external-flat-icons-inmotus-design/67/external-droid-star-wars-flat-icons-inmotus-design.png',
-        'https://img.icons8.com/emoji/48/man.png',
-        'https://img.icons8.com/fluency/48/businessman--v1.png',
-        'https://img.icons8.com/office/40/businesswoman.png',
-        'https://img.icons8.com/color/48/person-female-skin-type-7.png',
-        'https://img.icons8.com/stickers/50/storm-marvel--v6.png',
+        'https://img.icons8.com/color/96/cyclop-marvel.png',
+        'https://img.icons8.com/fluency/96/apple-arcade.png',
+        'https://img.icons8.com/arcade/64/ghost.png',
+        'https://img.icons8.com/color/96/neo.png',
+        'https://img.icons8.com/emoji/96/woman-head-emoji.png',
         'https://img.icons8.com/avantgarde/100/cyclop-marvel.png',
-        'https://img.icons8.com/color/48/cyclop-marvel.png',
-        'https://img.icons8.com/color/48/spiderman-head.png',
-        'https://img.icons8.com/color/48/thanos.png'
+        'https://img.icons8.com/color/96/logan-x-men.png',
+        'https://img.icons8.com/color/96/deadpool.png',
+        'https://img.icons8.com/color/96/jean-grey.png',
+        'https://img.icons8.com/color/96/anonymous-mask.png',
+        'https://img.icons8.com/dusk/128/detective.png',
+        'https://img.icons8.com/pulsar-gradient/96/user.png',
+        'https://img.icons8.com/color/96/moderator-male--v1.png',
+        'https://img.icons8.com/scribby/100/monster-face.png',
+        'https://img.icons8.com/avantgarde/100/super-mario.png',
+        'https://img.icons8.com/color/96/brunette-princess.png',
     ];
 
     const handleAvatarSelection = (avatar) => {
@@ -61,6 +62,21 @@ const AvatarSelection = () => {
     const handleBack = () => {
         navigate(-1);
     };
+
+    useEffect(() => {
+        if (selectedAvatar && goRoomButtonRef.current) {
+            if (window.innerWidth <= 768) {
+                const buttonPosition = goRoomButtonRef.current.getBoundingClientRect().top;
+                const maxScrollPosition = 480; 
+                const scrollPosition = Math.min(buttonPosition, maxScrollPosition); // Aplica o limite de rolagem
+
+                window.scrollTo({
+                    top: scrollPosition,
+                    behavior: 'smooth',
+                });
+            }
+        }
+    }, [selectedAvatar]);
 
     return (
         <div className="container mt-5">
@@ -131,18 +147,19 @@ const AvatarSelection = () => {
                     </div>
                 </div>
 
-
-                {selectedAvatar && (
-                    <div className="text-center mt-4 animated-button">
-                        <button
-                            className="btn btn-outline-warning btn-lg animate__animated animate__pulse animate__infinite"
-                            onClick={saveAvatarSelection}
-                        >
-                            <FontAwesomeIcon icon={faDoorOpen} className="me-2" />
-                            Go Room
-                        </button>
-                    </div>
-                )}
+                <div className="row justify-content-center mt-4">
+                    {selectedAvatar && (
+                        <div className="col-md-4 text-center animated-button" ref={goRoomButtonRef}>
+                            <button
+                                className="btn btn-outline-warning btn-lg animate__animated animate__pulse animate__infinite"
+                                onClick={saveAvatarSelection}
+                            >
+                                <FontAwesomeIcon icon={faDoorOpen} className="me-2" />
+                                Go Room
+                            </button>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

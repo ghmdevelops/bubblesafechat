@@ -39,25 +39,27 @@ const CookiePolicy = () => {
                 <meta property="og:title" content="Bubble Safe Chat - Segurança Total para Suas Conversas" />
                 <meta property="og:description" content="Salas de chat seguras e privadas com criptografia avançada. Proteja suas conversas com total privacidade e segurança online, em conformidade com regulamentações como o GDPR e a LGPD." />
                 <meta property="og:type" content="website" />
-                <meta property="og:url" content="https://www.bubblesafechat.com.br" />
-                <meta property="og:image" content="https://www.bubblesafechat.com.br/icon-page-200.jpg" />
+                <meta property="og:url" content="https://bubblesafechat.com.br" />
+                <meta property="og:image" content="https://bubblesafechat.com.br/icon-page-200.jpg" />
                 <meta name="twitter:card" content="summary_large_image" />
                 <meta name="twitter:title" content="Bubble Safe Chat - Segurança Total para Suas Conversas" />
                 <meta name="twitter:description" content="Junte-se ao Bubble Safe Chat e proteja suas conversas com criptografia avançada. Segurança e privacidade são prioridades." />
-                <meta name="twitter:image" content="https://www.bubblesafechat.com.br/icon-page-200.jpg" />
-                <link rel="canonical" href="https://www.bubblesafechat.com.br" />
+                <meta name="twitter:image" content="https://bubblesafechat.com.br/icon-page-200.jpg" />
+                <link rel="canonical" href="https://bubblesafechat.com.br" />
                 <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
                 <meta name="robots" content="index, follow" />
                 <meta property="og:image:type" content="image/jpeg" />
                 <meta property="og:image:width" content="200" />
                 <meta property="og:image:height" content="200" />
                 <meta name="twitter:image:alt" content="Bubble Safe Chat - Segurança Total" />
+                User-agent: *
+                Allow: /
             </Helmet>
 
             <header className="cookie-policy-header">
                 <nav className="navbar navbar-expand-md navbar-black fixed-top bg-black">
                     <div className="container-fluid">
-                    <img className="navbar-brand img-fluid responsive-img" src={iconPage} alt="Bubble Safe Chat" />
+                        <img className="navbar-brand img-fluid responsive-img" src={iconPage} alt="Bubble Safe Chat" />
                         <motion.button
                             className="btn btn-outline-info ms-auto"
                             onClick={goToHome}
@@ -65,7 +67,7 @@ const CookiePolicy = () => {
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.3, duration: 0.5 }}
                         >
-                            <FontAwesomeIcon icon={faArrowLeft} /> 
+                            <FontAwesomeIcon icon={faArrowLeft} />
                         </motion.button>
                     </div>
                 </nav>

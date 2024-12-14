@@ -225,7 +225,7 @@ const PrivacyPolicy = () => {
                         <li><strong>Portabilidade:</strong> Você pode solicitar a transferência de seus dados para outro serviço, se aplicável.</li>
                         <li><strong>Limitação:</strong> Você pode limitar o processamento de seus dados.</li>
                     </ul>
-                    Para exercer esses direitos, entre em contato com nossa equipe de suporte pelo e-mail: <a href="mailto:support@bubblesafechat.com.br">support@bubblesafechat.com.br</a>.
+                    Para exercer esses direitos, entre em contato com nossa equipe de suporte pelo e-mail: <a href="mailto:contato@bubblesafechat.com.br">contato@bubblesafechat.com.br</a>.
                 </motion.p>
 
                 <motion.h2
@@ -261,7 +261,7 @@ const PrivacyPolicy = () => {
                     variants={fadeInUp}
                     transition={{ duration: 0.7, delay: 1.7 }}
                 >
-                    Se você tiver dúvidas sobre esta Política de Privacidade ou como protegemos seus dados, entre em contato conosco pelo e-mail: <a href="mailto:support@bubblesafechat.com.br">support@bubblesafechat.com.br</a>.
+                    Se você tiver dúvidas sobre esta Política de Privacidade ou como protegemos seus dados, entre em contato conosco pelo e-mail: <a href="mailto:contato@bubblesafechat.com.br">contato@bubblesafechat.com.br</a>.
                 </motion.p>
             </motion.div>
         </motion.div>
