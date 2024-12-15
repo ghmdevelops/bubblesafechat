@@ -194,19 +194,7 @@ h2.page-text-ifo {
   line-height: 1.5;
 }
 
-.btn-acess-enter {
-  border-radius: 10rem;
-  border: 2px solid;
-}
-
 @media (max-width: 576px) {
-  .btn-acess-enter {
-    width: 1.7rem;
-    height: 1.7rem;
-    font-size: 0.8rem;
-    padding: 1px 1px;
-  }
-
   .cookie-logo {
     width: 280px;
     margin-bottom: 20px;

@@ -12,7 +12,21 @@ import { useNavigate } from 'react-router-dom';
 const IntroPage = ({ onContinue }) => {
     const [showCookieConsent, setShowCookieConsent] = useState(false);
     const [pageBlocked, setPageBlocked] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const consentGiven = localStorage.getItem('cookieConsent');
+        const consentTimestamp = localStorage.getItem('cookieConsentTimestamp');
+
+        if (!consentGiven || (consentTimestamp && (Date.now() - Number(consentTimestamp)) > 7 * 24 * 60 * 60 * 1000)) {
+            setShowCookieConsent(true);
+            setPageBlocked(true);
+        } else {
+            setPageBlocked(false);
+        }
+        setTimeout(() => setIsLoading(false), 1500);
+    }, []);
 
     useEffect(() => {
         const consentGiven = localStorage.getItem('cookieConsent');
@@ -86,20 +100,40 @@ const IntroPage = ({ onContinue }) => {
                             alt="OpenSecurityRoom"
                         />
                         <div className="icon-enter-user d-flex justify-content-center align-items-center">
-                            <b
-                                className="btn btn-outline-info btn-acess-enter me-1"
-                                onClick={handleLearnMore}
-                            >
-                                <FontAwesomeIcon icon={faQuestion} />
-                            </b>
-                            <b
-                                className="btn btn-outline-info btn-acess-enter"
+                            <motion.button
+                                className="btn-enter-app"
                                 onClick={onContinue}
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                whileHover={{
+                                    scale: 1.15,
+                                    background: "linear-gradient(90deg,rgb(42, 129, 164),rgb(12, 115, 200))",
+                                    boxShadow: "0 8px 15px rgba(0, 0, 0, 0.4)",
+                                }}
+                                whileTap={{ scale: 0.95 }}
+                                transition={{ duration: 0.3, ease: "easeInOut" }}
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    padding: window.innerWidth <= 576 ? "9px" : "12px 10px",
+                                    fontSize: window.innerWidth <= 576 ? "0.8rem" : "1rem",
+                                    fontWeight: "bold",
+                                    color: "white",
+                                    background: "transparent",
+                                    border: "2px solid rgb(0, 138, 230)",
+                                    borderRadius: "50px",
+                                    cursor: "pointer",
+                                    outline: "none",
+                                    margin: "0 10px",
+                                    width: window.innerWidth <= 576 ? "30px" : "auto",
+                                    height: window.innerWidth <= 576 ? "30px" : "auto",
+                                }}
                             >
-                                <FontAwesomeIcon icon={faUser} />
-                            </b>
+                                <FontAwesomeIcon icon={faUser} style={{ marginRight: window.innerWidth <= 576 ? "0" : "8px" }} />
+                                {window.innerWidth > 576 && "Entrar"}
+                            </motion.button>
                         </div>
-
                     </div>
                 </nav>
             </header>
@@ -120,7 +154,36 @@ const IntroPage = ({ onContinue }) => {
                     />
                 </motion.div>
                 <h2 className='mt-2 page-text-ifo'>
-                    Experimente o futuro da comunicação segura com o Bubble Safe Chat. Sua privacidade não é apenas garantida, é nossa prioridade número um. Com tecnologia de ponta, garantimos que todas as suas conversas sejam protegidas por criptografia avançada, permitindo que você controle completamente quem tem acesso às suas informações. Entre em um ambiente digital seguro e aproveite a tranquilidade ao conversar online.
+                    Comunicação Segura, Privacidade Garantida
+                    Converse com tranquilidade em um ambiente protegido por tecnologia de criptografia avançada e múltiplas camadas de segurança. Controle quem acessa suas salas de chat, compartilhe links seguros via QR code e gerencie suas conversas de forma simples e eficiente. Sua privacidade é nossa prioridade número um.
+                    <br />
+                    <motion.button
+                        className="btn-learn-more"
+                        onClick={() => navigate('/learn-more')}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        whileHover={{
+                            scale: 1.1,
+                            background: "linear-gradient(90deg, #0056b3, #00aaff)",
+                            boxShadow: "0 10px 20px rgba(0, 0, 0, 0.5)",
+                        }}
+                        whileTap={{ scale: 0.95 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        style={{
+                            marginTop: "20px",
+                            padding: "12px 26px",
+                            fontSize: "1rem",
+                            fontWeight: "bold",
+                            color: "white",
+                            background: "linear-gradient(90deg, #007bff, #00d4ff)",
+                            border: "none",
+                            borderRadius: "8px",
+                            cursor: "pointer",
+                            outline: "none",
+                        }}
+                    >
+                        Saiba Mais
+                    </motion.button>
                 </h2>
             </div>
 

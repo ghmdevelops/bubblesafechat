@@ -64,13 +64,37 @@ const LearnMorePage = () => {
                         <img className="navbar-brand img-fluid responsive-img" src={iconPage} alt="Bubble Safe Chat" />
                         <div className="collapse navbar-collapse" id="navbarCollapse"></div>
                         <motion.button
-                            className="btn btn-outline-info ms-auto"
+                            className="btn-back-login"
                             onClick={goToLogin}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.3, duration: 0.5 }}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            whileHover={{
+                                scale: 1.1,
+                                background: "linear-gradient(90deg, #007bff, #00d4ff)",
+                                color: "white",
+                                boxShadow: "0 8px 15px rgba(0, 0, 0, 0.4)",
+                            }}
+                            whileTap={{ scale: 0.95 }}
+                            transition={{ delay: 0.3, duration: 0.5, ease: "easeInOut" }}
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                padding: window.innerWidth <= 576 ? "10px" : "10px 16px",
+                                fontSize: window.innerWidth <= 576 ? "1rem" : "1rem",
+                                color: window.innerWidth <= 576 ? "white" : "#fff",
+                                background: "transparent",
+                                border: "2px solid rgba(0, 187, 255, 0.74)",
+                                borderRadius: "50px",
+                                cursor: "pointer",
+                                outline: "none",
+                                margin: "0 10px",
+                                width: window.innerWidth <= 576 ? "30px" : "auto",
+                                height: window.innerWidth <= 576 ? "30px" : "auto",
+                            }}
                         >
                             <FontAwesomeIcon icon={faArrowLeft} />
+                            {window.innerWidth > 576 && <span style={{ marginLeft: "8px" }}>Voltar</span>}
                         </motion.button>
                     </div>
                 </nav>
@@ -87,14 +111,23 @@ const LearnMorePage = () => {
             </motion.div>
 
             <motion.p
-                initial="hidden"
-                animate="visible"
-                variants={fadeInUp}
-                transition={{ duration: 0.5, delay: 0.3 }}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.7, ease: "easeInOut", delay: 0.3 }}
                 className="page-description mt-3 mb-3"
+                style={{
+                    fontSize: "1.2rem",
+                    lineHeight: "1.6",
+                    color: "#f1f1f1",
+                    textAlign: "center",
+                    maxWidth: "800px",
+                    margin: "0 auto",
+                    padding: "0 20px",
+                }}
             >
-                O <strong>Bubble Safe Chat</strong> é a sua solução definitiva para comunicação online segura e privada.
-                Nossa plataforma foi projetada para proteger seus dados a cada etapa, oferecendo segurança de nível mundial e funcionalidades avançadas para manter suas conversas e informações pessoais sob total controle.
+                <strong>Bubble Safe Chat</strong> é a sua solução definitiva para comunicação online segura e privada.
+                Nossa plataforma foi projetada para proteger seus dados em cada etapa, oferecendo segurança de nível mundial e funcionalidades avançadas para manter suas conversas e informações pessoais sob total controle.
             </motion.p>
 
             <motion.h2

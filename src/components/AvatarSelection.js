@@ -6,9 +6,10 @@ import '@sweetalert2/theme-dark/dark.css';
 import Swal from 'sweetalert2';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDoorOpen } from '@fortawesome/free-solid-svg-icons';
+import { faDoorOpen, faTimes } from '@fortawesome/free-solid-svg-icons';
 import iconPage from './img/icon-menu.png';
 import { Helmet } from 'react-helmet';
+import { motion } from 'framer-motion';
 
 const AvatarSelection = () => {
     const [selectedAvatar, setSelectedAvatar] = useState(null);
@@ -67,8 +68,8 @@ const AvatarSelection = () => {
         if (selectedAvatar && goRoomButtonRef.current) {
             if (window.innerWidth <= 768) {
                 const buttonPosition = goRoomButtonRef.current.getBoundingClientRect().top;
-                const maxScrollPosition = 480; 
-                const scrollPosition = Math.min(buttonPosition, maxScrollPosition); // Aplica o limite de rolagem
+                const maxScrollPosition = 480;
+                const scrollPosition = Math.min(buttonPosition, maxScrollPosition);
 
                 window.scrollTo({
                     top: scrollPosition,
@@ -113,12 +114,26 @@ const AvatarSelection = () => {
                         <div className="collapse navbar-collapse" id="navbarCollapse">
                             <ul className="navbar-nav ms-auto mb-2 mb-md-0">
                                 <div className="text-center mt-3">
-                                    <button
-                                        className="btn btn-outline-danger"
+                                    <motion.button
+                                        className="btn btn-danger fw-bold px-4 py-2"
                                         onClick={handleBack}
+                                        whileHover={{ scale: 1.1 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.5, ease: 'easeOut' }}
+                                        style={{
+                                            borderRadius: '8px',
+                                            background: 'linear-gradient(90deg, #e74c3c, #c0392b)',
+                                            color: '#fff',
+                                            boxShadow: '0 4px 10px rgba(231, 76, 60, 0.4)',
+                                            border: 'none',
+                                            fontSize: '1rem',
+                                        }}
                                     >
+                                        <FontAwesomeIcon icon={faTimes} className="me-2" />
                                         Cancelar
-                                    </button>
+                                    </motion.button>
                                 </div>
                             </ul>
                         </div>
@@ -127,9 +142,24 @@ const AvatarSelection = () => {
             </header>
 
             <div className="container mt-5 pt-5">
-                <div className="text-center mb-4 animated-title">
-                    <h2 style={{ fontWeight: "500" }} className="display-6 animated fadeInUp">Escolha seu Avatar</h2>
-                    <p className="lead animated fadeInLeft delay-1s">Selecione um avatar para personalizar sua experiência no chat.</p>
+                <div className="text-center mb-5 animated-title">
+                    <motion.h2
+                        className="display-5 fw-bold text-info"
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, ease: 'easeOut' }}
+                    >
+                        Personalize sua Jornada
+                    </motion.h2>
+
+                    <motion.p
+                        className="lead text-light"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
+                    >
+                        Escolha um avatar que combine com você e torne sua experiência no chat única e divertida.
+                    </motion.p>
                 </div>
 
                 <div className="row justify-content-center">
@@ -150,13 +180,26 @@ const AvatarSelection = () => {
                 <div className="row justify-content-center mt-4">
                     {selectedAvatar && (
                         <div className="col-md-4 text-center animated-button" ref={goRoomButtonRef}>
-                            <button
-                                className="btn btn-outline-warning btn-lg animate__animated animate__pulse animate__infinite"
+                            <motion.button
+                                className="btn btn-warning btn-lg fw-bold px-5 py-3"
                                 onClick={saveAvatarSelection}
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5, ease: 'easeOut' }}
+                                style={{
+                                    borderRadius: '12px',
+                                    background: 'linear-gradient(90deg,rgb(8, 111, 156),rgb(4, 70, 146))',
+                                    color: '#fff',
+                                    boxShadow: '0 4px 10px rgba(243, 156, 18, 0.4)',
+                                    textShadow: '1px 1px 2px rgba(0, 0, 0, 0.2)',
+                                    border: 'none',
+                                }}
                             >
                                 <FontAwesomeIcon icon={faDoorOpen} className="me-2" />
-                                Go Room
-                            </button>
+                                Entrar na Sala
+                            </motion.button>
                         </div>
                     )}
                 </div>

@@ -23,12 +23,6 @@ button {
     box-shadow 0.3s ease;
 }
 
-button:hover {
-  background-color: #0056b3;
-  transform: scale(1.05) rotate(3deg);
-  box-shadow: 0 4px 20px rgba(0, 86, 179, 0.5);
-}
-
 .navbar-brand img {
   width: 60px;
   transition: transform 0.3s ease;
@@ -199,5 +193,19 @@ button:hover {
 
   span {
     font-size: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .welcome-section h2 {
+    font-size: 1rem; 
+  }
+
+  .welcome-section h1 {
+    font-size: 1rem; 
+  }
+
+  .benefits-list li {
+    font-size: 0.7rem;
   }
 }
