@@ -83,6 +83,7 @@ const AvatarSelection = () => {
         <div className="container mt-5">
             <Helmet>
                 <title>Bubble Safe Chat - Avatar</title>
+                <meta name="title" content="Bubble Safe Chat" />
                 <meta name="description" content="Entre no Bubble Safe Chat para criar ou acessar salas de chat seguras e privadas. Junte-se à comunidade e proteja suas conversas online." />
                 <meta name="keywords" content="login, registro, chat seguro, privacidade, criptografia, comunidade online, segurança digital" />
                 <meta name="author" content="Bubble Safe Chat" />
