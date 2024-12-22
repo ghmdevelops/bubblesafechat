@@ -1266,7 +1266,6 @@ const Room = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.5 }}
           >
-            <FontAwesomeIcon icon={faUser} className="me-2" style={{ color: '#F1E5AC' }} />
             Insira seu nome ou nick para solicitação de acesso à sala
           </motion.p>
           <div className="d-flex justify-content-center">
@@ -1477,7 +1476,7 @@ const Room = () => {
                         className={`dropdown-item d-flex justify-content-between align-items-center ${isDestructionActive ? 'text-success' : 'text-white'}`}
                         onClick={toggleDestruction}
                       >
-                        <span>
+                        <span className='auds'>
                           <FontAwesomeIcon icon={faClock} className={`me-2 ${isDestructionActive ? 'text-success' : 'text-white'} autodesc`} />
                           Autodestruição
                         </span>
@@ -1769,22 +1768,80 @@ const Room = () => {
               </button>
 
               {showPlusButton && !showOptions ? (
-                <button onClick={toggleOptions} className="btn btn-warning rounded-5">
+                <button
+                  onClick={toggleOptions}
+                  className="btn rounded-5 shadow-lg hover-scale"
+                  style={{
+                    backgroundColor: "#4CAF50", 
+                    borderColor: "#388E3C",      
+                    color: "#fff",              
+                    fontSize: "18px",       
+                    transition: "all 0.3s ease",
+                  }}
+                >
                   <FontAwesomeIcon icon={faPlus} />
                 </button>
               ) : null}
 
               {!showPlusButton || showOptions ? (
                 <div className="btn-group d-flex">
-                  <button onClick={sendProtectedMessage} className="btn btn-warning me-2 rounded-5 blocks">
+                  <button
+                    onClick={() => {
+                      Swal.fire({
+                        title: 'Mensagem Protegida',
+                        text: 'Este botão envia uma mensagem protegida.',
+                        icon: 'info',
+                        confirmButtonText: 'OK'
+                      }).then(() => {
+                        sendProtectedMessage();
+                      });
+                    }}
+                    className="btn btn-primary me-2 rounded-pill shadow-lg hover-scale"
+                    style={{ backgroundColor: "#6c63ff", borderColor: "#6c63ff" }}
+                  >
                     <FontAwesomeIcon icon={faLock} />
                   </button>
-                  <button style={{ borderRadius: "10rem" }} onClick={recognitionActive ? stopRecognition : startRecognition} className="btn btn-warning me-2 audiosescri">
+
+                  <button
+                    style={{ borderRadius: "50%", backgroundColor: "#ff5722", borderColor: "#ff5722" }}
+                    onClick={() => {
+                      const action = recognitionActive ? stopRecognition : startRecognition;
+                      const text = recognitionActive ? 'Parando o reconhecimento de voz' : 'Iniciando o reconhecimento de voz';
+
+                      Swal.fire({
+                        title: 'Reconhecimento de Voz',
+                        text: text,
+                        icon: 'info',
+                        confirmButtonText: 'OK'
+                      }).then(() => {
+                        action();
+                      });
+                    }}
+                    className="btn btn-warning me-2 audiosescri hover-scale"
+                  >
                     <FontAwesomeIcon icon={faPen} />
                   </button>
+
                   {isCreator && (
-                    <button style={{ borderRadius: "30rem" }} className="btn btn-warning excluiuserma" onClick={toggleExpelModal}>
-                      <FontAwesomeIcon icon={faUserSlash} style={{ width: "0.9rem" }} />
+                    <button
+                      style={{
+                        borderRadius: "50%",
+                        backgroundColor: "#e91e63",
+                        borderColor: "#e91e63",
+                      }}
+                      className="btn btn-danger excluiuserma hover-scale"
+                      onClick={() => {
+                        Swal.fire({
+                          title: 'Expulsar Usuário',
+                          text: 'Você está prestes a expulsar um usuário da sala.',
+                          icon: 'warning',
+                          confirmButtonText: 'OK'
+                        }).then(() => {
+                          toggleExpelModal();
+                        });
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faUserSlash} style={{ width: "1rem" }} />
                     </button>
                   )}
                 </div>

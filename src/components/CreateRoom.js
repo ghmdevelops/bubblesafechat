@@ -350,7 +350,8 @@ const CreateRoom = () => {
                       boxShadow: '0 4px 8px rgba(220, 53, 69, 0.3)',
                       background: 'linear-gradient(90deg, rgb(203, 81, 81), rgb(184, 23, 23))',
                       color: '#fff',
-                      fontSize: '1rem',
+                      fontSize: '12px',
+                      width: '100%'
                     }}
                   >
                     <FontAwesomeIcon icon={faUserShield} className="me-2" />
@@ -369,7 +370,8 @@ const CreateRoom = () => {
                       boxShadow: '0 4px 8px rgba(23, 162, 184, 0.3)',
                       background: 'linear-gradient(90deg, rgb(23, 117, 184), #138496)',
                       color: '#fff',
-                      fontSize: '1rem',
+                      fontSize: '12px',
+                      width: '94%'
                     }}
                   >
                     <FontAwesomeIcon icon={faPowerOff} className="me-2" />
@@ -442,8 +444,8 @@ const CreateRoom = () => {
                   style={{
                     border: '2px solid #17a2b8',
                     borderRadius: '8px',
-                    padding: '12px 15px',
-                    fontSize: '1rem',
+                    padding: '10px 10px',
+                    fontSize: '15px',
                     background: '#f8f9fa',
                     color: '#212529',
                     boxShadow: '0 4px 8px rgba(23, 162, 184, 0.2)',
@@ -460,7 +462,7 @@ const CreateRoom = () => {
                     whileHover={{ scale: 1.07 }}
                     whileTap={{ scale: 0.95 }}
                     style={{
-                      padding: '12px 25px',
+                      padding: '12px 14px',
                       fontWeight: 'bold',
                       color: '#fff',
                       border: 'none',
@@ -567,7 +569,7 @@ const CreateRoom = () => {
                     style={{
                       border: '2px solid #17a2b8',
                       borderRadius: '8px',
-                      padding: '12px 15px',
+                      padding: '10px 10px',
                       fontSize: '1rem',
                       background: '#f8f9fa',
                       color: '#212529',
@@ -593,7 +595,7 @@ const CreateRoom = () => {
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.2, delay: 0.2 }}
                         style={{
-                          padding: '12px 25px',
+                          padding: '12px 14px',
                           fontWeight: 'bold',
                           color: '#fff',
                           border: 'none',
@@ -627,7 +629,7 @@ const CreateRoom = () => {
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.5, delay: 0.7 }}
                     style={{
-                      padding: '12px 25px',
+                      padding: '12px 14px',
                       fontWeight: 'bold',
                       color: '#fff',
                       border: 'none',
