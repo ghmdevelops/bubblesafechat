@@ -61,9 +61,34 @@ const IntroPage = ({ onContinue }) => {
         navigate('/cookie-policy');
     };
 
+    if (isLoading) {
+        return (
+            <div className="loading-container">
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                >
+                    <p>Carregando...</p>
+                </motion.div>
+            </div>
+        );
+    }
+
     return (
         <motion.div className="intro-container">
             <Helmet>
+                <script type="application/ld+json">
+                    {`
+            {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                "name": "Bubble Safe Chat",
+                "url": "https://bubblesafechat.com.br",
+                "description": "Plataforma de chat segura e privada com criptografia de ponta a ponta."
+            }
+        `}
+                </script>
                 <title>Bubble Safe Chat - Segurança Total para Suas Conversas</title>
                 <meta name="title" content="Bubble Safe Chat" />
                 <meta name="description" content="Bubble Safe Chat oferece salas de chat seguras e privadas com criptografia de ponta a ponta. Garanta a confidencialidade de suas conversas, com segurança de nível empresarial e recursos avançados de proteção de dados, respeitando regulamentações de privacidade como o GDPR e a LGPD. Converse sem preocupações e com total controle sobre sua privacidade." />
