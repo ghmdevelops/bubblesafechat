@@ -341,21 +341,22 @@ const CreateRoom = () => {
               <ul className="navbar-nav ms-auto mb-2 mb-md-0">
                 <li className="nav-item me-3">
                   <motion.button
-                    className="btn btn-danger px-4 py-2 fw-bold"
+                    className="btn btn-info px-4 py-2 fw-bold"
                     onClick={deleteAccount}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     style={{
-                      borderRadius: '8px',
-                      boxShadow: '0 4px 8px rgba(220, 53, 69, 0.3)',
-                      background: 'linear-gradient(90deg, rgb(203, 81, 81), rgb(184, 23, 23))',
+                      borderRadius: '3px',
+                      border: '3px solid rgb(5, 152, 175)',
+                      boxShadow: '0 4px 8px rgba(23, 162, 184, 0.3)',
+                      background: 'transparent',
                       color: '#fff',
-                      fontSize: '12px',
+                      fontSize: '13px',
                       width: '100%'
                     }}
                   >
                     <FontAwesomeIcon icon={faUserShield} className="me-2" />
-                    Remover Conta
+                    Excluir Conta
                   </motion.button>
                 </li>
 
@@ -366,16 +367,16 @@ const CreateRoom = () => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     style={{
-                      borderRadius: '8px',
+                      borderRadius: '3px',
+                      border: '3px solid rgb(5, 152, 175)',
                       boxShadow: '0 4px 8px rgba(23, 162, 184, 0.3)',
-                      background: 'linear-gradient(90deg, rgb(23, 117, 184), #138496)',
+                      background: 'transparent',
                       color: '#fff',
-                      fontSize: '12px',
+                      fontSize: '13px',
                       width: '94%'
                     }}
                   >
-                    <FontAwesomeIcon icon={faPowerOff} className="me-2" />
-                    Sair
+                    <FontAwesomeIcon icon={faPowerOff} />
                   </motion.button>
                 </li>
               </ul>
