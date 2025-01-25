@@ -96,21 +96,6 @@ const PrivacyPolicy = () => {
                 alt="Bubble Safe Chat"
               />
             </Link>
-            <button
-              className="navbar-toggler"
-              type="button"
-              data-bs-toggle="collapse"
-              data-bs-target="#navbarCollapse"
-              aria-controls="navbarCollapse"
-              aria-expanded="false"
-              aria-label="Toggle navigation"
-            >
-              <span className="navbar-toggler-icon"></span>
-            </button>
-            {/* Se você tiver mais itens no navbar, adicione-os aqui */}
-            <div className="collapse navbar-collapse" id="navbarCollapse">
-              {/* Itens de navegação adicionais */}
-            </div>
           </div>
         </nav>
       </header>

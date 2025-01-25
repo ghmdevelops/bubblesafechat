@@ -1,11 +1,22 @@
+import { FaUserSecret } from "react-icons/fa";
+import { RiLoginBoxFill } from "react-icons/ri";
+import { IoMdLogIn } from "react-icons/io";
+// src/components/IntroPage.js
 import React, { useEffect } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../firebaseConfig";
 import "./IntroPage.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSignInAlt, faUserPlus } from "@fortawesome/free-solid-svg-icons";
 import iconPage from "./img/icon-menu.png";
 import iconPageVisual from "./img/rm373batch4-15.jpg";
 import logo from "./img/name.png";
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+};
 
 const IntroPage = () => {
   const navigate = useNavigate();
@@ -21,55 +32,35 @@ const IntroPage = () => {
       <header>
         <nav className="navbar navbar-expand-md navbar-dark fixed-top bg-black">
           <div className="container-fluid">
-            <img
-              className="navbar-brand img-fluid responsive-img"
-              src={iconPage}
-              alt="Bubble Safe Chat"
-              onClick={() => navigate("/")}
-              style={{ cursor: "pointer" }}
-            />
-            <button
-              className="navbar-toggler"
-              type="button"
-              data-bs-toggle="collapse"
-              data-bs-target="#navbarNav"
-            >
-              <span className="navbar-toggler-icon"></span>
-            </button>
-            <div className="collapse navbar-collapse" id="navbarNav">
-              <ul className="navbar-nav ms-auto">
-                <li className="nav-item">
-                  <button
-                    className="btn btn-primary me-2"
-                    onClick={() => navigate("/login")}
-                    style={{
-                      padding: "5px 15px",
-                      fontSize: "1rem",
-                      fontWeight: "bold",
-                      borderRadius: "5px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Login
-                  </button>
-                </li>
-                <li className="nav-item">
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => navigate("/register")}
-                    style={{
-                      padding: "5px 15px",
-                      fontSize: "1rem",
-                      fontWeight: "bold",
-                      borderRadius: "5px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Registrar
-                  </button>
-                </li>
-              </ul>
-            </div>
+            <Link to="/">
+              <img
+                className="navbar-brand img-fluid responsive-img clickable-img"
+                src={iconPage}
+                alt="Bubble Safe Chat"
+                onClick={() => navigate("/")}
+              />
+            </Link>
+
+            <ul className="navbar-nav ms-auto d-flex justify-content-between">
+              <li className="nav-item">
+                <button
+                  className="btn btn-primary btn-sm align-items-center w-auto"
+                  onClick={() => navigate("/login")}
+                  aria-label="Login"
+                >
+                  <RiLoginBoxFill size={15} />
+                  <span className="d-none d-md-inline"> Login</span>
+                </button>
+                <button
+                  className="btn btn-primary btn-sm align-items-center w-auto"
+                  onClick={() => navigate("/register")}
+                  aria-label="Registrar"
+                >
+                  <FaUserSecret size={15} />
+                  <span className="d-none d-md-inline"> Registrar</span>
+                </button>
+              </li>
+            </ul>
           </div>
         </nav>
       </header>

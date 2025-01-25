@@ -1,12 +1,12 @@
 // src/components/UserProfile.js
 import React, { useEffect, useState } from "react";
 import { auth, database } from "../firebaseConfig";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { ref, onValue, update, remove } from "firebase/database";
 import Swal from "sweetalert2";
-import { Helmet } from "react-helmet";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Helmet } from "react-helmet";
 import {
   faUser,
   faEnvelope,
@@ -15,15 +15,20 @@ import {
   faCheck,
   faTimes,
   faSpinner,
+  faEdit, // Importação do ícone de edição
 } from "@fortawesome/free-solid-svg-icons";
 import { motion } from "framer-motion";
 import { EmailAuthProvider } from "firebase/auth"; // Importação necessária
+import iconPage from "./img/icon-menu.png";
 import "./UserProfile.css";
 
 const UserProfile = () => {
   const [userData, setUserData] = useState(undefined); // Inicializar como undefined
   const [selectedAvatar, setSelectedAvatar] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isEditing, setIsEditing] = useState(false); // Novo estado para edição
+  const [editedCelular, setEditedCelular] = useState(""); // Estado para celular editado
+  const [editedApelido, setEditedApelido] = useState(""); // Estado para apelido editado
   const navigate = useNavigate();
 
   const avatars = [
@@ -222,12 +227,11 @@ const UserProfile = () => {
 
           const checkbox = document.createElement("input");
           checkbox.type = "checkbox";
-          checkbox.className = "d-none";
+          checkbox.className = "ms-2";
           checkbox.id = "show-password";
-          checkbox.style.marginLeft = "10px";
 
+          checkboxLabel.appendChild(checkbox);
           container.appendChild(checkboxLabel);
-          container.appendChild(checkbox);
 
           checkbox.addEventListener("change", (event) => {
             if (event.target.checked) {
@@ -260,6 +264,62 @@ const UserProfile = () => {
     }
   };
 
+  // Função para ativar o modo de edição
+  const handleEditProfile = () => {
+    if (userData) {
+      setEditedCelular(userData.celular);
+      setEditedApelido(userData.apelido);
+      setIsEditing(true);
+    }
+  };
+
+  // Função para salvar as alterações
+  const handleSaveProfile = async () => {
+    if (!editedCelular.trim() || !editedApelido.trim()) {
+      Swal.fire(
+        "Campos Obrigatórios",
+        "Por favor, preencha todos os campos antes de salvar.",
+        "warning"
+      );
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const currentUser = auth.currentUser;
+      const userRef = ref(database, `users/${currentUser.uid}`);
+
+      await update(userRef, {
+        celular: editedCelular,
+        apelido: editedApelido,
+      });
+
+      Swal.fire("Sucesso", "Perfil atualizado com sucesso!", "success");
+      setUserData((prevData) => ({
+        ...prevData,
+        celular: editedCelular,
+        apelido: editedApelido,
+      }));
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Erro ao atualizar perfil:", error);
+      Swal.fire(
+        "Erro",
+        "Erro ao atualizar o perfil. Tente novamente.",
+        "error"
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Função para cancelar a edição
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditedCelular("");
+    setEditedApelido("");
+  };
+
   // Adicionar condicional de carregamento
   if (userData === undefined) {
     return (
@@ -273,9 +333,25 @@ const UserProfile = () => {
     <div className="container mt-5">
       <Helmet>
         <title>Perfil do Usuário - Bubble Safe Chat</title>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
       </Helmet>
+
+      <header>
+        <nav className="navbar navbar-expand-md navbar-dark fixed-top bg-black">
+          <div className="container-fluid">
+            <Link to="/create-room">
+              <img
+                className="navbar-brand img-fluid responsive-img"
+                src={iconPage}
+                alt="Bubble Safe Chat"
+              />
+            </Link>
+          </div>
+        </nav>
+      </header>
+
       <motion.h1
-        className="mb-4 text-center text-info"
+        className="mb-4 text-center text-info mt-5"
         initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
@@ -286,7 +362,9 @@ const UserProfile = () => {
         <div className="card-body">
           <div className="text-center mb-4">
             <img
-              src={userData.avatar || "https://via.placeholder.com/100?text=User"}
+              src={
+                userData.avatar || "https://via.placeholder.com/100?text=User"
+              }
               alt="User Avatar"
               className="rounded-circle"
               style={{
@@ -298,6 +376,7 @@ const UserProfile = () => {
             />
           </div>
 
+          {/* Nome Completo */}
           <motion.h5
             className="card-title d-flex align-items-center"
             initial={{ opacity: 0, x: -20 }}
@@ -316,6 +395,7 @@ const UserProfile = () => {
             {userData.firstName}
           </motion.p>
 
+          {/* Email */}
           <motion.h5
             className="card-title d-flex align-items-center"
             initial={{ opacity: 0, x: -20 }}
@@ -334,6 +414,7 @@ const UserProfile = () => {
             {userData.email}
           </motion.p>
 
+          {/* Celular */}
           <motion.h5
             className="card-title d-flex align-items-center"
             initial={{ opacity: 0, x: -20 }}
@@ -342,16 +423,36 @@ const UserProfile = () => {
           >
             <FontAwesomeIcon icon={faPhone} className="me-2 text-info" />
             Celular
+            {!isEditing && (
+              <FontAwesomeIcon
+                icon={faEdit}
+                className="ms-2 text-secondary edit-icon"
+                style={{ cursor: "pointer" }}
+                onClick={handleEditProfile}
+                title="Editar Perfil"
+              />
+            )}
           </motion.h5>
-          <motion.p
+          <motion.div
             className="card-text mb-4"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.7 }}
           >
-            {userData.celular}
-          </motion.p>
+            {isEditing ? (
+              <input
+                type="text"
+                className="form-control"
+                value={editedCelular}
+                onChange={(e) => setEditedCelular(e.target.value)}
+                placeholder="Digite seu celular"
+              />
+            ) : (
+              userData.celular
+            )}
+          </motion.div>
 
+          {/* Apelido */}
           <motion.h5
             className="card-title d-flex align-items-center"
             initial={{ opacity: 0, x: -20 }}
@@ -360,25 +461,82 @@ const UserProfile = () => {
           >
             <FontAwesomeIcon icon={faLock} className="me-2 text-info" />
             Apelido
+            {!isEditing && (
+              <FontAwesomeIcon
+                icon={faEdit}
+                className="ms-2 text-secondary edit-icon"
+                style={{ cursor: "pointer" }}
+                onClick={handleEditProfile}
+                title="Editar Perfil"
+              />
+            )}
           </motion.h5>
-          <motion.p
+          <motion.div
             className="card-text mb-4"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.9 }}
           >
-            {userData.apelido}
-          </motion.p>
+            {isEditing ? (
+              <input
+                type="text"
+                className="form-control"
+                value={editedApelido}
+                onChange={(e) => setEditedApelido(e.target.value)}
+                placeholder="Digite seu apelido"
+              />
+            ) : (
+              userData.apelido
+            )}
+          </motion.div>
+
+          {/* Botões de Salvar e Cancelar no Modo de Edição */}
+          {isEditing && (
+            <div className="d-flex justify-content-end">
+              <motion.button
+                className="btn btn-success me-2"
+                onClick={handleSaveProfile}
+                disabled={isSaving}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {isSaving ? (
+                  <>
+                    <FontAwesomeIcon icon={faSpinner} className="me-2" spin />
+                    Salvando...
+                  </>
+                ) : (
+                  <>
+                    <FontAwesomeIcon icon={faCheck} className="me-2" />
+                    Salvar
+                  </>
+                )}
+              </motion.button>
+              <motion.button
+                className="btn btn-secondary"
+                onClick={handleCancelEdit}
+                disabled={isSaving}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <FontAwesomeIcon icon={faTimes} className="me-2" />
+                Cancelar
+              </motion.button>
+            </div>
+          )}
         </div>
       </div>
 
+      {/* Seção de Avatar */}
       <div className="mt-5">
         <h2 className="text-center text-info mb-4">Escolha um Avatar</h2>
         <div className="avatar-grid">
           {avatars.map((avatar, index) => (
             <motion.div
               key={index}
-              className={`avatar-item ${selectedAvatar === avatar ? "selected" : ""}`}
+              className={`avatar-item ${
+                selectedAvatar === avatar ? "selected" : ""
+              }`}
               onClick={() => handleAvatarSelect(avatar)}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -427,6 +585,28 @@ const UserProfile = () => {
             </motion.button>
           </div>
         )}
+      </div>
+
+      {/* Botão de Logout e Deletar Conta */}
+      <div className="mt-5 d-flex justify-content-center">
+        <motion.button
+          className="btn btn-outline-danger me-3"
+          onClick={deleteAccount}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <FontAwesomeIcon icon={faTimes} className="me-2" />
+          Deletar Conta
+        </motion.button>
+        <motion.button
+          className="btn btn-outline-secondary"
+          onClick={handleLogout}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <FontAwesomeIcon icon={faLock} className="me-2" />
+          Sair
+        </motion.button>
       </div>
     </div>
   );

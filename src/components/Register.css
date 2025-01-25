@@ -1,0 +1,52 @@
+.input-icon-container .is-invalid {
+  border-color: #dc3545;
+}
+
+.input-icon-container .invalid-feedback {
+  color: #dc3545;
+  font-size: 0.875em;
+  margin-top: 5px;
+}
+
+.eye-icon {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #adb5bd;
+}
+
+.password-strength-meter .progress {
+  height: 5px;
+  background-color: #495057;
+  border-radius: 3px;
+}
+
+.password-strength-meter .progress-bar {
+  transition: width 0.3s ease-in-out, background-color 0.3s ease-in-out;
+}
+
+.password-strength-meter small {
+  display: block;
+  margin-top: 5px;
+  font-weight: bold;
+}
+
+.btn-primary {
+  width: 100%;
+}
+
+.btn-redpass {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.btn-redpass span:hover {
+  color: #0056b3;
+}
+
+/* Medidor de Força de Senha */
+.password-strength-meter {
+  width: 100%;
+}

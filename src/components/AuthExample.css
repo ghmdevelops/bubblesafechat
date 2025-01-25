@@ -248,3 +248,12 @@ body::-webkit-scrollbar-thumb:hover {
 .btn-primary:hover {
   transform: scale(1.05);
 }
+
+.password-strength-meter .progress {
+  height: 5px;
+}
+
+.password-strength-meter small {
+  display: block;
+  margin-top: 5px;
+}

@@ -7,6 +7,10 @@
   width: 50rem;
 }
 
+.clickable-img {
+  cursor: pointer;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -194,10 +198,25 @@ h2.page-text-ifo {
   line-height: 1.5;
 }
 
+.nav-item button{
+  padding: 10px 20px;
+}
+
 @media (max-width: 576px) {
   .cookie-logo {
     width: 280px;
     margin-bottom: 20px;
+  }
+
+  .clickable-img {
+    cursor: pointer;
+    width: 190px;
+  }
+
+  .nav-item button{
+    font-size: 10px;
+    padding: 8px 8px;
+    border-radius: 3rem;
   }
 }
 

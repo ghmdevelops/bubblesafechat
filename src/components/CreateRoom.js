@@ -48,6 +48,9 @@ const CreateRoom = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
+  // Novo estado para armazenar o apelido do usuário
+  const [userApelido, setUserApelido] = useState("");
+
   const LOGOUT_TIMEOUT = 60 * 60 * 1000;
   let logoutTimer;
 
@@ -95,15 +98,18 @@ const CreateRoom = () => {
         const emailName = user.email.split("@")[0];
         setUserEmail(emailName);
         setDisplayName(user.displayName || "");
+
         const userRef = dbRef(database, `users/${user.uid}`);
         onValue(userRef, (snapshot) => {
           if (snapshot.exists()) {
+            const userData = snapshot.val();
             setUserAvatar(
-              snapshot.val().avatar ||
-                "https://via.placeholder.com/40?text=Avatar"
+              userData.avatar || "https://via.placeholder.com/40?text=Avatar"
             );
+            setUserApelido(userData.apelido || "Usuário"); // Atualização para obter 'apelido'
           } else {
             setUserAvatar("https://via.placeholder.com/40?text=Avatar");
+            setUserApelido("Usuário"); // Valor padrão caso 'apelido' não exista
           }
         });
         resetLastAccessTime();
@@ -435,106 +441,88 @@ const CreateRoom = () => {
               src={iconPage}
               alt="OpenSecurityRoom"
             />
-            <button
-              className="navbar-toggler bg-black"
-              type="button"
-              data-bs-toggle="collapse"
-              data-bs-target="#navbarCollapse"
-              aria-controls="navbarCollapse"
-              aria-expanded="false"
-              aria-label="Toggle navigation"
-            >
-              <span className="navbar-toggler-icon"></span>
-            </button>
-            <div className="collapse navbar-collapse" id="navbarCollapse">
-              <ul className="navbar-nav ms-auto mb-2 mb-md-0">
-                <li
-                  className="nav-item me-3 position-relative"
-                  ref={dropdownRef}
+
+            <ul className="navbar-nav ms-auto mb-2 mb-md-0">
+              <li className="nav-item me-3 position-relative" ref={dropdownRef}>
+                <motion.div
+                  onClick={toggleDropdown}
+                  className="position-relative"
                 >
-                  <motion.div
-                    onClick={toggleDropdown}
-                    className="position-relative"
-                  >
-                    <motion.img
-                      src={userAvatar}
-                      alt="User Avatar"
-                      className="user-avatar"
-                      style={{
-                        width: "40px",
-                        height: "40px",
-                        borderRadius: "50%",
-                        cursor: "pointer",
-                        border: "2px solid #17a2b8",
-                        boxShadow: "0 4px 8px rgba(23, 162, 184, 0.3)",
-                      }}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                    />
-                    <AnimatePresence>
-                      {isDropdownOpen && (
-                        <motion.div
-                          className="dropdown-menu show position-absolute mt-2 p-2 bg-dark rounded shadow"
-                          initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                          animate={{ opacity: 1, scale: 1, y: 0 }}
-                          exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                          transition={{ duration: 0.2 }}
-                          style={{
-                            left: "-150px",
-                            top: "100%",
-                            zIndex: 1050,
-                            minWidth: "200px",
+                  <motion.img
+                    src={userAvatar}
+                    alt="User Avatar"
+                    className="user-avatar"
+                    style={{
+                      width: "40px",
+                      height: "40px",
+                      borderRadius: "50%",
+                      cursor: "pointer",
+                      border: "2px solid #17a2b8",
+                      boxShadow: "0 4px 8px rgba(23, 162, 184, 0.3)",
+                    }}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                  />
+                  <AnimatePresence>
+                    {isDropdownOpen && (
+                      <motion.div
+                        className="dropdown-menu show position-absolute mt-2 p-2 bg-dark rounded shadow"
+                        initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                        style={{
+                          left: "-150px",
+                          top: "100%",
+                          zIndex: 1050,
+                          minWidth: "200px",
+                        }}
+                      >
+                        <motion.button
+                          className="dropdown-item text-white"
+                          onClick={() => {
+                            navigate("/user-profile");
+                            setIsDropdownOpen(false);
                           }}
+                          whileHover={{ backgroundColor: "#17a2b8" }}
+                          whileTap={{ scale: 0.95 }}
                         >
-                          <motion.button
-                            className="dropdown-item text-white"
-                            onClick={() => {
-                              navigate("/user-profile");
-                              setIsDropdownOpen(false);
-                            }}
-                            whileHover={{ backgroundColor: "#17a2b8" }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            <FontAwesomeIcon
-                              icon={faUserCircle}
-                              className="me-2"
-                            />
-                            Ver Perfil
-                          </motion.button>
-                          <motion.button
-                            className="dropdown-item text-white"
-                            onClick={() => {
-                              handleLogout();
-                              setIsDropdownOpen(false);
-                            }}
-                            whileHover={{ backgroundColor: "#17a2b8" }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            <FontAwesomeIcon
-                              icon={faPowerOff}
-                              className="me-2"
-                            />
-                            Sair
-                          </motion.button>
-                          <motion.button
-                            className="dropdown-item text-white"
-                            onClick={() => {
-                              deleteAccount();
-                              setIsDropdownOpen(false);
-                            }}
-                            whileHover={{ backgroundColor: "#dc3545" }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            <FontAwesomeIcon icon={faTimes} className="me-2" />
-                            Excluir Conta
-                          </motion.button>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </motion.div>
-                </li>
-              </ul>
-            </div>
+                          <FontAwesomeIcon
+                            icon={faUserCircle}
+                            className="me-2"
+                          />
+                          Ver Perfil
+                        </motion.button>
+                        <motion.button
+                          className="dropdown-item text-white"
+                          onClick={() => {
+                            handleLogout();
+                            setIsDropdownOpen(false);
+                          }}
+                          whileHover={{ backgroundColor: "#17a2b8" }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <FontAwesomeIcon icon={faPowerOff} className="me-2" />
+                          Sair
+                        </motion.button>
+                        <motion.button
+                          className="dropdown-item text-white"
+                          onClick={() => {
+                            deleteAccount();
+                            setIsDropdownOpen(false);
+                          }}
+                          whileHover={{ backgroundColor: "#dc3545" }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <FontAwesomeIcon icon={faTimes} className="me-2" />
+                          Excluir Conta
+                        </motion.button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              </li>
+            </ul>
           </div>
         </nav>
       </header>
@@ -543,8 +531,9 @@ const CreateRoom = () => {
         <div className="container-32" style={{ paddingTop: "80px" }}>
           {!isNameConfirmed && (
             <div className="welcome-section">
+              {/* Atualização aqui: Use 'userApelido' em vez de 'displayName' */}
               <h2 className="fw-bold text-info mb-4">
-                Seja bem-vindo, {displayName}!
+                Seja bem-vindo, {userApelido}!
               </h2>
               <h1 className="fw-bold text-light mb-4">
                 Escolha um apelido que reflita sua personalidade

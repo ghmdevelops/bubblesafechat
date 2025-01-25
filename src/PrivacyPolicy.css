@@ -4,16 +4,9 @@
   margin: 0 auto;
   font-family: "Arial", sans-serif;
 }
-
-/* src/components/PrivacyPolicy.css *
-/* Navbar Personalizada */
-.privacy-policy-header .navbar-brand {
-  max-height: 50px; /* Ajuste conforme necessário */
-}
-
+  
 .responsive-img {
   width: 100%;
-  height: auto;
 }
 
 /* Conteúdo Principal */

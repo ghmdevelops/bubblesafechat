@@ -3,7 +3,11 @@ import React, { useState } from "react";
 import { auth, database } from "../firebaseConfig"; // Importa o Realtime Database
 import { Helmet } from "react-helmet";
 import { useNavigate } from "react-router-dom";
-import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  updateProfile,
+  sendEmailVerification,
+} from "firebase/auth";
 import { ref, set } from "firebase/database"; // Funções do Realtime Database
 import {
   faPhone,
@@ -20,8 +24,10 @@ import "@sweetalert2/theme-dark/dark.css";
 import logo from "./img/name.png";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import "./Register.css"; // Certifique-se de importar o CSS relevante
 
 const Register = () => {
+  // Estados iniciais
   const [firstName, setFirstName] = useState("");
   const [apelido, setApelido] = useState("");
   const [celular, setCelular] = useState("");
@@ -32,24 +38,37 @@ const Register = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isValidName, setIsValidName] = useState(true);
+  const [passwordStrength, setPasswordStrength] = useState({
+    label: "",
+    score: 0,
+    color: "#dc3545",
+  });
   const navigate = useNavigate();
 
+  // Funções de validação
   const validateName = (name) => /^[a-zA-Z]+(?:\s[a-zA-Z]+)+$/.test(name);
   const validateCelular = (celular) => /^\+55\d{11}$/.test(celular);
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
   const checkPasswordStrength = (password) => {
-    const hasUpperCase = /[A-Z]/.test(password);
-    const hasLowerCase = /[a-z]/.test(password);
-    const hasNumber = /[0-9]/.test(password);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-    const isLongEnough = password.length >= 8;
+    let strength = 0;
+    if (password.length >= 8) strength += 1;
+    if (/[A-Z]/.test(password)) strength += 1;
+    if (/[a-z]/.test(password)) strength += 1;
+    if (/[0-9]/.test(password)) strength += 1;
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength += 1;
 
-    if (!isLongEnough) return "Fraca";
-    if (hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar)
-      return "Forte";
-    return "Média";
+    if (strength <= 2) return { label: "Fraca", score: 20, color: "#dc3545" }; // Vermelho
+    if (strength === 3) return { label: "Média", score: 60, color: "#ffc107" }; // Amarelo
+    if (strength >= 4) return { label: "Forte", score: 100, color: "#28a745" }; // Verde
+  };
+
+  const handlePasswordChange = (e) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+    const strength = checkPasswordStrength(newPassword);
+    setPasswordStrength(strength);
   };
 
   const handleRegister = async (e) => {
@@ -74,7 +93,7 @@ const Register = () => {
       return;
     }
 
-    if (checkPasswordStrength(password) === "Fraca") {
+    if (checkPasswordStrength(password).label === "Fraca") {
       Swal.fire({
         icon: "error",
         title: "Senha Fraca",
@@ -155,6 +174,7 @@ const Register = () => {
       <h1>Registrar</h1>
       {errorMessage && <p className="error-message">{errorMessage}</p>}
       <form onSubmit={handleRegister}>
+        {/* Campo Nome Completo */}
         <div className="input-icon-container">
           <div className="icon-background">
             <FontAwesomeIcon icon={faUser} className="input-icon" />
@@ -169,9 +189,13 @@ const Register = () => {
             autoComplete="name"
           />
           {!isValidName && (
-            <div className="invalid-feedback">Por favor, insira um nome válido.</div>
+            <div className="invalid-feedback">
+              Por favor, insira um nome válido.
+            </div>
           )}
         </div>
+
+        {/* Campo Apelido */}
         <div className="input-icon-container">
           <div className="icon-background">
             <FontAwesomeIcon icon={faUser} className="input-icon" />
@@ -186,9 +210,13 @@ const Register = () => {
             autoComplete="nickname"
           />
           {apelido.trim() === "" && (
-            <div className="invalid-feedback">Por favor, insira um apelido.</div>
+            <div className="invalid-feedback">
+              Por favor, insira um apelido.
+            </div>
           )}
         </div>
+
+        {/* Campo Celular */}
         <div className="input-icon-container">
           <div className="icon-background">
             <FontAwesomeIcon icon={faPhone} className="input-icon" />
@@ -210,6 +238,8 @@ const Register = () => {
             </div>
           )}
         </div>
+
+        {/* Campo Email */}
         <div className="input-icon-container">
           <div className="icon-background">
             <FontAwesomeIcon icon={faEnvelope} className="input-icon" />
@@ -224,6 +254,8 @@ const Register = () => {
             autoComplete="email"
           />
         </div>
+
+        {/* Campo Senha */}
         <div className="input-icon-container">
           <div className="icon-background">
             <FontAwesomeIcon icon={faLock} className="input-icon" />
@@ -231,7 +263,7 @@ const Register = () => {
           <input
             type={showPassword ? "text" : "password"}
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={handlePasswordChange} // Atualizado para usar handlePasswordChange
             placeholder="Senha"
             required
             className="mt-2"
@@ -241,6 +273,8 @@ const Register = () => {
             <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
           </span>
         </div>
+
+        {/* Campo Confirmar Senha */}
         <div className="input-icon-container">
           <div className="icon-background">
             <FontAwesomeIcon icon={faLock} className="input-icon" />
@@ -258,9 +292,36 @@ const Register = () => {
             <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
           </span>
         </div>
-        {password !== confirmPassword && (
-          <p className="error-message">As senhas não correspondem. Tente novamente.</p>
+
+        {/* Medidor de Força de Senha */}
+        {password && (
+          <div className="password-strength-meter mt-2">
+            <div className="progress">
+              <div
+                className="progress-bar"
+                role="progressbar"
+                style={{
+                  width: `${passwordStrength.score}%`,
+                  backgroundColor: `${passwordStrength.color}`,
+                }}
+                aria-valuenow={passwordStrength.score}
+                aria-valuemin="0"
+                aria-valuemax="100"
+              ></div>
+            </div>
+            <small style={{ color: passwordStrength.color }}>
+              Força da Senha: {passwordStrength.label}
+            </small>
+          </div>
         )}
+
+        {password !== confirmPassword && (
+          <p className="error-message">
+            As senhas não correspondem. Tente novamente.
+          </p>
+        )}
+
+        {/* Botão de Registro */}
         <button
           type="submit"
           style={{ height: "50px", fontWeight: "500", fontSize: "16px" }}
@@ -274,6 +335,8 @@ const Register = () => {
           )}
         </button>
       </form>
+
+      {/* Link para Login */}
       <p className="btn-redpass">
         Já tem uma conta?{" "}
         <span
