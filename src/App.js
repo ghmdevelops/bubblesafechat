@@ -1,30 +1,43 @@
-import React, { useEffect, useState } from 'react';
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import CreateRoom from './components/CreateRoom';
-import Room from './components/Room';
-import AuthExample from './components/AuthExample';
-import NotFound from './components/NotFound';
-import AvatarSelection from './components/AvatarSelection';
-import { auth } from './firebaseConfig';
-import Footer from './components/Footer';
-import LearnMorePage from './LearnMorePage';
-import CookiePolicy from './CookiePolicy';
-import PrivacyPolicy from './PrivacyPolicy'
+// src/App.js
+import React, { useEffect, useState } from "react";
+import {
+  HashRouter as Router, // Use HashRouter se estiver utilizando URLs com #
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import CreateRoom from "./components/CreateRoom";
+import Room from "./components/Room";
+import DoorPage from './components/DoorPage';
+import Login from "./components/Login";
+import Register from "./components/Register";
+import ResetPassword from "./components/ResetPassword";
+import UserProfile from "./components/UserProfile";
+import NotFound from "./components/NotFound";
+import LearnMorePage from "./LearnMorePage";
+import CookiePolicy from "./CookiePolicy";
+import PrivacyPolicy from "./PrivacyPolicy";
+import IntroPage from "./components/IntroPage";
+import Footer from "./components/Footer";
+import { auth } from "./firebaseConfig";
+
 
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Observa o estado de autenticação do Firebase
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setUser(user);
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => unsubscribe(); // Limpa a inscrição quando o componente é desmontado
   }, []);
 
   if (loading) {
+    // Exibe um indicador de carregamento enquanto verifica o estado do usuário
     return (
       <div className="d-flex justify-content-center align-items-center vh-100">
         <div className="text-center">
@@ -42,13 +55,47 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={<AuthExample />} />
-        <Route path="/" element={user ? <CreateRoom /> : <Navigate to="/login" />} />
+        {/* Rota para IntroPage */}
+        <Route path="/" element={<IntroPage />} />
+
+        {/* Rota para Login */}
+        <Route path="/login" element={<Login />} />
+
+        {/* Rota para Registro */}
+        <Route path="/register" element={<Register />} />
+
+        {/* Rota para Reset de Senha */}
+        <Route path="/reset-password" element={<ResetPassword />} />
+
+        {/* Rota para a Página Principal (Criar Sala) */}
+        <Route
+          path="/create-room"
+          element={user ? <CreateRoom /> : <Navigate to="/login" />}
+        />
+
+        {/* Rota para Perfil do Usuário */}
+        <Route
+          path="/user-profile"
+          element={user ? <UserProfile /> : <Navigate to="/login" />}
+        />
+
+        <Route
+          path="/door/:roomId"
+          element={user ? <DoorPage /> : <Navigate to="/login" />}
+        />
+
+        {/* Outras Rotas Públicas */}
         <Route path="/learn-more" element={<LearnMorePage />} />
         <Route path="/cookie-policy" element={<CookiePolicy />} />
         <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
-        <Route path="/room/:roomId" element={<Room />} />
-        <Route path="/avatar-selection" element={user ? <AvatarSelection /> : <Navigate to="/login" />} />
+
+        {/* Rota para Sala de Chat (Agora Pública) */}
+        <Route
+          path="/room/:roomId"
+          element={<Room />}
+        />
+
+        {/* Rota para Not Found */}
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Footer />

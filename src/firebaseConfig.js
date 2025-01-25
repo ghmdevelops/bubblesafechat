@@ -12,7 +12,8 @@ const firebaseConfig = {
     projectId: "opensecurityroom",
     storageBucket: "opensecurityroom.appspot.com",
     messagingSenderId: "100768688093",
-    appId: "1:100768688093:web:39e42da6d5e35258acb834"
+    appId: "1:100768688093:web:39e42da6d5e35258acb834",
+    measurementId: "G-S792FEXBQM",
 };
 
 if (!firebase.apps.length) {

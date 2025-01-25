@@ -4,10 +4,6 @@ body {
   background-image: url("./img/Background_Blue_1500.png");
   font-family: "Roboto", sans-serif;
   color: #fff;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
 }
 
 .swal2-popup {

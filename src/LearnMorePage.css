@@ -1,5 +1,4 @@
 .learn-more-container {
-  background: linear-gradient(135deg, #0a0d12, #1c2126);
   color: #ffffff;
   padding: 20px;
   border-radius: 8px;
@@ -9,75 +8,62 @@
   font-family: "Arial", sans-serif;
 }
 
+/* Imagem Visual */
 .visual-image {
-  width: 100%;
-  height: 30rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  transition: transform 0.3s ease;
+  max-width: 100%;
+  height: auto;
 }
 
-.visual-image:hover {
-  transform: scale(1.05);
+/* Títulos das Seções */
+.section-title-dados {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-top: 2rem;
 }
 
-.logout-button-op {
-  border: 2px solid;
-  border-radius: 10rem;
-}
-
-.logout-button-op {
-  border: 2px solid;
-}
-
+/* Descrições */
 .page-description {
   font-size: 1.2rem;
   line-height: 1.6;
-  margin-bottom: 20px;
   text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
-.section-title-dados {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #99c3ef;
-  margin-top: 30px;
-  margin-bottom: 15px;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-@media (max-width: 500px) {
-  .section-title-dados {
-    text-align: center;
-    font-size: 1.4rem;
-  }
-
-  .page-description {
-    font-size: 1rem;
-  }
-}
-
+/* Cards de Funcionalidades */
 .features-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
-  margin-bottom: 40px;
+  margin-top: 2rem;
 }
 
 .feature-card {
-  background-color: #102332;
-  padding: 20px;
+  background-color: #1e1e1e; /* Fundo dos cards */
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
 }
 
 .feature-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
 }
 
 .feature-icon {
-  font-size: 2rem;
-  color: #3795f9;
+  font-size: 3rem;
+  color: #17a2b8; /* Cor dos ícones */
+}
+
+@media (max-width: 576px) {
+  .section-title-dados {
+    font-size: 1.5rem;
+  }
+
+  .page-description {
+    font-size: 1rem;
+    padding: 0 10px;
+  }
+
+  .feature-icon {
+    font-size: 2.5rem;
+  }
 }

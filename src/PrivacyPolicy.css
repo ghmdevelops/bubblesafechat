@@ -1,54 +1,83 @@
 .privacy-policy-container {
-  background-color: transparent;
   color: #e0e0e0;
   padding: 20px;
   margin: 0 auto;
   font-family: "Arial", sans-serif;
 }
 
-.policy-title {
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: #ffffff;
-  text-align: center;
-  margin-bottom: 20px;
-  letter-spacing: 1px;
+/* src/components/PrivacyPolicy.css *
+/* Navbar Personalizada */
+.privacy-policy-header .navbar-brand {
+  max-height: 50px; /* Ajuste conforme necessário */
 }
 
-.policy-description {
-  font-size: 1.2rem;
-  line-height: 1.6;
-  color: #c0c0c0;
-  text-align: center;
-  margin-bottom: 30px;
+.responsive-img {
+  width: 100%;
+  height: auto;
 }
 
+/* Conteúdo Principal */
+.policy-content {
+  background-color: #1e1e1e; /* Fundo um pouco mais claro */
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Títulos das Seções */
 .section-title {
-  font-size: 1.8rem;
-  margin-top: 30px;
-  margin-bottom: 15px;
-  color: #f0f0f0;
-  border-bottom: 1px solid #333;
-  padding-bottom: 5px;
-  text-transform: uppercase;
+  font-size: 1.5rem;
 }
 
-.section {
-  margin-bottom: 20px;
-}
-
-.section p {
+/* Descrições */
+.policy-description {
   font-size: 1rem;
-  line-height: 1.5;
-  color: #d3d3d3;
+  line-height: 1.75;
 }
 
-a {
-  color: #007bff;
+/* Listas */
+.policy-description ul {
+  list-style-type: disc;
+  padding-left: 20px;
+}
+
+.policy-description ul li {
+  margin-bottom: 0.5rem;
+}
+
+/* Ícones nas Seções */
+.feature-icon {
+  font-size: 2rem;
+  color: #17a2b8; /* Cor dos ícones */
+}
+
+/* Links */
+a.text-info {
+  color: #17a2b8;
+  text-decoration: underline;
+}
+
+a.text-info:hover {
+  color: #138496;
   text-decoration: none;
-  transition: color 0.3s;
 }
 
-a:hover {
-  color: #0056b3;
+/* Responsividade */
+@media (max-width: 576px) {
+  .policy-content {
+    padding: 1rem;
+  }
+
+  .section-title {
+    font-size: 1.2rem;
+  }
+
+  .policy-description {
+    font-size: 0.9rem;
+  }
+
+  .feature-icon {
+    font-size: 1.5rem;
+  }
 }
+
