@@ -45,6 +45,7 @@ import { Spinner } from "react-bootstrap";
 import notificationSound from "./sounds/notification.mp3";
 import Joyride from "react-joyride";
 import { ref as dbRef, onValue } from "firebase/database";
+import CryptoJS from "crypto-js";
 
 const Room = () => {
   const { roomId } = useParams();
@@ -93,6 +94,19 @@ const Room = () => {
   const [attempts, setAttempts] = useState(0);
   const [isRotated, setIsRotated] = useState(false);
   const [isTourActive, setIsTourActive] = useState(false);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [selectedAvatar, setSelectedAvatar] = useState("");
+
+  const ENCRYPTION_KEY = "chaveSuperSecretaNoCliente";
+
+  function encryptMessage(plainText) {
+    return CryptoJS.AES.encrypt(plainText, ENCRYPTION_KEY).toString();
+  }
+
+  function decryptMessage(cipherText) {
+    const bytes = CryptoJS.AES.decrypt(cipherText, ENCRYPTION_KEY);
+    return bytes.toString(CryptoJS.enc.Utf8);
+  }
 
   const dropdownRef = useRef(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -134,6 +148,15 @@ const Room = () => {
   const startNewRoom = () => {
     localStorage.removeItem("tourAsked");
   };
+
+  const avatars = [
+    "https://i.pravatar.cc/150?img=1",
+    "https://i.pravatar.cc/150?img=3",
+    "https://i.pravatar.cc/150?img=5",
+    "https://i.pravatar.cc/150?img=6",
+    "https://i.pravatar.cc/150?img=7",
+    "https://i.pravatar.cc/150?img=8",
+  ];
 
   const promptPasswordAndDisplayMessage = (msg) => {
     let attemptCount = 0;
@@ -818,6 +841,8 @@ const Room = () => {
         console.log("Erro ao enviar solicitação:", error);
         setStatusMessage("Erro ao enviar solicitação. Tente novamente.");
       });
+
+    setShowAvatarModal(true);
   };
 
   useEffect(() => {
@@ -950,12 +975,14 @@ const Room = () => {
       const deletionTime = Date.now() + destructionTime * 1000;
       const messageRef = database.ref(`rooms/${roomId}/messages`).push();
 
+      const encryptedText = encryptMessage(message);
+
       const newMessage = {
-        text: message,
+        text: encryptedText,
         user: userName || creatorName,
         timestamp: new Date().toISOString(),
         deletionTime: isDestructionActive ? deletionTime : null,
-        avatar: userAvatar, // Adiciona o avatar do usuário
+        avatar: userAvatar || selectedAvatar,
       };
 
       if (replyingTo) {
@@ -997,6 +1024,8 @@ const Room = () => {
 
   const leaveRoom = () => {
     const messageRef = database.ref(`rooms/${roomId}/messages`).push();
+    const sanitizedUserName = sanitizeUserName(userName);
+
     messageRef
       .set({
         text: `${userName} saiu da sala.`,
@@ -1004,11 +1033,24 @@ const Room = () => {
         timestamp: new Date().toISOString(),
       })
       .then(() => {
-        setStatusMessage("Você saiu da sala.");
-        setTimeout(() => {
-          localStorage.removeItem("hasJoined");
-          navigate("/");
-        }, 1000);
+        const allowedUsersRef = database.ref(
+          `rooms/${roomId}/allowedUsers/${sanitizedUserName}`
+        );
+        allowedUsersRef
+          .remove()
+          .then(() => {
+            setStatusMessage("Você saiu da sala.");
+            setTimeout(() => {
+              localStorage.removeItem(`hasJoined_${roomId}`);
+              navigate("/");
+            }, 1000);
+          })
+          .catch((error) => {
+            console.error(
+              "Erro ao remover o usuário da lista de permitidos:",
+              error
+            );
+          });
       })
       .catch((error) => {
         console.error("Erro ao enviar mensagem de saída:", error);
@@ -1540,6 +1582,35 @@ const Room = () => {
     },
   ];
 
+  const finalizeAccess = () => {
+    const sanitizedUserName = sanitizeUserName(userName);
+    const userRef = database.ref(
+      `rooms/${roomId}/allowedUsers/${sanitizedUserName}`
+    );
+
+    userRef
+      .set({
+        userName,
+        avatar: selectedAvatar,
+        timestamp: new Date().toISOString(),
+      })
+      .then(() => {
+        setHasJoined(true);
+        setShowAvatarModal(false);
+        setLoading(false);
+        setStatusMessage("Você foi aceito na sala. Redirecionando...");
+        setTimeout(() => {
+          setStatusMessage("");
+          navigate(`/room/${roomId}`);
+        }, 2000);
+      })
+      .catch((error) => {
+        console.error("Erro ao definir avatar:", error);
+        setStatusMessage("Erro ao definir avatar. Tente novamente.");
+        setLoading(false);
+      });
+  };
+
   return (
     <div>
       <Joyride
@@ -1579,56 +1650,6 @@ const Room = () => {
         <title>{`Bubble Safe Chat - ${
           roomName ? roomName : "Carregando..."
         }`}</title>
-        <meta name="title" content="Bubble Safe Chat" />
-        <meta
-          name="description"
-          content="Bubble Safe Chat oferece salas de chat seguras e privadas com criptografia de ponta a ponta. Garanta a confidencialidade de suas conversas, com segurança de nível empresarial e recursos avançados de proteção de dados, respeitando regulamentações de privacidade como o GDPR e a LGPD. Converse sem preocupações e com total controle sobre sua privacidade."
-        />
-        <meta
-          name="keywords"
-          content="chat seguro, privacidade online, criptografia avançada, salas de chat privadas, segurança de dados, comunicação segura, proteção de dados pessoais, GDPR, LGPD, criptografia ponta a ponta, privacidade nas mensagens, comunicação confidencial, segurança digital, plataforma de chat segura, mensagem autodestrutiva"
-        />
-        <meta name="author" content="Bubble Safe Chat" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta httpEquiv="Content-Type" content="text/html; charset=UTF-8" />
-        <meta property="og:site_name" content="Bubble Safe Chat" />
-        <meta
-          property="og:title"
-          content="Bubble Safe Chat - Segurança Total para Suas Conversas"
-        />
-        <meta
-          property="og:description"
-          content="Salas de chat seguras e privadas com criptografia avançada. Proteja suas conversas com total privacidade e segurança online, em conformidade com regulamentações como o GDPR e a LGPD."
-        />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://bubblesafechat.com.br" />
-        <meta
-          property="og:image"
-          content="https://bubblesafechat.com.br/icon-page-200.jpg"
-        />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta
-          name="twitter:title"
-          content="Bubble Safe Chat - Segurança Total para Suas Conversas"
-        />
-        <meta
-          name="twitter:description"
-          content="Junte-se ao Bubble Safe Chat e proteja suas conversas com criptografia avançada. Segurança e privacidade são prioridades."
-        />
-        <meta
-          name="twitter:image"
-          content="https://bubblesafechat.com.br/icon-page-200.jpg"
-        />
-        <link rel="canonical" href="https://bubblesafechat.com.br" />
-        <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
-        <meta name="robots" content="index, follow" />
-        <meta property="og:image:type" content="image/jpeg" />
-        <meta property="og:image:width" content="200" />
-        <meta property="og:image:height" content="200" />
-        <meta
-          name="twitter:image:alt"
-          content="Bubble Safe Chat - Segurança Total"
-        />
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
       </Helmet>
 
@@ -1854,6 +1875,20 @@ const Room = () => {
           const timeRemaining = destructionTime - timeSinceCreation;
           const isSentByUser = msg.user === userName;
           const remainingTime = timeLeft[msg.id];
+          const isSystemMessage = msg.user === "Sistema";
+
+          let messageContent;
+          if (isSystemMessage) {
+            messageContent = msg.text;
+          } else {
+            if (msg.text) {
+              try {
+                messageContent = decryptMessage(msg.text);
+              } catch (error) {
+                messageContent = "Erro ao descriptografar";
+              }
+            }
+          }
 
           const promptPasswordAndDisplayMessage = async () => {
             let attemptCount = 0;
@@ -1912,7 +1947,7 @@ const Room = () => {
               <strong
                 style={{ display: "block", fontSize: "0.85em", color: "#555" }}
               >
-                {msg.user === creatorName && creatorAvatar ? (
+                {msg.avatar ? (
                   <img
                     src={msg.avatar}
                     alt={`${msg.user}'s avatar`}
@@ -1953,8 +1988,8 @@ const Room = () => {
                     <FontAwesomeIcon icon={faLock} /> Mensagem Protegida (Clique
                     para digitar senha)
                   </button>
-                ) : msg.text ? (
-                  msg.text
+                ) : messageContent ? (
+                  messageContent
                 ) : (
                   <button
                     style={{ color: "#fff", fontSize: "20px" }}
@@ -2293,6 +2328,73 @@ const Room = () => {
         >
           <FontAwesomeIcon icon={faCheckCircle} className="me-2" />
           <span>{statusMessage}</span>
+        </div>
+      )}
+
+      {showAvatarModal && (
+        <div
+          className="modal show d-block"
+          tabIndex="-1"
+          role="dialog"
+          style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+        >
+          <div className="modal-dialog modal-lg" role="document">
+            <div className="modal-content bg-dark">
+              <div className="modal-header">
+                <h5 className="modal-title">Escolha seu Avatar</h5>
+                <button
+                  type="button"
+                  className="btn-close text-bg-light"
+                  aria-label="Close"
+                  onClick={() => setShowAvatarModal(false)}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <div className="d-flex flex-wrap justify-content-center">
+                  {avatars.map((avatarUrl, index) => (
+                    <img
+                      key={index}
+                      src={avatarUrl}
+                      alt={`Avatar ${index + 1}`}
+                      className={`avatar-option ${
+                        selectedAvatar === avatarUrl ? "selected" : ""
+                      }`}
+                      onClick={() => setSelectedAvatar(avatarUrl)}
+                      style={{
+                        width: "80px",
+                        height: "80px",
+                        borderRadius: "50%",
+                        margin: "10px",
+                        cursor: "pointer",
+                        border:
+                          selectedAvatar === avatarUrl
+                            ? "3px solid #007bff"
+                            : "2px solid #ccc",
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button
+                  className="btn btn-primary"
+                  onClick={() => {
+                    if (selectedAvatar) {
+                      finalizeAccess();
+                    } else {
+                      Swal.fire(
+                        "Seleção de Avatar",
+                        "Por favor, selecione um avatar.",
+                        "warning"
+                      );
+                    }
+                  }}
+                >
+                  Confirmar
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

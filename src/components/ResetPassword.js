@@ -64,58 +64,6 @@ const ResetPassword = () => {
     <div className="auth-container">
       <Helmet>
         <title>Bubble Safe Chat - Redefinir Senha</title>
-        <meta name="title" content="Bubble Safe Chat" />
-        <meta
-          name="description"
-          content="Bubble Safe Chat oferece salas de chat seguras e privadas com criptografia de ponta a ponta. Redefina sua senha com segurança."
-        />
-        <meta
-          name="keywords"
-          content="chat seguro, privacidade online, criptografia avançada, redefinir senha, segurança de dados"
-        />
-        <meta name="author" content="Bubble Safe Chat" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta httpEquiv="Content-Type" content="text/html; charset=UTF-8" />
-        <meta property="og:site_name" content="Bubble Safe Chat" />
-        <meta
-          property="og:title"
-          content="Bubble Safe Chat - Redefinir Senha"
-        />
-        <meta
-          property="og:description"
-          content="Redefina sua senha de forma segura com o Bubble Safe Chat."
-        />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://bubblesafechat.com.br" />
-        <meta
-          property="og:image"
-          content="https://bubblesafechat.com.br/icon-page-200.jpg"
-        />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta
-          name="twitter:title"
-          content="Bubble Safe Chat - Redefinir Senha"
-        />
-        <meta
-          name="twitter:description"
-          content="Redefina sua senha de forma segura com o Bubble Safe Chat."
-        />
-        <meta
-          name="twitter:image"
-          content="https://bubblesafechat.com.br/icon-page-200.jpg"
-        />
-        <link rel="canonical" href="https://bubblesafechat.com.br" />
-        <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
-        <meta name="robots" content="index, follow" />
-        <meta property="og:image:type" content="image/jpeg" />
-        <meta property="og:image:width" content="200" />
-        <meta property="og:image:height" content="200" />
-        <meta
-          name="twitter:image:alt"
-          content="Bubble Safe Chat - Redefinir Senha"
-        />
-        {/* Remova as linhas abaixo, pois são diretivas de robots.txt e não pertencem aos meta tags */}
-        {/* User-agent: * Allow: / */}
       </Helmet>
 
       <img

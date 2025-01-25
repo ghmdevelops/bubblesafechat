@@ -163,7 +163,7 @@ const Register = () => {
   return (
     <div className="auth-container">
       <Helmet>
-        <title>Bubble Safe Chat - Registro</title>
+        <title>Bubble Safe Chat - Registrar</title>
       </Helmet>
       <img
         onClick={() => navigate("/")}

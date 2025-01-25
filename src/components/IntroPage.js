@@ -1,14 +1,12 @@
 import { FaUserSecret } from "react-icons/fa";
 import { RiLoginBoxFill } from "react-icons/ri";
 import { IoMdLogIn } from "react-icons/io";
-// src/components/IntroPage.js
+import { Helmet } from "react-helmet";
 import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../firebaseConfig";
 import "./IntroPage.css";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSignInAlt, faUserPlus } from "@fortawesome/free-solid-svg-icons";
 import iconPage from "./img/icon-menu.png";
 import iconPageVisual from "./img/rm373batch4-15.jpg";
 import logo from "./img/name.png";
@@ -29,6 +27,10 @@ const IntroPage = () => {
 
   return (
     <div className="intro-container">
+      <Helmet>
+        <title>Bubble Safe Chat</title>
+      </Helmet>
+
       <header>
         <nav className="navbar navbar-expand-md navbar-dark fixed-top bg-black">
           <div className="container-fluid">
@@ -44,7 +46,7 @@ const IntroPage = () => {
             <ul className="navbar-nav ms-auto d-flex justify-content-between">
               <li className="nav-item">
                 <button
-                  className="btn btn-primary btn-sm align-items-center w-auto"
+                  className="btn btn-outline-info btn-sm align-items-center w-auto"
                   onClick={() => navigate("/login")}
                   aria-label="Login"
                 >
@@ -52,7 +54,7 @@ const IntroPage = () => {
                   <span className="d-none d-md-inline"> Login</span>
                 </button>
                 <button
-                  className="btn btn-primary btn-sm align-items-center w-auto"
+                  className="btn btn-outline-info btn-sm align-items-center w-auto"
                   onClick={() => navigate("/register")}
                   aria-label="Registrar"
                 >

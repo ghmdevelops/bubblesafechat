@@ -20,21 +20,14 @@ import { faGoogle } from "@fortawesome/free-brands-svg-icons";
 import Swal from "sweetalert2";
 import "@sweetalert2/theme-dark/dark.css";
 import logo from "./img/name.png";
-import googleIcon from "./img/icon-google.png";
-import "./AuthExample.css";
+import "./Login.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import {
-  faPaperPlane,
-  faArrowLeft,
-  faSignInAlt,
-  faUserPlus,
   faSpinner,
-  faUser,
   faEnvelope,
   faLock,
   faEye,
   faEyeSlash,
-  faInfoCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -304,7 +297,6 @@ const Login = () => {
     <div className="auth-container">
       <Helmet>
         <title>Bubble Safe Chat - Login</title>
-        {/* ...metatags restantes */}
       </Helmet>
 
       <img

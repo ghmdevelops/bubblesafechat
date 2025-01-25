@@ -1,14 +1,68 @@
 // src/components/DoorPage.js
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2'; // Importa o SweetAlert2
+import 'sweetalert2/dist/sweetalert2.min.css'; // Importa os estilos do SweetAlert2
 import './DoorPage.css'; // Certifique-se de que o CSS está corretamente importado
 import doorSound from './sounds/open-door.mp3'; // Caminho correto para o arquivo de áudio
+import { database } from '../firebaseConfig'; // Importa a configuração do Firebase
+import { ref as dbRef, onValue } from 'firebase/database'; // Importa funções do Firebase Realtime Database
 
 const DoorPage = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [roomName, setRoomName] = useState('');
+  const [loading, setLoading] = useState(true);
   const audioRef = useRef(null);
   const { roomId } = useParams();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (roomId) {
+      const roomRef = dbRef(database, `rooms/${roomId}`);
+      const unsubscribe = onValue(roomRef, (snapshot) => {
+        if (snapshot.exists()) {
+          const roomData = snapshot.val();
+          setRoomName(roomData.name || 'Sala Sem Nome');
+
+          // Exibir o Swal após obter os dados da sala
+          Swal.fire({
+            title: `Bem-vindo à sala ${roomData.name || 'Sala Sem Nome'}`,
+            text: 'Clique na maçaneta para abrir a porta.',
+            icon: 'info',
+            confirmButtonText: 'Entendi',
+            allowOutsideClick: false, // Impede fechar o Swal clicando fora
+          });
+        } else {
+          // Se a sala não existir, exibir uma mensagem de erro
+          Swal.fire({
+            title: 'Sala Não Encontrada',
+            text: 'A sala que você está tentando acessar não existe.',
+            icon: 'error',
+            confirmButtonText: 'Voltar',
+          }).then(() => {
+            navigate('/'); // Navegar de volta para a página inicial ou outra rota apropriada
+          });
+        }
+        setLoading(false);
+      });
+
+      // Limpeza do listener quando o componente for desmontado
+      return () => {
+        unsubscribe();
+      };
+    } else {
+      // Se o roomId não estiver presente na URL
+      Swal.fire({
+        title: 'Erro',
+        text: 'Nenhuma sala identificada na URL.',
+        icon: 'error',
+        confirmButtonText: 'Voltar',
+      }).then(() => {
+        navigate('/'); // Navegar de volta para a página inicial ou outra rota apropriada
+      });
+      setLoading(false);
+    }
+  }, [roomId, navigate]);
 
   const openDoor = () => {
     setIsOpen(true);
@@ -21,6 +75,10 @@ const DoorPage = () => {
       navigate(`/room/${roomId}`);
     }, 1200);
   };
+
+  if (loading) {
+    return <div className="loading">Carregando...</div>;
+  }
 
   return (
     <div className={`body ${isOpen ? 'open-light' : ''}`}>

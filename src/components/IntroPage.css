@@ -198,8 +198,11 @@ h2.page-text-ifo {
   line-height: 1.5;
 }
 
-.nav-item button{
+.nav-item button {
   padding: 10px 20px;
+  border: 2px solid;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 600;
 }
 
 @media (max-width: 576px) {
@@ -213,7 +216,7 @@ h2.page-text-ifo {
     width: 190px;
   }
 
-  .nav-item button{
+  .nav-item button {
     font-size: 10px;
     padding: 8px 8px;
     border-radius: 3rem;
