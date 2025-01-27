@@ -12,6 +12,7 @@ import DoorPage from './components/DoorPage';
 import Login from "./components/Login";
 import Register from "./components/Register";
 import ResetPassword from "./components/ResetPassword";
+import MagicLinkHandler from "./components/MagicLinkHandler";
 import UserProfile from "./components/UserProfile";
 import NotFound from "./components/NotFound";
 import LearnMorePage from "./LearnMorePage";
@@ -60,6 +61,8 @@ function App() {
 
         {/* Rota para Login */}
         <Route path="/login" element={<Login />} />
+
+        <Route path="/magic-link" element={<MagicLinkHandler />} />
 
         {/* Rota para Registro */}
         <Route path="/register" element={<Register />} />

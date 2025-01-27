@@ -46,7 +46,12 @@
   color: #0056b3;
 }
 
-/* Medidor de Força de Senha */
 .password-strength-meter {
   width: 100%;
+}
+
+@media (max-width: 576px) {
+  .icon-paf3 {
+    margin-top: 5rem;
+  }
 }

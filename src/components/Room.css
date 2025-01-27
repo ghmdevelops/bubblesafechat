@@ -422,3 +422,36 @@ h3 {
 .transition-icon.rotated {
   transform: rotate(90deg);
 }
+
+.reactions button {
+  background-color: transparent;
+  border: none;
+  padding: 2px 5px;
+  font-size: 14px;
+}
+
+.reactions button:hover {
+  background-color: rgba(23, 162, 184, 0.1);
+  border-radius: 5px;
+}
+
+.reactions .btn-primary {
+  color: #fff;
+  background-color: #17a2b8;
+  border-color: #17a2b8;
+}
+
+.reactions .btn-outline-primary {
+  color: #17a2b8;
+  border-color: #17a2b8;
+}
+
+.reactions .btn-primary:hover {
+  background-color: #138496;
+  border-color: #117a8b;
+}
+
+.reactions .btn-outline-primary:hover {
+  background-color: #17a2b8;
+  color: #fff;
+}

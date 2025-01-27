@@ -46,7 +46,7 @@ const IntroPage = () => {
             <ul className="navbar-nav ms-auto d-flex justify-content-between">
               <li className="nav-item">
                 <button
-                  className="btn btn-outline-info btn-sm align-items-center w-auto"
+                  className="btn btn-outline-info btn-sm align-items-center w-auto btn-32"
                   onClick={() => navigate("/login")}
                   aria-label="Login"
                 >
@@ -54,7 +54,7 @@ const IntroPage = () => {
                   <span className="d-none d-md-inline"> Login</span>
                 </button>
                 <button
-                  className="btn btn-outline-info btn-sm align-items-center w-auto"
+                  className="btn btn-outline-info btn-sm align-items-center w-auto  btn-32"
                   onClick={() => navigate("/register")}
                   aria-label="Registrar"
                 >

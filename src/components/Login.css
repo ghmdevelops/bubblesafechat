@@ -95,6 +95,7 @@ label#check:hover {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   padding: 20px;
 }
 
@@ -113,7 +114,7 @@ label#check:hover {
 }
 
 @media (max-width: 768px) {
-  .btn-redpass span{
+  .btn-redpass span {
     font-size: 15px;
   }
 }
@@ -158,12 +159,29 @@ label#check:hover {
 
 .input-icon-container input {
   width: 100%;
-  padding: 10px;
+  padding: 4px;
   padding-right: 40px;
   border: none;
   outline: none;
   font-size: 16px;
   background-color: transparent;
+}
+
+.login-methods-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.login-methods-toggle .btn {
+  flex: 1;
+}
+
+/* Estilos opcionais para melhorar a aparência */
+.login-methods-toggle .btn-secondary,
+.login-methods-toggle .btn-outline-secondary {
+  width: 150px;
 }
 
 .eye-icon {

@@ -36,6 +36,12 @@ import {
   faTrash,
   faCheck,
   faTimes,
+  faThumbsUp,
+  faHeart,
+  faLaugh,
+  faSurprise,
+  faSadTear,
+  faAngry,
 } from "@fortawesome/free-solid-svg-icons";
 import { faWhatsapp, faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { Helmet } from "react-helmet";
@@ -143,6 +149,56 @@ const Room = () => {
 
   const handleToggle = () => {
     setIsRotated(!isRotated);
+  };
+
+  const reactionTypes = [
+    { type: "like", icon: faThumbsUp },
+    { type: "love", icon: faHeart },
+    { type: "haha", icon: faLaugh },
+    { type: "wow", icon: faSurprise },
+    { type: "sad", icon: faSadTear },
+    { type: "angry", icon: faAngry },
+  ];
+
+  const removeReaction = (messageId, reactionType) => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+
+    const sanitizedUserName = sanitizeUserName(userName || creatorName); // Use o userName do estado
+
+    const reactionRef = database.ref(
+      `rooms/${roomId}/messages/${messageId}/reactions/${reactionType}`
+    );
+
+    reactionRef.once("value").then((snapshot) => {
+      const users = snapshot.val() || [];
+      if (users.includes(sanitizedUserName)) {
+        const updatedUsers = users.filter((user) => user !== sanitizedUserName);
+        if (updatedUsers.length > 0) {
+          reactionRef.set(updatedUsers);
+        } else {
+          reactionRef.remove();
+        }
+      }
+    });
+  };
+
+  const addReaction = (messageId, reactionType) => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+
+    const sanitizedUserName = sanitizeUserName(userName || creatorName); // Use o userName do estado
+
+    const reactionRef = database.ref(
+      `rooms/${roomId}/messages/${messageId}/reactions/${reactionType}`
+    );
+
+    reactionRef.once("value").then((snapshot) => {
+      const users = snapshot.val() || [];
+      if (!users.includes(sanitizedUserName)) {
+        reactionRef.set([...users, sanitizedUserName]);
+      }
+    });
   };
 
   const startNewRoom = () => {
@@ -1870,6 +1926,18 @@ const Room = () => {
         }}
       >
         {messages.map((msg) => {
+          const handleReaction = (reactionType) => {
+            if (
+              msg.reactions &&
+              msg.reactions[reactionType] &&
+              msg.reactions[reactionType].includes(userName)
+            ) {
+              removeReaction(msg.id, reactionType);
+            } else {
+              addReaction(msg.id, reactionType);
+            }
+          };
+
           const timeSinceCreation =
             (Date.now() - new Date(msg.timestamp).getTime()) / 1000;
           const timeRemaining = destructionTime - timeSinceCreation;
@@ -1964,6 +2032,34 @@ const Room = () => {
                 )}
                 {msg.user}
               </strong>
+
+              <div className="reactions mt-2 d-flex">
+                {reactionTypes.map((reaction) => {
+                  const usersReacted =
+                    msg.reactions && msg.reactions[reaction.type]
+                      ? msg.reactions[reaction.type]
+                      : [];
+                  const userHasReacted = usersReacted.includes(userName);
+                  const reactionCount = usersReacted.length;
+
+                  return (
+                    <button
+                      key={reaction.type}
+                      onClick={() => handleReaction(reaction.type)}
+                      className={`btn btn-sm me-1 ${
+                        userHasReacted ? "btn-primary" : "btn-outline-primary"
+                      }`}
+                      style={{ display: "flex", alignItems: "center" }}
+                      aria-label={`Reagir com ${reaction.type}`}
+                    >
+                      <FontAwesomeIcon icon={reaction.icon} />
+                      {reactionCount > 0 && (
+                        <span className="ms-1">{reactionCount}</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
 
               {msg.replyTo && (
                 <div className="reply-preview mt-1" style={replyPreviewStyles}>

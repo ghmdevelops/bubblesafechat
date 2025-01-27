@@ -166,6 +166,7 @@ const Register = () => {
         <title>Bubble Safe Chat - Registrar</title>
       </Helmet>
       <img
+        className="icon-paf3"
         onClick={() => navigate("/")}
         style={{ cursor: "pointer", width: "300px" }}
         src={logo}
