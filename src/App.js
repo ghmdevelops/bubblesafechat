@@ -43,10 +43,10 @@ function App() {
       <div className="d-flex justify-content-center align-items-center vh-100">
         <div className="text-center">
           <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Carregando...</span>
+            <span className="visually-hidden"></span>
           </div>
           <div className="mt-3">
-            <span>Carregando...</span>
+            <span></span>
           </div>
         </div>
       </div>

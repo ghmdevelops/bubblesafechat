@@ -1569,7 +1569,6 @@ const Room = () => {
               transition={{ duration: 0.5 }}
             >
               <div className="spinner-border colorful-spinner" role="status">
-                <span className="visually-hidden">Carregando...</span>
               </div>
             </motion.div>
           )}
@@ -1606,7 +1605,6 @@ const Room = () => {
         }}
       >
         <Spinner animation="border" role="status" variant="primary" />
-        <div className="mt-3">Carregando a sala...</div>
       </motion.div>
     );
   }
@@ -1805,7 +1803,7 @@ const Room = () => {
                                 <span className="auds">
                                   <FontAwesomeIcon
                                     icon={faClock}
-                                    className={`me-2 ${
+                                    className={`me-1 ${
                                       isDestructionActive
                                         ? "text-success"
                                         : "text-white"

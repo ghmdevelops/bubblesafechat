@@ -111,6 +111,10 @@ button {
   span {
     font-size: 14px;
   }
+
+  img.img-u53 {
+    width: 16.8rem;
+  }
 }
 
 @keyframes fadeIn {

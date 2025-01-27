@@ -15,15 +15,13 @@ import {
   faShieldAlt,
   faEye,
   faSpinner,
-  faPlus,
   faTimes,
   faCheck,
   faPowerOff,
   faUserCircle,
-  faDoorOpen,
 } from "@fortawesome/free-solid-svg-icons";
 import iconPage from "./img/icon-menu.png";
-import { EmailAuthProvider } from "firebase/auth";
+import { EmailAuthProvider, getAuth } from "firebase/auth";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ref as dbRef,
@@ -32,6 +30,7 @@ import {
   remove,
   update,
   set,
+  get,
 } from "firebase/database";
 
 const CreateRoom = () => {
@@ -47,10 +46,7 @@ const CreateRoom = () => {
   const [userAvatar, setUserAvatar] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
-
-  // Novo estado para armazenar o apelido do usuário
   const [userApelido, setUserApelido] = useState("");
-
   const LOGOUT_TIMEOUT = 60 * 60 * 1000;
   let logoutTimer;
 
@@ -110,10 +106,85 @@ const CreateRoom = () => {
             setUserAvatar(
               userData.avatar || "https://secure.gravatar.com/avatar/?d=mp"
             );
-            setUserApelido(userData.apelido || "Usuário"); // Atualização para obter 'apelido'
+            setUserApelido(userData.apelido || "Usuário");
+
+            // Verifica se o avatar está definido
+            if (!userData.avatar) {
+              Swal.fire({
+                title: "Escolha um Avatar!",
+                text: "Você ainda não escolheu um avatar. Deseja fazer isso agora?",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Sim",
+                cancelButtonText: "Não",
+                background: "#1E1E1E",
+                customClass: {
+                  popup: "swal-popup-dark",
+                },
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  navigate("/user-profile");
+                }
+              });
+            }
+
+            // Verifica se o apelido está definido
+            if (
+              userData.apelido === "Apelido Não Definido" ||
+              userData.apelido === "Usuário"
+            ) {
+              Swal.fire({
+                title: "Defina um Apelido e Avatar!",
+                text: "Você ainda não definiu um apelido. Deseja fazer isso agora?",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Sim",
+                cancelButtonText: "Não",
+                background: "#1E1E1E",
+                customClass: {
+                  popup: "swal-popup-dark",
+                },
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  navigate("/user-profile");
+                }
+              });
+            }
           } else {
             setUserAvatar("https://secure.gravatar.com/avatar/?d=mp");
-            setUserApelido("Usuário"); // Valor padrão caso 'apelido' não exista
+            setUserApelido("Usuário");
+            Swal.fire({
+              title: "Escolha um Avatar!",
+              text: "Você ainda não escolheu um avatar. Deseja fazer isso agora?",
+              icon: "question",
+              showCancelButton: true,
+              confirmButtonText: "Sim",
+              cancelButtonText: "Não",
+              background: "#1E1E1E",
+              customClass: {
+                popup: "swal-popup-dark",
+              },
+            }).then((result) => {
+              if (result.isConfirmed) {
+                navigate("/user-profile");
+              }
+            });
+            Swal.fire({
+              title: "Defina um Apelido!",
+              text: "Você ainda não definiu um apelido. Deseja fazer isso agora?",
+              icon: "question",
+              showCancelButton: true,
+              confirmButtonText: "Sim",
+              cancelButtonText: "Não",
+              background: "#1E1E1E",
+              customClass: {
+                popup: "swal-popup-dark",
+              },
+            }).then((result) => {
+              if (result.isConfirmed) {
+                navigate("/user-profile");
+              }
+            });
           }
         });
         resetLastAccessTime();
@@ -161,7 +232,6 @@ const CreateRoom = () => {
 
   const reauthenticateUser = async () => {
     const currentUser = auth.currentUser;
-
     try {
       const { value: password } = await Swal.fire({
         title: "Reautenticação necessária",
@@ -190,12 +260,11 @@ const CreateRoom = () => {
 
           const checkbox = document.createElement("input");
           checkbox.type = "checkbox";
-          checkbox.className = "d-none";
+          checkbox.className = "ms-2";
           checkbox.id = "show-password";
-          checkbox.style.marginLeft = "10px";
 
+          checkboxLabel.appendChild(checkbox);
           container.appendChild(checkboxLabel);
-          container.appendChild(checkbox);
 
           checkbox.addEventListener("change", (event) => {
             if (event.target.checked) {
@@ -216,7 +285,6 @@ const CreateRoom = () => {
         password
       );
       await currentUser.reauthenticateWithCredential(credential);
-
       return true;
     } catch (error) {
       Swal.fire(
@@ -264,13 +332,10 @@ const CreateRoom = () => {
     if (result.isConfirmed) {
       try {
         const reauthenticated = await reauthenticateUser();
-
         if (!reauthenticated) return;
-
         const userRef = dbRef(database, `users/${currentUser.uid}`);
         await remove(userRef);
         await currentUser.delete();
-
         Swal.fire("Conta excluída com sucesso!", "", "success");
         navigate("/");
       } catch (error) {
@@ -291,46 +356,6 @@ const CreateRoom = () => {
     return CryptoJS.lib.WordArray.random(16).toString();
   };
 
-  const checkAndPromptAvatarSelection = (user, navigate) => {
-    const userRef = dbRef(database, `users/${user.uid}`);
-
-    onValue(userRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const userData = snapshot.val();
-        if (!userData.avatar) {
-          Swal.fire({
-            title: "Escolha um Avatar!",
-            text: "Você ainda não escolheu um avatar. Deseja fazer isso agora?",
-            icon: "question",
-            showCancelButton: true,
-            confirmButtonText: "Sim",
-            cancelButtonText: "Não",
-            background: "#1E1E1E",
-            customClass: {
-              popup: "swal-popup-dark",
-            },
-          }).then((result) => {
-            if (result.isConfirmed) {
-              navigate("/user-profile");
-            }
-          });
-        }
-      }
-    });
-  };
-
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user) {
-        checkAndPromptAvatarSelection(user, navigate);
-      }
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, [navigate]);
-
   const createRoom = async () => {
     const currentUser = auth.currentUser;
 
@@ -343,19 +368,27 @@ const CreateRoom = () => {
       try {
         const roomsRef = dbRef(database, "rooms");
         const newRoomRef = push(roomsRef);
+
+        // Recupera os dados do usuário diretamente do Firebase
+        const userRef = dbRef(database, `users/${currentUser.uid}`);
+        const snapshot = await get(userRef);
+        let avatar = "https://secure.gravatar.com/avatar/?d=mp";
+        if (snapshot.exists()) {
+          const userData = snapshot.val();
+          avatar = userData.avatar || avatar;
+        }
+
         await set(newRoomRef, {
           name: roomName,
           createdAt: new Date().toISOString(),
           creator: currentUser.uid,
           creatorName: userName,
           encryptionKey: encryptionKey,
-          avatar: "https://secure.gravatar.com/avatar/?d=mp",
+          avatar: avatar,
         });
 
         setSuccessMessage("Sala criada com sucesso!");
         setErrorMessage("");
-
-        // **Alteração aqui: Navegar para DoorPage em vez de Room**
         navigate(`/door/${newRoomRef.key}`);
       } catch (error) {
         console.error("Erro ao criar sala:", error);
@@ -431,7 +464,7 @@ const CreateRoom = () => {
         <nav className="navbar navbar-expand-md navbar-dark fixed-top bg-black">
           <div className="container-fluid">
             <img
-              className="navbar-brand img-fluid responsive-img"
+              className="navbar-brand img-fluid responsive-img img-u53"
               src={iconPage}
               alt="OpenSecurityRoom"
             />
@@ -525,7 +558,6 @@ const CreateRoom = () => {
         <div className="container-32" style={{ paddingTop: "80px" }}>
           {!isNameConfirmed && (
             <div className="welcome-section">
-              {/* Atualização aqui: Use 'userApelido' em vez de 'displayName' */}
               <h2 className="fw-bold text-info mb-4">
                 Seja bem-vindo, {userApelido}!
               </h2>
@@ -614,6 +646,7 @@ const CreateRoom = () => {
                   <motion.button
                     className="btn btn-info w-100 w-md-auto"
                     onClick={handleConfirmName}
+                    disabled={!userName.trim() || loading}
                     whileHover={{ scale: 1.07 }}
                     whileTap={{ scale: 0.95 }}
                     style={{

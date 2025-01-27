@@ -1,4 +1,3 @@
-// Login.js
 import React, { useState, useEffect, useRef } from "react";
 import { auth } from "../firebaseConfig";
 import { Helmet } from "react-helmet";
@@ -11,6 +10,7 @@ import {
   signInWithEmailAndPassword,
   sendSignInLinkToEmail,
   isSignInWithEmailLink,
+  sendEmailVerification,
 } from "firebase/auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import logo from "./img/name.png";
@@ -40,28 +40,23 @@ const Login = () => {
   const [isLockedOut, setIsLockedOut] = useState(false);
   const [lockoutMessage, setLockoutMessage] = useState("");
   const navigate = useNavigate();
-  const animationInterval = useRef(null); // Referência para o intervalo
+  const animationInterval = useRef(null);
 
   const MAX_ATTEMPTS = 5;
-  const LOCKOUT_DURATION_MS = 3 * 60 * 1000; // 3 minutos
+  const LOCKOUT_DURATION_MS = 3 * 60 * 1000;
 
-  // Novos estados para Passwordless
   const [isPasswordless, setIsPasswordless] = useState(false);
   const [magicEmail, setMagicEmail] = useState("");
   const [isSendingLink, setIsSendingLink] = useState(false);
 
-  // Configurações do Email Link
   const actionCodeSettings = {
-    // A URL para a qual o usuário será redirecionado após clicar no link
     url: "https://bubblesafechat.com.br/#/magic-link",
-    // Este deve ser verdadeiro para a aplicação detectar o link
     handleCodeInApp: true,
   };
 
   useEffect(() => {
-    // Verifica se há um link mágico na URL
     if (isSignInWithEmailLink(auth, window.location.href)) {
-      navigate("/magic-link"); // Redireciona para o componente MagicLinkHandler
+      navigate("/magic-link");
     }
 
     const storedLockout = localStorage.getItem("isLockedOut");
@@ -106,14 +101,12 @@ const Login = () => {
         clearTimeout(animationInterval.current);
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [navigate]);
 
   const revealPassword = () => {
     if (password.length === 0) return;
 
     let indices = Array.from({ length: password.length }, (_, i) => i);
-    // Embaralha os índices
     for (let i = indices.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [indices[i], indices[j]] = [indices[j], indices[i]];
@@ -124,7 +117,7 @@ const Login = () => {
     animationInterval.current = setInterval(() => {
       if (indices.length === 0) {
         clearInterval(animationInterval.current);
-        setDisplayedPassword(password); // Garante que a senha completa seja exibida
+        setDisplayedPassword(password);
         return;
       }
 
@@ -137,14 +130,13 @@ const Login = () => {
         .map((char, idx) => (currentRevealed.includes(idx) ? char : "•"))
         .join("");
       setDisplayedPassword(newDisplayedPassword);
-    }, 100); // Intervalo de 100ms entre cada revelação
+    }, 100);
   };
 
   const hidePassword = () => {
     if (password.length === 0) return;
 
     let indices = Array.from({ length: password.length }, (_, i) => i);
-    // Embaralha os índices
     for (let i = indices.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [indices[i], indices[j]] = [indices[j], indices[i]];
@@ -155,7 +147,7 @@ const Login = () => {
     animationInterval.current = setInterval(() => {
       if (indices.length === 0) {
         clearInterval(animationInterval.current);
-        setDisplayedPassword("•".repeat(password.length)); // Garante que a senha completa esteja mascarada
+        setDisplayedPassword("•".repeat(password.length));
         return;
       }
 
@@ -168,12 +160,11 @@ const Login = () => {
         .map((char, idx) => (currentHidden.includes(idx) ? "•" : char))
         .join("");
       setDisplayedPassword(newDisplayedPassword);
-    }, 100); // Intervalo de 100ms entre cada ocultação
+    }, 100);
   };
 
   const togglePasswordVisibility = () => {
     if (!showPassword) {
-      // Iniciar a revelação
       setShowPassword(true);
       setDisplayedPassword("•".repeat(password.length));
       setRevealedIndices([]);
@@ -183,7 +174,6 @@ const Login = () => {
       }
       revealPassword();
     } else {
-      // Iniciar a ocultação
       setShowPassword(false);
       setDisplayedPassword(password);
       setRevealedIndices([]);
@@ -231,7 +221,6 @@ const Login = () => {
             const interval = setInterval(() => {
               timer.textContent = Swal.getTimerLeft();
             }, 100);
-            // Limpa o intervalo quando o Swal é fechado
             Swal.getPopup().addEventListener("close", () => {
               clearInterval(interval);
             });
@@ -240,10 +229,11 @@ const Login = () => {
           navigate("/");
         });
       } else {
+        await sendEmailVerification(user);
         Swal.fire({
           icon: "warning",
           title: "E-mail não verificado",
-          text: "Por favor, verifique seu e-mail antes de fazer login.",
+          text: "Um e-mail de verificação foi enviado novamente. Por favor, verifique seu e-mail, inclusive a pasta de lixo eletrônico.",
           confirmButtonText: "Ok",
         });
         auth.signOut();
@@ -416,16 +406,14 @@ const Login = () => {
     }
   };
 
-  // Função para enviar o link mágico
   const sendMagicLink = async (e) => {
     e.preventDefault();
     setErrorMessage("");
 
-    const MAGIC_LINK_COOLDOWN = 60 * 1000; // Tempo de espera em milissegundos (60 segundos)
+    const MAGIC_LINK_COOLDOWN = 60 * 1000;
     const lastRequestTime = localStorage.getItem("lastMagicLinkRequestTime");
     const now = Date.now();
 
-    // Verifica se o usuário precisa aguardar antes de enviar outro link
     if (lastRequestTime && now - lastRequestTime < MAGIC_LINK_COOLDOWN) {
       const remainingTime = Math.ceil(
         (MAGIC_LINK_COOLDOWN - (now - lastRequestTime)) / 1000
@@ -443,10 +431,7 @@ const Login = () => {
 
     try {
       await sendSignInLinkToEmail(auth, magicEmail, actionCodeSettings);
-      // Armazene o timestamp da solicitação atual para limitar as próximas
       localStorage.setItem("lastMagicLinkRequestTime", now);
-
-      // Armazene o e-mail localmente para completar o login após o redirecionamento
       window.localStorage.setItem("emailForSignIn", magicEmail);
 
       Swal.fire({
@@ -485,7 +470,6 @@ const Login = () => {
       />
       <h1>Login</h1>
 
-      {/* Botões para alternar entre os métodos de login */}
       <div className="login-methods-toggle">
         <button
           type="button"
@@ -510,11 +494,8 @@ const Login = () => {
       {lockoutMessage && <p className="error-message">{lockoutMessage}</p>}
       {errorMessage && <p className="error-message">{errorMessage}</p>}
 
-      {/* Exibir formulário com base no método selecionado */}
       {!isPasswordless ? (
-        // Formulário de login tradicional
         <form onSubmit={handleLogin}>
-          {/* Campo de Email */}
           <div className="input-icon-container">
             <div className="icon-background">
               <FontAwesomeIcon icon={faEnvelope} className="input-icon" />
@@ -530,7 +511,6 @@ const Login = () => {
             />
           </div>
 
-          {/* Campo de Senha */}
           <div className={`input-icon-container ${password ? "password" : ""}`}>
             <div className="icon-background">
               <FontAwesomeIcon icon={faLock} className="input-icon" />
@@ -545,7 +525,6 @@ const Login = () => {
                   setRevealedIndices([]);
                   setHiddenIndices([]);
                 } else {
-                  // Atualiza displayedPassword com a nova senha enquanto está visível
                   setDisplayedPassword(e.target.value);
                 }
               }}
@@ -559,7 +538,6 @@ const Login = () => {
             </span>
           </div>
 
-          {/* Botão de Login */}
           <button
             type="submit"
             style={{ height: "50px", fontWeight: "500", fontSize: "16px" }}
@@ -578,7 +556,6 @@ const Login = () => {
             )}
           </button>
 
-          {/* Botões de Login Social */}
           <div className="d-flex justify-content-center gap-3 mt-4 div-btn-log">
             <button
               type="button"
@@ -627,7 +604,6 @@ const Login = () => {
           </div>
         </form>
       ) : (
-        // Formulário de login sem senha
         <form onSubmit={sendMagicLink}>
           <div className="input-icon-container">
             <div className="icon-background">
@@ -644,7 +620,6 @@ const Login = () => {
             />
           </div>
 
-          {/* Botão para enviar o link mágico */}
           <button
             type="submit"
             style={{ height: "50px", fontWeight: "500", fontSize: "16px" }}
@@ -662,7 +637,6 @@ const Login = () => {
         </form>
       )}
 
-      {/* Links de Redefinir Senha e Registrar */}
       <p className="btn-redpass">
         Esqueceu sua senha?{" "}
         <span onClick={() => navigate("/reset-password")}>Redefinir senha</span>

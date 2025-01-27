@@ -77,7 +77,7 @@ const DoorPage = () => {
   };
 
   if (loading) {
-    return <div className="loading">Carregando...</div>;
+    return <div className="loading"></div>;
   }
 
   return (

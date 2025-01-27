@@ -1,5 +1,5 @@
 // src/components/UserProfile.js
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { auth, database } from "../firebaseConfig";
 import { useNavigate, Link } from "react-router-dom";
 import { ref, onValue, update, remove } from "firebase/database";
@@ -15,21 +15,23 @@ import {
   faCheck,
   faTimes,
   faSpinner,
-  faEdit, // Importação do ícone de edição
+  faEdit,
 } from "@fortawesome/free-solid-svg-icons";
 import { motion } from "framer-motion";
-import { EmailAuthProvider } from "firebase/auth"; // Importação necessária
+import { EmailAuthProvider } from "firebase/auth";
 import iconPage from "./img/icon-menu.png";
 import "./UserProfile.css";
 
 const UserProfile = () => {
-  const [userData, setUserData] = useState(undefined); // Inicializar como undefined
+  const [userData, setUserData] = useState(undefined);
   const [selectedAvatar, setSelectedAvatar] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const [isEditing, setIsEditing] = useState(false); // Novo estado para edição
-  const [editedCelular, setEditedCelular] = useState(""); // Estado para celular editado
-  const [editedApelido, setEditedApelido] = useState(""); // Estado para apelido editado
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedCelular, setEditedCelular] = useState("");
+  const [editedApelido, setEditedApelido] = useState("");
   const navigate = useNavigate();
+  const topRef = useRef(null);
+  const saveAvatarRef = useRef(null);
 
   const avatars = [
     "https://i.pravatar.cc/150?img=1",
@@ -105,22 +107,29 @@ const UserProfile = () => {
       userRef,
       (snapshot) => {
         if (snapshot.exists()) {
-          setUserData(snapshot.val());
+          const data = snapshot.val();
+          if (!data.firstName && currentUser.displayName) {
+            update(userRef, { firstName: currentUser.displayName });
+            setUserData({ ...data, firstName: currentUser.displayName });
+          } else {
+            setUserData(data);
+          }
         } else {
-          // Definir um objeto vazio ou com valores padrão
-          setUserData({
-            firstName: "Nome Não Definido",
+          const initialData = {
+            firstName: currentUser.displayName || "Nome Não Definido",
             email: currentUser.email,
             celular: "Número Não Definido",
             apelido: "Apelido Não Definido",
             avatar: "https://secure.gravatar.com/avatar/?d=mp",
-          });
+          };
+          update(userRef, initialData);
+          setUserData(initialData);
         }
       },
       (error) => {
         console.error("Erro ao buscar dados do usuário:", error);
         Swal.fire("Erro", "Erro ao buscar dados do usuário.", "error");
-        setUserData(null); // Definir como null em caso de erro
+        setUserData(null);
       }
     );
 
@@ -131,6 +140,9 @@ const UserProfile = () => {
 
   const handleAvatarSelect = (avatar) => {
     setSelectedAvatar(avatar);
+    if (saveAvatarRef.current) {
+      saveAvatarRef.current.scrollIntoView({ behavior: "smooth" });
+    }
   };
 
   const handleSaveAvatar = async () => {
@@ -147,15 +159,16 @@ const UserProfile = () => {
     try {
       const currentUser = auth.currentUser;
       const userRef = ref(database, `users/${currentUser.uid}`);
-
       await update(userRef, { avatar: selectedAvatar });
-
       Swal.fire("Sucesso", "Avatar atualizado com sucesso!", "success");
       setUserData((prevData) => ({
         ...prevData,
         avatar: selectedAvatar,
       }));
       setSelectedAvatar("");
+      if (topRef.current) {
+        topRef.current.scrollIntoView({ behavior: "smooth" });
+      }
     } catch (error) {
       console.error("Erro ao salvar avatar:", error);
       Swal.fire("Erro", "Erro ao salvar o avatar. Tente novamente.", "error");
@@ -228,13 +241,10 @@ const UserProfile = () => {
     if (result.isConfirmed) {
       try {
         const reauthenticated = await reauthenticateUser();
-
         if (!reauthenticated) return;
-
         const userRef = ref(database, `users/${currentUser.uid}`);
         await remove(userRef);
         await currentUser.delete();
-
         Swal.fire("Conta excluída com sucesso!", "", "success");
         navigate("/");
       } catch (error) {
@@ -246,7 +256,6 @@ const UserProfile = () => {
 
   const reauthenticateUser = async () => {
     const currentUser = auth.currentUser;
-
     try {
       const { value: password } = await Swal.fire({
         title: "Reautenticação necessária",
@@ -300,7 +309,6 @@ const UserProfile = () => {
         password
       );
       await currentUser.reauthenticateWithCredential(credential);
-
       return true;
     } catch (error) {
       Swal.fire(
@@ -312,7 +320,6 @@ const UserProfile = () => {
     }
   };
 
-  // Função para ativar o modo de edição
   const handleEditProfile = () => {
     if (userData) {
       setEditedCelular(userData.celular);
@@ -321,7 +328,6 @@ const UserProfile = () => {
     }
   };
 
-  // Função para salvar as alterações
   const handleSaveProfile = async () => {
     if (!editedCelular.trim() || !editedApelido.trim()) {
       Swal.fire(
@@ -336,12 +342,10 @@ const UserProfile = () => {
     try {
       const currentUser = auth.currentUser;
       const userRef = ref(database, `users/${currentUser.uid}`);
-
       await update(userRef, {
         celular: editedCelular,
         apelido: editedApelido,
       });
-
       Swal.fire("Sucesso", "Perfil atualizado com sucesso!", "success");
       setUserData((prevData) => ({
         ...prevData,
@@ -361,24 +365,22 @@ const UserProfile = () => {
     }
   };
 
-  // Função para cancelar a edição
   const handleCancelEdit = () => {
     setIsEditing(false);
     setEditedCelular("");
     setEditedApelido("");
   };
 
-  // Adicionar condicional de carregamento
   if (userData === undefined) {
     return (
-      <div className="container mt-5">
-        <p className="text-center">Carregando...</p>
+      <div className="container mt-5" ref={topRef}>
+        <p className="text-center"></p>
       </div>
     );
   }
 
   return (
-    <div className="container mt-5">
+    <div className="container mt-5" ref={topRef}>
       <Helmet>
         <title>Perfil do Usuário - Bubble Safe Chat</title>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
@@ -424,7 +426,6 @@ const UserProfile = () => {
             />
           </div>
 
-          {/* Nome Completo */}
           <motion.h5
             className="card-title d-flex align-items-center"
             initial={{ opacity: 0, x: -20 }}
@@ -443,7 +444,6 @@ const UserProfile = () => {
             {userData.firstName}
           </motion.p>
 
-          {/* Email */}
           <motion.h5
             className="card-title d-flex align-items-center"
             initial={{ opacity: 0, x: -20 }}
@@ -462,7 +462,6 @@ const UserProfile = () => {
             {userData.email}
           </motion.p>
 
-          {/* Celular */}
           <motion.h5
             className="card-title d-flex align-items-center"
             initial={{ opacity: 0, x: -20 }}
@@ -500,7 +499,6 @@ const UserProfile = () => {
             )}
           </motion.div>
 
-          {/* Apelido */}
           <motion.h5
             className="card-title d-flex align-items-center"
             initial={{ opacity: 0, x: -20 }}
@@ -538,7 +536,6 @@ const UserProfile = () => {
             )}
           </motion.div>
 
-          {/* Botões de Salvar e Cancelar no Modo de Edição */}
           {isEditing && (
             <div className="d-flex justify-content-end">
               <motion.button
@@ -575,7 +572,6 @@ const UserProfile = () => {
         </div>
       </div>
 
-      {/* Seção de Avatar */}
       <div className="mt-5">
         <h2 className="text-center text-info mb-4">Escolha um Avatar</h2>
         <div className="avatar-grid">
@@ -601,7 +597,7 @@ const UserProfile = () => {
           ))}
         </div>
         {selectedAvatar && (
-          <div className="text-center mt-4">
+          <div className="text-center mt-4" ref={saveAvatarRef}>
             <motion.button
               className="btn btn-primary me-2"
               onClick={handleSaveAvatar}
@@ -635,7 +631,6 @@ const UserProfile = () => {
         )}
       </div>
 
-      {/* Botão de Logout e Deletar Conta */}
       <div className="mt-5 d-flex justify-content-center">
         <motion.button
           className="btn btn-outline-danger me-3"
