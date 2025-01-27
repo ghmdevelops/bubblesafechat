@@ -347,10 +347,10 @@ const Room = () => {
           if (snapshot.exists()) {
             setUserAvatar(
               snapshot.val().avatar ||
-                "https://via.placeholder.com/40?text=Avatar"
+                "https://secure.gravatar.com/avatar/?d=mp"
             );
           } else {
-            setUserAvatar("https://via.placeholder.com/40?text=Avatar");
+            setUserAvatar("https://secure.gravatar.com/avatar/?d=mp");
           }
         });
       } else {

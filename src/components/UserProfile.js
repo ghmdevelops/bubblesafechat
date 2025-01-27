@@ -113,7 +113,7 @@ const UserProfile = () => {
             email: currentUser.email,
             celular: "Número Não Definido",
             apelido: "Apelido Não Definido",
-            avatar: "https://via.placeholder.com/100?text=User",
+            avatar: "https://secure.gravatar.com/avatar/?d=mp",
           });
         }
       },
@@ -411,7 +411,7 @@ const UserProfile = () => {
           <div className="text-center mb-4">
             <img
               src={
-                userData.avatar || "https://via.placeholder.com/100?text=User"
+                userData.avatar || "https://secure.gravatar.com/avatar/?d=mp"
               }
               alt="User Avatar"
               className="rounded-circle"

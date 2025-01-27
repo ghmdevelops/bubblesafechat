@@ -108,11 +108,11 @@ const CreateRoom = () => {
           if (snapshot.exists()) {
             const userData = snapshot.val();
             setUserAvatar(
-              userData.avatar || "https://via.placeholder.com/40?text=Avatar"
+              userData.avatar || "https://secure.gravatar.com/avatar/?d=mp"
             );
             setUserApelido(userData.apelido || "Usuário"); // Atualização para obter 'apelido'
           } else {
-            setUserAvatar("https://via.placeholder.com/40?text=Avatar");
+            setUserAvatar("https://secure.gravatar.com/avatar/?d=mp");
             setUserApelido("Usuário"); // Valor padrão caso 'apelido' não exista
           }
         });
@@ -291,6 +291,46 @@ const CreateRoom = () => {
     return CryptoJS.lib.WordArray.random(16).toString();
   };
 
+  const checkAndPromptAvatarSelection = (user, navigate) => {
+    const userRef = dbRef(database, `users/${user.uid}`);
+
+    onValue(userRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const userData = snapshot.val();
+        if (!userData.avatar) {
+          Swal.fire({
+            title: "Escolha um Avatar!",
+            text: "Você ainda não escolheu um avatar. Deseja fazer isso agora?",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: "Sim",
+            cancelButtonText: "Não",
+            background: "#1E1E1E",
+            customClass: {
+              popup: "swal-popup-dark",
+            },
+          }).then((result) => {
+            if (result.isConfirmed) {
+              navigate("/user-profile");
+            }
+          });
+        }
+      }
+    });
+  };
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        checkAndPromptAvatarSelection(user, navigate);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [navigate]);
+
   const createRoom = async () => {
     const currentUser = auth.currentUser;
 
@@ -309,7 +349,7 @@ const CreateRoom = () => {
           creator: currentUser.uid,
           creatorName: userName,
           encryptionKey: encryptionKey,
-          avatar: "https://via.placeholder.com/40?text=Avatar",
+          avatar: "https://secure.gravatar.com/avatar/?d=mp",
         });
 
         setSuccessMessage("Sala criada com sucesso!");
