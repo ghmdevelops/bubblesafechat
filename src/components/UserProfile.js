@@ -2,7 +2,15 @@
 import React, { useEffect, useState, useRef } from "react";
 import { auth, database } from "../firebaseConfig";
 import { useNavigate, Link } from "react-router-dom";
-import { ref, onValue, update, remove } from "firebase/database";
+import {
+  ref,
+  onValue,
+  update,
+  remove,
+  query,
+  orderByChild,
+  equalTo,
+} from "firebase/database";
 import Swal from "sweetalert2";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -16,6 +24,7 @@ import {
   faTimes,
   faSpinner,
   faEdit,
+  faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { motion } from "framer-motion";
 import { EmailAuthProvider } from "firebase/auth";
@@ -24,6 +33,7 @@ import "./UserProfile.css";
 
 const UserProfile = () => {
   const [userData, setUserData] = useState(undefined);
+  const [userRooms, setUserRooms] = useState([]);
   const [selectedAvatar, setSelectedAvatar] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -32,6 +42,7 @@ const UserProfile = () => {
   const navigate = useNavigate();
   const topRef = useRef(null);
   const saveAvatarRef = useRef(null);
+  const [loading, setLoading] = useState(true);
 
   const avatars = [
     "https://i.pravatar.cc/150?img=1",
@@ -44,66 +55,19 @@ const UserProfile = () => {
     "https://i.pravatar.cc/150?img=10",
     "https://i.pravatar.cc/150?img=11",
     "https://i.pravatar.cc/150?img=12",
-    "https://i.pravatar.cc/150?img=13",
-    "https://i.pravatar.cc/150?img=14",
-    "https://i.pravatar.cc/150?img=15",
-    "https://i.pravatar.cc/150?img=16",
-    "https://i.pravatar.cc/150?img=17",
-    "https://i.pravatar.cc/150?img=18",
-    "https://i.pravatar.cc/150?img=19",
-    "https://i.pravatar.cc/150?img=20",
-    "https://i.pravatar.cc/150?img=21",
-    "https://i.pravatar.cc/150?img=22",
-    "https://i.pravatar.cc/150?img=23",
-    "https://i.pravatar.cc/150?img=24",
-    "https://i.pravatar.cc/150?img=25",
-    "https://i.pravatar.cc/150?img=26",
-    "https://i.pravatar.cc/150?img=27",
-    "https://i.pravatar.cc/150?img=28",
-    "https://i.pravatar.cc/150?img=29",
-    "https://i.pravatar.cc/150?img=30",
-    "https://i.pravatar.cc/150?img=31",
-    "https://i.pravatar.cc/150?img=32",
-    "https://i.pravatar.cc/150?img=33",
-    "https://i.pravatar.cc/150?img=34",
-    "https://i.pravatar.cc/150?img=35",
-    "https://i.pravatar.cc/150?img=36",
-    "https://i.pravatar.cc/150?img=37",
-    "https://i.pravatar.cc/150?img=38",
-    "https://i.pravatar.cc/150?img=39",
-    "https://i.pravatar.cc/150?img=40",
-    "https://i.pravatar.cc/150?img=41",
-    "https://i.pravatar.cc/150?img=42",
-    "https://i.pravatar.cc/150?img=43",
-    "https://i.pravatar.cc/150?img=44",
-    "https://i.pravatar.cc/150?img=45",
-    "https://i.pravatar.cc/150?img=46",
-    "https://i.pravatar.cc/150?img=47",
-    "https://i.pravatar.cc/150?img=48",
-    "https://i.pravatar.cc/150?img=49",
-    "https://i.pravatar.cc/150?img=50",
-    "https://i.pravatar.cc/150?img=51",
-    "https://i.pravatar.cc/150?img=52",
-    "https://i.pravatar.cc/150?img=53",
-    "https://i.pravatar.cc/150?img=54",
-    "https://i.pravatar.cc/150?img=55",
-    "https://i.pravatar.cc/150?img=56",
-    "https://i.pravatar.cc/150?img=57",
-    "https://i.pravatar.cc/150?img=58",
-    "https://i.pravatar.cc/150?img=59",
-    "https://i.pravatar.cc/150?img=60",
   ];
 
   useEffect(() => {
     const currentUser = auth.currentUser;
 
     if (!currentUser) {
-      navigate("/");
+      console.error("Usuário não autenticado");
+      setLoading(false);
       return;
     }
 
     const userRef = ref(database, `users/${currentUser.uid}`);
-    const unsubscribe = onValue(
+    const unsubscribeUser = onValue(
       userRef,
       (snapshot) => {
         if (snapshot.exists()) {
@@ -133,15 +97,78 @@ const UserProfile = () => {
       }
     );
 
-    return () => {
-      unsubscribe();
-    };
-  }, [navigate]);
+    const roomsQuery = query(
+      ref(database, "rooms"),
+      orderByChild("creator"),
+      equalTo(currentUser.uid)
+    );
+
+    const unsubscribe = onValue(
+      roomsQuery,
+      (snapshot) => {
+        if (snapshot.exists()) {
+          const rooms = [];
+          snapshot.forEach((childSnapshot) => {
+            rooms.push({ id: childSnapshot.key, ...childSnapshot.val() });
+          });
+          setUserRooms(rooms);
+        } else {
+          setUserRooms([]); // Sem salas encontradas
+        }
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Erro ao buscar salas:", error);
+        Swal.fire("Erro", "Erro ao buscar salas do usuário.", "error");
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  if (loading) {
+    return <p>Carregando...</p>;
+  }
 
   const handleAvatarSelect = (avatar) => {
     setSelectedAvatar(avatar);
     if (saveAvatarRef.current) {
       saveAvatarRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const handleDeleteRoom = async (roomId) => {
+    const result = await Swal.fire({
+      title: "Excluir Sala?",
+      text: "Você tem certeza que deseja excluir esta sala? Esta ação não pode ser desfeita.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sim, excluir!",
+      cancelButtonText: "Cancelar",
+      customClass: {
+        confirmButton: "btn btn-danger",
+        cancelButton: "btn btn-secondary",
+      },
+      buttonsStyling: false,
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const roomRef = ref(database, `rooms/${roomId}`);
+        await remove(roomRef);
+        setUserRooms((prevRooms) =>
+          prevRooms.filter((room) => room.id !== roomId)
+        );
+        Swal.fire("Excluído!", "A sala foi excluída com sucesso.", "success");
+      } catch (error) {
+        console.error("Erro ao excluir sala:", error);
+        Swal.fire(
+          "Erro",
+          "Não foi possível excluir a sala. Tente novamente.",
+          "error"
+        );
+      }
     }
   };
 
@@ -242,8 +269,17 @@ const UserProfile = () => {
       try {
         const reauthenticated = await reauthenticateUser();
         if (!reauthenticated) return;
+
+        // Remover usuário do nó 'users'
         const userRef = ref(database, `users/${currentUser.uid}`);
         await remove(userRef);
+
+        // Remover todas as salas criadas pelo usuário
+        for (const room of userRooms) {
+          const roomRef = ref(database, `rooms/${room.id}`);
+          await remove(roomRef);
+        }
+
         await currentUser.delete();
         Swal.fire("Conta excluída com sucesso!", "", "success");
         navigate("/");
@@ -468,6 +504,24 @@ const UserProfile = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.6 }}
           >
+            <FontAwesomeIcon icon={faLock} className="me-2 text-info" />
+            UID
+          </motion.h5>
+          <motion.p
+            className="card-text mb-4"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.7 }}
+          >
+            {auth.currentUser.uid}
+          </motion.p>
+
+          <motion.h5
+            className="card-title d-flex align-items-center"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.8 }}
+          >
             <FontAwesomeIcon icon={faPhone} className="me-2 text-info" />
             Celular
             {!isEditing && (
@@ -484,7 +538,7 @@ const UserProfile = () => {
             className="card-text mb-4"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.7 }}
+            transition={{ duration: 0.5, delay: 0.9 }}
           >
             {isEditing ? (
               <input
@@ -503,7 +557,7 @@ const UserProfile = () => {
             className="card-title d-flex align-items-center"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.8 }}
+            transition={{ duration: 0.5, delay: 1.0 }}
           >
             <FontAwesomeIcon icon={faLock} className="me-2 text-info" />
             Apelido
@@ -521,7 +575,7 @@ const UserProfile = () => {
             className="card-text mb-4"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.9 }}
+            transition={{ duration: 0.5, delay: 1.1 }}
           >
             {isEditing ? (
               <input
@@ -627,6 +681,36 @@ const UserProfile = () => {
               <FontAwesomeIcon icon={faTimes} className="me-2" />
               Cancelar
             </motion.button>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-5">
+        <h2 className="text-center text-info mb-4">Salas Criadas por Você</h2>
+        {userRooms.length === 0 ? (
+          <p className="text-center">Você ainda não criou nenhuma sala.</p>
+        ) : (
+          <div className="list-group">
+            {userRooms.map((room) => (
+              <div
+                className="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+              >
+                {room.name || `Sala ${room.id}`}
+                <span className="badge bg-info text-white">
+                  {room.participants
+                    ? Object.keys(room.participants).length
+                    : 0}{" "}
+                  Participantes
+                </span>
+                <FontAwesomeIcon
+                  icon={faTrash}
+                  className="text-danger"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => handleDeleteRoom(room.id)}
+                  title="Excluir Sala"
+                />
+              </div>
+            ))}
           </div>
         )}
       </div>

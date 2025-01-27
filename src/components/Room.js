@@ -1770,7 +1770,7 @@ const Room = () => {
                             >
                               <FontAwesomeIcon
                                 icon={faUserCircle}
-                                className="me-2"
+                                className="me-1"
                               />
                               Ver Perfil
                             </motion.button>
