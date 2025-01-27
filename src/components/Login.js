@@ -420,16 +420,40 @@ const Login = () => {
   const sendMagicLink = async (e) => {
     e.preventDefault();
     setErrorMessage("");
+
+    const MAGIC_LINK_COOLDOWN = 60 * 1000; // Tempo de espera em milissegundos (60 segundos)
+    const lastRequestTime = localStorage.getItem("lastMagicLinkRequestTime");
+    const now = Date.now();
+
+    // Verifica se o usuário precisa aguardar antes de enviar outro link
+    if (lastRequestTime && now - lastRequestTime < MAGIC_LINK_COOLDOWN) {
+      const remainingTime = Math.ceil(
+        (MAGIC_LINK_COOLDOWN - (now - lastRequestTime)) / 1000
+      );
+      Swal.fire({
+        icon: "info",
+        title: "Aguarde antes de tentar novamente",
+        text: `Você já solicitou um link de login recentemente. Por favor, aguarde ${remainingTime} segundos antes de tentar novamente.`,
+        confirmButtonText: "Entendido",
+      });
+      return;
+    }
+
     setIsSendingLink(true);
 
     try {
       await sendSignInLinkToEmail(auth, magicEmail, actionCodeSettings);
+      // Armazene o timestamp da solicitação atual para limitar as próximas
+      localStorage.setItem("lastMagicLinkRequestTime", now);
+
       // Armazene o e-mail localmente para completar o login após o redirecionamento
       window.localStorage.setItem("emailForSignIn", magicEmail);
+
       Swal.fire({
         icon: "success",
-        title: "Link enviado",
-        text: "Verifique seu email para continuar o login.",
+        title: "Link enviado com sucesso!",
+        text: "Verifique seu e-mail (e a pasta de spam, se necessário) para acessar o link de login.",
+        confirmButtonText: "Ok",
       });
       setMagicEmail("");
     } catch (error) {
@@ -438,8 +462,8 @@ const Login = () => {
         title: "Erro ao enviar link",
         text:
           error.message ||
-          "Não foi possível enviar o link de login. Tente novamente.",
-        confirmButtonText: "Ok",
+          "Não foi possível enviar o link de login. Tente novamente mais tarde.",
+        confirmButtonText: "Entendido",
       });
       console.error("Erro ao enviar link mágico:", error);
     } finally {
