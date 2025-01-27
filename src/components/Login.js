@@ -53,7 +53,7 @@ const Login = () => {
   // Configurações do Email Link
   const actionCodeSettings = {
     // A URL para a qual o usuário será redirecionado após clicar no link
-    url: "https://bubblesafechat.com.br/magic-link",
+    url: "https://bubblesafechat.com.br/#/magic-link",
     // Este deve ser verdadeiro para a aplicação detectar o link
     handleCodeInApp: true,
   };
