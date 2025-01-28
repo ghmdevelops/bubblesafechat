@@ -1,3 +1,5 @@
+import { IoMdArrowRoundBack } from "react-icons/io"; 
+import { AiOutlineRollback } from "react-icons/ai";
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useNavigate } from "react-router-dom";
@@ -7,7 +9,7 @@ const NotFound = () => {
   const navigate = useNavigate();
 
   const handleGoBack = () => {
-    navigate(-1); // Retorna à página anterior
+    navigate(-1);
   };
 
   return (
@@ -33,6 +35,7 @@ const NotFound = () => {
           borderRadius: "8px",
         }}
       >
+        <IoMdArrowRoundBack />
         Voltar para a página anterior
       </button>
     </div>

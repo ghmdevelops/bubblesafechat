@@ -1568,8 +1568,10 @@ const Room = () => {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
             >
-              <div className="spinner-border colorful-spinner" role="status">
-              </div>
+              <div
+                className="spinner-border colorful-spinner"
+                role="status"
+              ></div>
             </motion.div>
           )}
 
@@ -1759,21 +1761,6 @@ const Room = () => {
                               minWidth: "200px",
                             }}
                           >
-                            <motion.button
-                              className="dropdown-item text-white"
-                              onClick={() => {
-                                navigate("/user-profile");
-                                setIsDropdownOpen(false);
-                              }}
-                              whileHover={{ backgroundColor: "#17a2b8" }}
-                              whileTap={{ scale: 0.95 }}
-                            >
-                              <FontAwesomeIcon
-                                icon={faUserCircle}
-                                className="me-1"
-                              />
-                              Ver Perfil
-                            </motion.button>
                             <li className="nav-item">
                               <button
                                 className="dropdown-item compart"

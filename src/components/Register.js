@@ -25,10 +25,10 @@ import "@sweetalert2/theme-dark/dark.css";
 import logo from "./img/name.png";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import "./Register.css"; // Certifique-se de importar o CSS relevante
+import "./Register.css"; 
 
 const Register = () => {
-  // Estados iniciais
+  // aqui estrao as estacias de todas as configuraçoes 
   const [firstName, setFirstName] = useState("marcos silva");
   const [apelido, setApelido] = useState("marc9403");
   const [celular, setCelular] = useState("+5511981835197");

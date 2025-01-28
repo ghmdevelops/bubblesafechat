@@ -1,7 +1,6 @@
-// src/App.js
 import React, { useEffect, useState } from "react";
 import {
-  HashRouter as Router, // Use HashRouter se estiver utilizando URLs com #
+  HashRouter as Router,
   Routes,
   Route,
   Navigate,
@@ -28,17 +27,15 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Observa o estado de autenticação do Firebase
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setUser(user);
       setLoading(false);
     });
 
-    return () => unsubscribe(); // Limpa a inscrição quando o componente é desmontado
+    return () => unsubscribe(); 
   }, []);
 
   if (loading) {
-    // Exibe um indicador de carregamento enquanto verifica o estado do usuário
     return (
       <div className="d-flex justify-content-center align-items-center vh-100">
         <div className="text-center">
@@ -56,27 +53,17 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Rota para IntroPage */}
         <Route path="/" element={<IntroPage />} />
-
-        {/* Rota para Login */}
         <Route path="/login" element={<Login />} />
-
         <Route path="/magic-link" element={<MagicLinkHandler />} />
-
-        {/* Rota para Registro */}
         <Route path="/register" element={<Register />} />
-
-        {/* Rota para Reset de Senha */}
         <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* Rota para a Página Principal (Criar Sala) */}
         <Route
           path="/create-room"
           element={user ? <CreateRoom /> : <Navigate to="/login" />}
         />
 
-        {/* Rota para Perfil do Usuário */}
         <Route
           path="/user-profile"
           element={user ? <UserProfile /> : <Navigate to="/login" />}
@@ -87,18 +74,15 @@ function App() {
           element={user ? <DoorPage /> : <Navigate to="/login" />}
         />
 
-        {/* Outras Rotas Públicas */}
         <Route path="/learn-more" element={<LearnMorePage />} />
         <Route path="/cookie-policy" element={<CookiePolicy />} />
         <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
 
-        {/* Rota para Sala de Chat (Agora Pública) */}
         <Route
           path="/room/:roomId"
           element={<Room />}
         />
 
-        {/* Rota para Not Found */}
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Footer />
