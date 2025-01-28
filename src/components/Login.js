@@ -6,6 +6,7 @@ import {
   GoogleAuthProvider,
   GithubAuthProvider,
   FacebookAuthProvider,
+  OAuthProvider,
   signInWithPopup,
   signInWithEmailAndPassword,
   sendSignInLinkToEmail,
@@ -22,7 +23,7 @@ import {
   faEyeSlash,
 } from "@fortawesome/free-solid-svg-icons";
 import { BsFillDoorOpenFill, BsGoogle, BsFacebook } from "react-icons/bs";
-import { AiFillGithub } from "react-icons/ai";
+import { AiFillGithub, AiFillApple } from "react-icons/ai";
 import Swal from "sweetalert2";
 import "./Login.css";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -406,6 +407,43 @@ const Login = () => {
     }
   };
 
+  const handleAppleLogin = async () => {
+    const provider = new OAuthProvider("apple.com");
+    setIsLoading(true);
+
+    try {
+      const result = await signInWithPopup(auth, provider);
+      Swal.fire({
+        icon: "success",
+        title: "Login com Apple bem-sucedido",
+        text: "Você foi logado com sucesso usando sua conta Apple.",
+        timer: 1600,
+        timerProgressBar: true,
+      }).then(() => {
+        navigate("/");
+      });
+    } catch (error) {
+      if (error.code === "auth/popup-closed-by-user") {
+        Swal.fire({
+          icon: "warning",
+          title: "Autenticação interrompida",
+          text: "A janela de autenticação foi fechada. Tente novamente.",
+          confirmButtonText: "Ok",
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Erro no login com Apple",
+          text: error.message || "Erro desconhecido. Tente novamente.",
+          confirmButtonText: "Ok",
+        });
+        console.error("Erro ao fazer login com Apple:", error);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const sendMagicLink = async (e) => {
     e.preventDefault();
     setErrorMessage("");
@@ -598,6 +636,21 @@ const Login = () => {
               ) : (
                 <>
                   <BsFacebook size={24} />
+                </>
+              )}
+            </button>
+
+            <button
+              type="button"
+              className="btn btn-primary btn-social apple-btn"
+              onClick={handleAppleLogin}
+              disabled={isLoading || isLockedOut}
+            >
+              {isLoading ? (
+                "Carregando..."
+              ) : (
+                <>
+                  <AiFillApple size={35} />
                 </>
               )}
             </button>
