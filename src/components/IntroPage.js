@@ -96,15 +96,14 @@ const IntroPage = () => {
           <motion.button
             className="btn-learn-more"
             onClick={() => navigate("/learn-more")}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             whileHover={{
               scale: 1.1,
               background: "linear-gradient(90deg, #0056b3, #00aaff)",
               boxShadow: "0 10px 20px rgba(0, 0, 0, 0.5)",
             }}
             whileTap={{ scale: 0.95 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
             style={{
               marginTop: "20px",
               padding: "12px 26px",

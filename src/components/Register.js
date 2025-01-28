@@ -29,12 +29,12 @@ import "./Register.css";
 
 const Register = () => {
   // aqui estrao as estacias de todas as configuraçoes 
-  const [firstName, setFirstName] = useState("marcos silva");
-  const [apelido, setApelido] = useState("marc9403");
-  const [celular, setCelular] = useState("+5511981835197");
-  const [email, setEmail] = useState("tell3rv@outlook.com");
-  const [password, setPassword] = useState("Geh@2021");
-  const [confirmPassword, setConfirmPassword] = useState("Geh@2021");
+  const [firstName, setFirstName] = useState("");
+  const [apelido, setApelido] = useState("");
+  const [celular, setCelular] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
