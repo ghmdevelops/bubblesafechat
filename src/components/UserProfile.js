@@ -502,24 +502,6 @@ const UserProfile = () => {
             className="card-title d-flex align-items-center"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-          >
-            <FontAwesomeIcon icon={faLock} className="me-2 text-info" />
-            UID
-          </motion.h5>
-          <motion.p
-            className="card-text mb-4"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.7 }}
-          >
-            {auth.currentUser.uid}
-          </motion.p>
-
-          <motion.h5
-            className="card-title d-flex align-items-center"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.8 }}
           >
             <FontAwesomeIcon icon={faPhone} className="me-2 text-info" />
