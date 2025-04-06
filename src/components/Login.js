@@ -625,7 +625,7 @@ const Login = () => {
               )}
             </button>
 
-            <button
+            {/*<button
               type="button"
               className="btn btn-primary btn-social facebook-btn"
               onClick={handleFacebookLogin}
@@ -653,7 +653,7 @@ const Login = () => {
                   <AiFillApple size={35} />
                 </>
               )}
-            </button>
+            </button>*/}
           </div>
         </form>
       ) : (

@@ -28,7 +28,7 @@ const IntroPage = () => {
   return (
     <div className="intro-container">
       <Helmet>
-        <title>Bubble Safe Chat</title>
+        <title>Bubble Safe Chat - Segurança Total Para Suas Conversas</title>
       </Helmet>
 
       <header>

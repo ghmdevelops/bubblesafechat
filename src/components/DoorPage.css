@@ -5,7 +5,7 @@
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #0d0d0d;
+    background-color: #1e2431;
     margin: 0;
     perspective: 1000px;
     overflow: hidden;
@@ -25,7 +25,7 @@
 .door {
     width: 120px;
     height: 250px;
-    background: linear-gradient(135deg, #5e3a1e, #704214, #5e3a1e);
+    background: linear-gradient(135deg, #101010, #101010, #101010);
     border: 3px solid #3b2b2b;
     border-radius: 3px;
     position: relative;

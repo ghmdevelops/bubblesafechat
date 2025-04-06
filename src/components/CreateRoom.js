@@ -523,18 +523,6 @@ const CreateRoom = () => {
                         <motion.button
                           className="dropdown-item text-white"
                           onClick={() => {
-                            handleLogout();
-                            setIsDropdownOpen(false);
-                          }}
-                          whileHover={{ backgroundColor: "#17a2b8" }}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          <FontAwesomeIcon icon={faPowerOff} className="me-2" />
-                          Sair
-                        </motion.button>
-                        <motion.button
-                          className="dropdown-item text-white"
-                          onClick={() => {
                             deleteAccount();
                             setIsDropdownOpen(false);
                           }}
@@ -543,6 +531,18 @@ const CreateRoom = () => {
                         >
                           <FontAwesomeIcon icon={faTimes} className="me-2" />
                           Excluir Conta
+                        </motion.button>
+                        <motion.button
+                          className="dropdown-item text-white"
+                          onClick={() => {
+                            handleLogout();
+                            setIsDropdownOpen(false);
+                          }}
+                          whileHover={{ backgroundColor: "#17a2b8" }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <FontAwesomeIcon icon={faPowerOff} className="me-2" />
+                          Sair
                         </motion.button>
                       </motion.div>
                     )}
