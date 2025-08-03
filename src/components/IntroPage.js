@@ -1,159 +1,240 @@
-import { FaUserSecret } from "react-icons/fa";
-import { RiLoginBoxFill } from "react-icons/ri";
-import { IoMdLogIn } from "react-icons/io";
-import { Helmet } from "react-helmet";
-import React, { useEffect } from "react";
-import { motion } from "framer-motion";
+// src/components/IntroPage.js
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet";
+import { motion } from "framer-motion";
+import { useInView } from "react-intersection-observer";
+import { FaUserShield, FaLock, FaClock, FaUserSecret } from "react-icons/fa";
+import { RiLoginBoxFill } from "react-icons/ri";
+import { FiSun, FiMoon } from "react-icons/fi";
 import { auth } from "../firebaseConfig";
+import { useTheme } from "./hooks/useTheme";
 import "./IntroPage.css";
 import iconPage from "./img/icon-menu.png";
-import iconPageVisual from "./img/rm373batch4-15.jpg";
-import logo from "./img/name.png";
+import heroBg from "./img/rm373batch4-15.jpg";
 
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 },
+const securityFeatures = [
+  {
+    icon: <FaLock />,
+    title: "Criptografia AES-256",
+    desc: "Todas as conversas são protegidas ponta a ponta.",
+  },
+  {
+    icon: <FaUserShield />,
+    title: "Links Expiráveis",
+    desc: "Compartilhe com controle total de tempo e acesso.",
+  },
+  {
+    icon: <FaClock />,
+    title: "Auditoria & Logs",
+    desc: "Rastreie acessos e atividades com histórico imutável.",
+  },
+  {
+    icon: <FaLock />,
+    title: "2FA Opcional",
+    desc: "Camada extra de proteção no login do usuário.",
+  },
+];
+
+const metrics = [
+  { value: "12k+", label: "Salas Criadas" },
+  { value: "99.98%", label: "Uptime Garantido" },
+  { value: "4+", label: "Camadas de Criptografia" },
+  { value: "5m", label: "Links Expiram em" },
+];
+
+// componente separado para evitar uso de hook dentro de map direto
+const FeatureCard = ({ icon, title, desc, delay = 0 }) => {
+  const [ref, inView] = useInView({
+    triggerOnce: true,
+    threshold: 0.2,
+  });
+
+  return (
+    <motion.div
+      ref={ref}
+      className="feature-card"
+      initial={{ opacity: 0, y: 20 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.5, delay }}
+    >
+      <div className="icon" aria-hidden="true">
+        {icon}
+      </div>
+      <div className="info">
+        <h3>{title}</h3>
+        <p>{desc}</p>
+      </div>
+    </motion.div>
+  );
 };
 
 const IntroPage = () => {
   const navigate = useNavigate();
+  const { theme, toggle } = useTheme();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [heroLoaded, setHeroLoaded] = useState(false);
 
   useEffect(() => {
-    if (auth.currentUser) {
-      navigate("/create-room");
-    }
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) navigate("/create-room");
+    });
+    return unsubscribe;
   }, [navigate]);
 
   return (
-    <div className="intro-container">
+    <div className="intro-page">
       <Helmet>
-        <title>Bubble Safe Chat - Segurança Total Para Suas Conversas</title>
+        <title>Bubble Safe Chat – Segurança Total</title>
       </Helmet>
 
-      <header>
-        <nav className="navbar navbar-expand-md navbar-dark fixed-top bg-black">
-          <div className="container-fluid">
-            <Link to="/">
-              <img
-                className="navbar-brand img-fluid responsive-img clickable-img"
-                src={iconPage}
-                alt="Bubble Safe Chat"
-                onClick={() => navigate("/")}
-              />
+      <header className="site-header">
+        <div className="nav-inner container">
+          <div className="brand">
+            <Link to="/" aria-label="Home">
+              <img src={iconPage} alt="Bubble Safe Chat" className="logo" />
             </Link>
-
-            <ul className="navbar-nav ms-auto d-flex justify-content-between">
-              <li className="nav-item">
-                <button
-                  className="btn btn-outline-info btn-sm align-items-center w-auto btn-32"
-                  onClick={() => navigate("/login")}
-                  aria-label="Login"
-                >
-                  <RiLoginBoxFill size={15} />
-                  <span className="d-none d-md-inline"> Login</span>
-                </button>
-                <button
-                  className="btn btn-outline-info btn-sm align-items-center w-auto  btn-32"
-                  onClick={() => navigate("/register")}
-                  aria-label="Registrar"
-                >
-                  <FaUserSecret size={15} />
-                  <span className="d-none d-md-inline"> Registrar</span>
-                </button>
-              </li>
-            </ul>
           </div>
-        </nav>
+          <div className="actions">
+            <button
+              className="hamburger"
+              aria-label="Abrir menu"
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((o) => !o)}
+            >
+              <span className="bar" />
+              <span className="bar" />
+              <span className="bar" />
+            </button>
+          </div>
+          <nav className={`nav-links ${menuOpen ? "open" : ""}`}>
+            <button
+              className="btn outline"
+              onClick={() => {
+                navigate("/login");
+                setMenuOpen(false);
+              }}
+              aria-label="Login"
+            >
+              <RiLoginBoxFill size={16} />
+              <span className="label">Login</span>
+            </button>
+            <button
+              className="btn outline"
+              onClick={() => {
+                navigate("/register");
+                setMenuOpen(false);
+              }}
+              aria-label="Registrar"
+            >
+              <FaUserSecret size={16} />
+              <span className="label">Registrar</span>
+            </button>
+          </nav>
+          {menuOpen && (
+            <div
+              className="backdrop"
+              aria-hidden="true"
+              onClick={() => setMenuOpen(false)}
+            />
+          )}
+        </div>
       </header>
 
-      <div
-        className="image-text-container"
-        style={{ position: "relative", width: "100vw", height: "100vh" }}
-      >
+      <section className="hero">
         <motion.div
-          className="learn-more-container"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.5 }}
-          style={{ width: "100%", height: "100%", padding: "0" }}
+          className="hero-bg"
+          initial={{ scale: 1.08 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 1.8, ease: "easeOut" }}
+          aria-hidden="true"
         >
           <img
-            src={iconPageVisual}
-            alt="Bubble Safe Chat"
-            className="visual-image-pageifo"
+            src={heroBg}
+            alt="Fundo seguro e tecnológico"
+            loading="lazy"
+            className={`hero-img ${heroLoaded ? "loaded" : ""}`}
+            onLoad={() => setHeroLoaded(true)}
           />
         </motion.div>
-        <h2 className="mt-2 page-text-ifo">
-          Comunicação Segura, Privacidade Garantida. Converse com tranquilidade
-          em um ambiente protegido por tecnologia de criptografia avançada e
-          múltiplas camadas de segurança. Controle quem acessa suas salas de
-          chat, compartilhe links seguros via QR code e gerencie suas conversas
-          de forma simples e eficiente. Sua privacidade é nossa prioridade
-          número um.
-          <br />
-          <motion.button
-            className="btn-learn-more"
-            onClick={() => navigate("/learn-more")}
-            animate={{ scale: [1, 1.05, 1] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            whileHover={{
-              scale: 1.1,
-              background: "linear-gradient(90deg, #0056b3, #00aaff)",
-              boxShadow: "0 10px 20px rgba(0, 0, 0, 0.5)",
-            }}
-            whileTap={{ scale: 0.95 }}
-            style={{
-              marginTop: "20px",
-              padding: "12px 26px",
-              fontSize: "1rem",
-              fontWeight: "bold",
-              color: "white",
-              background: "linear-gradient(90deg, #007bff, #00d4ff)",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-              outline: "none",
-            }}
-          >
-            Saiba Mais
-          </motion.button>
-        </h2>
-      </div>
+        <div className="overlay" aria-hidden="true" />
+        <div className="hero-content container">
+          <div className="text-block">
+            <motion.h1
+              className="title"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              Comunicação Segura. Privacidade Inabalável.
+            </motion.h1>
+            <motion.p
+              className="subtitle"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              Converse com tranquilidade em ambiente protegido por múltiplas
+              camadas de criptografia, controle de acessos e links temporários
+              via QR code. Sua privacidade é nossa prioridade número um.
+            </motion.p>
+            <motion.div
+              className="cta-group"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+            >
+              <motion.button
+                className="btn primary"
+                onClick={() => navigate("/learn-more")}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                aria-label="Saiba mais"
+              >
+                Saiba Mais
+              </motion.button>
+              <motion.button
+                className="btn secondary"
+                onClick={() => navigate("/create-room")}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                aria-label="Criar sala"
+              >
+                Criar Sala
+              </motion.button>
+            </motion.div>
+          </div>
+          <div className="stats-cards">
+            {metrics.map((m, i) => (
+              <motion.div
+                className="metric"
+                key={m.label}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 + i * 0.1, duration: 0.5 }}
+              >
+                <div className="value">{m.value}</div>
+                <div className="label">{m.label}</div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-      <div className="auth-buttons d-flex justify-content-center mt-4 gap-3">
-        <motion.button
-          className="btn btn-primary"
-          onClick={() => navigate("/login")}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          style={{
-            padding: "10px 20px",
-            fontSize: "1rem",
-            fontWeight: "bold",
-            borderRadius: "5px",
-            cursor: "pointer",
-          }}
-        >
-          Login
-        </motion.button>
-        <motion.button
-          className="btn btn-secondary"
-          onClick={() => navigate("/register")}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          style={{
-            padding: "10px 20px",
-            fontSize: "1rem",
-            fontWeight: "bold",
-            borderRadius: "5px",
-            cursor: "pointer",
-          }}
-        >
-          Registrar
-        </motion.button>
-      </div>
+      <section className="features container">
+        <h2 className="section-title">O que torna seguro</h2>
+        <div className="feature-grid">
+          {securityFeatures.map((f, idx) => (
+            <FeatureCard
+              key={f.title}
+              icon={f.icon}
+              title={f.title}
+              desc={f.desc}
+              delay={idx * 0.15}
+            />
+          ))}
+        </div>
+      </section>
     </div>
   );
 };

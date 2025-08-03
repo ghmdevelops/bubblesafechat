@@ -1,67 +1,193 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFacebook, faTwitter, faGoogle, faInstagram, faLinkedin, faGithub } from '@fortawesome/free-brands-svg-icons';
-import { faEnvelope, faPhone, faHome } from '@fortawesome/free-solid-svg-icons';
-import './Footer.css';
-import iconPage from './img/icon-page.png'
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+    faFacebookF,
+    faTwitter,
+    faGoogle,
+    faInstagram,
+    faLinkedinIn,
+    faGithub,
+} from "@fortawesome/free-brands-svg-icons";
+import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
+import "./Footer.css";
+import iconPage from "./img/icon-page.png";
+import Swal from "sweetalert2";
+
+const socialLinks = [
+    { icon: faFacebookF, label: "Facebook", href: "#" },
+    { icon: faTwitter, label: "Twitter", href: "#" },
+    { icon: faGoogle, label: "Google", href: "#" },
+    { icon: faInstagram, label: "Instagram", href: "#" },
+    { icon: faLinkedinIn, label: "LinkedIn", href: "#" },
+    { icon: faGithub, label: "GitHub", href: "#" },
+];
 
 const Footer = () => {
     const navigate = useNavigate();
+    const [newsletterEmail, setNewsletterEmail] = useState("");
 
     const handlePrivacyPolicyClick = () => {
-        navigate('/politica-de-privacidade');
-    }
+        navigate("/politica-de-privacidade");
+    };
+
+    const handleNewsletterSubmit = (e) => {
+        e.preventDefault();
+        if (!newsletterEmail || !newsletterEmail.includes("@")) {
+            Swal.fire({
+                icon: "error",
+                title: "Email inválido",
+                text: "Por favor, insira um email válido para assinar.",
+                toast: true,
+                position: "top-end",
+                timer: 2000,
+                showConfirmButton: false,
+            });
+            return;
+        }
+        // Placeholder: integrar com backend/serviço real
+        Swal.fire({
+            icon: "success",
+            title: "Inscrito!",
+            text: "Você será notificado com novidades.",
+            toast: true,
+            position: "top-end",
+            timer: 2000,
+            showConfirmButton: false,
+        });
+        setNewsletterEmail("");
+    };
+
+    const scrollToTop = () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    const currentYear = new Date().getFullYear();
 
     return (
-        <footer className="footer text-light pt-4 mt-5 mb-4">
-            <div className="container text-center text-md-left">
-                <div className="row">
-                    <div className="col-md-4 col-lg-4 col-xl-4 mx-auto mb-4">
-                        <img style={{ width: '  80px' }} src={iconPage} alt='OpenSecurityRoom' />
-                        <h6 className="text-uppercase fw-bold">Bubble Safe Chat</h6>
-                        <p>Converse com segurança, controle com liberdade!</p>
-                        <hr className="mb-4 mt-0 d-inline-block mx-auto" style={{ width: '60px' }} />
-                        <p>
-                            Estamos revolucionando a forma de se comunicar com soluções de chat ultrasseguras. Com uma equipe enxuta e altamente dedicada, trabalhando remotamente de diversas regiões do Brasil e do mundo, nossa missão é clara: colocar a inovação e a segurança no coração de cada interação, protegendo suas conversas e garantindo total privacidade.
-                        </p>
-                        <p className='mt-4'><FontAwesomeIcon icon={faEnvelope} /> Email: contato@bubblesafechat.com.br</p>
-                        <p className="mt-2" style={{ cursor: 'pointer', color: '#007bff' }} onClick={handlePrivacyPolicyClick}>
+        <footer className="footer">
+            <div className="footer-inner container">
+                <div className="brand-section">
+                    <div className="logo-row">
+                        <img src={iconPage} alt="Bubble Safe Chat logo" className="logo-4903" />
+                        <div>
+                            <h6 className="brand-title">Bubble Safe Chat</h6>
+                            <p className="tagline">Converse com segurança, controle com liberdade!</p>
+                        </div>
+                    </div>
+                    <p className="description">
+                        Estamos revolucionando a forma de se comunicar com soluções de chat
+                        ultrasseguras. Nossa missão é clara: colocar a inovação e a segurança
+                        no coração de cada interação, protegendo suas conversas e garantindo
+                        total privacidade.
+                    </p>
+                    <address className="contact-block">
+                        <div className="contact-item">
+                            <FontAwesomeIcon icon={faEnvelope} />{" "}
+                            <a href="mailto:contato@bubblesafechat.com.br" className="contact-link">
+                                contato@bubblesafechat.com.br
+                            </a>
+                        </div>
+                        <div
+                            className="privacy-link"
+                            onClick={handlePrivacyPolicyClick}
+                            role="button"
+                            tabIndex={0}
+                            aria-label="Ver política de privacidade"
+                        >
                             Política de Privacidade
-                        </p>
+                        </div>
+                    </address>
+                </div>
+
+                <div className="links-newsletter">
+                    <div className="link-section">
+                        <h6>Recursos</h6>
+                        <ul>
+                            <li>
+                                <button className="link-btn" onClick={() => navigate("/learn-more")}>
+                                    Saiba Mais
+                                </button>
+                            </li>
+                            <li>
+                                <button className="link-btn" onClick={() => navigate("/create-room")}>
+                                    Criar Sala
+                                </button>
+                            </li>
+                            <li>
+                                <button className="link-btn" onClick={() => navigate("/support")}>
+                                    Suporte
+                                </button>
+                            </li>
+                        </ul>
                     </div>
 
-                    <div className="col-md-4 col-lg-4 col-xl-4 mx-auto mb-4 d-none">
-                        <h6 className="text-uppercase fw-bold">Contact Us</h6>
-                        <hr className="mb-4 mt-0 d-inline-block mx-auto" style={{ width: '60px' }} />
-                        <p><FontAwesomeIcon icon={faHome} /> Address: 123 Main St, City, Country</p>
-                        <p><FontAwesomeIcon icon={faPhone} /> Phone: +123 456 7890</p>
+                    <div className="link-section">
+                        <h6>Empresa</h6>
+                        <ul>
+                            <li>
+                                <button className="link-btn" onClick={() => navigate("/about")}>
+                                    Sobre Nós
+                                </button>
+                            </li>
+                            <li>
+                                <button className="link-btn" onClick={() => navigate("/terms")}>
+                                    Termos
+                                </button>
+                            </li>
+                            <li>
+                                <button className="link-btn" onClick={() => navigate("/privacy")}>
+                                    Privacidade
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div className="newsletter-section">
+                        <h6>Receba novidades</h6>
+                        <p className="small">
+                            Assine nossa newsletter para atualizações e dicas de segurança.
+                        </p>
+                        <form onSubmit={handleNewsletterSubmit} className="newsletter-form">
+                            <input
+                                aria-label="Email para newsletter"
+                                type="email"
+                                placeholder="Seu email"
+                                value={newsletterEmail}
+                                onChange={(e) => setNewsletterEmail(e.target.value)}
+                            />
+                            <button type="submit" className="btn-subscribe">
+                                Inscrever
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
 
-            <div className="text-light text-center p-3 mt-5">
-                <section className="social-icons">
-                    <a href="#" className="text-light mx-2">
-                        <FontAwesomeIcon icon={faFacebook} />
-                    </a>
-                    <a href="#" className="text-light mx-2">
-                        <FontAwesomeIcon icon={faTwitter} />
-                    </a>
-                    <a href="#" className="text-light mx-2">
-                        <FontAwesomeIcon icon={faGoogle} />
-                    </a>
-                    <a href="#" className="text-light mx-2">
-                        <FontAwesomeIcon icon={faInstagram} />
-                    </a>
-                    <a href="#" className="text-light mx-2">
-                        <FontAwesomeIcon icon={faLinkedin} />
-                    </a>
-                    <a href="#" className="text-light mx-2">
-                        <FontAwesomeIcon icon={faGithub} />
-                    </a>
-                </section>
-                <p className="mt-3">© 2024 Bubble Safe Chat. All rights reserved.</p>
+            <div className="bottom-bar">
+                <div className="social-wrapper">
+                    {socialLinks.map((s) => (
+                        <a
+                            key={s.label}
+                            href={s.href}
+                            aria-label={s.label}
+                            className="social-icon"
+                            rel="noopener noreferrer"
+                        >
+                            <FontAwesomeIcon icon={s.icon} />
+                        </a>
+                    ))}
+                </div>
+                <div className="rights">
+                    <span>© {currentYear} Bubble Safe Chat. Todos os direitos reservados.</span>
+                    <button
+                        className="back-to-top"
+                        onClick={scrollToTop}
+                        aria-label="Voltar ao topo"
+                    >
+                        ↑ Topo
+                    </button>
+                </div>
             </div>
         </footer>
     );

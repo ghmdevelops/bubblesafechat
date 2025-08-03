@@ -132,6 +132,11 @@ label#check:hover {
   border: 1px solid none;
   border-radius: 5px;
   font-size: 16px;
+  color: #fff;
+}
+
+.auth-container input:hover {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
 }
 
 .input-icon-container {
@@ -140,8 +145,8 @@ label#check:hover {
   margin-bottom: 15px;
   border: 1px solid #b3cde8;
   border-radius: 5px;
-  background-color: #f4f7fb;
   position: relative;
+  background-color: transparent;
 }
 
 .icon-background {
