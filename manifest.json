@@ -1,25 +1,55 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "BubbleSafe",
+  "name": "Bubble Safe Chat – Comunicação Segura",
+  "description": "Crie salas temporárias criptografadas com segurança avançada, links expiráveis e privacidade total.",
+
   "icons": [
     {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "src": "/icon-page-200.png",
+      "sizes": "200x200",
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "logo192.png",
+      "src": "/icon-page-500.png",
+      "sizes": "500x500",
       "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "logo512.png",
-      "type": "image/png",
-      "sizes": "512x512"
+      "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
+
+  "start_url": "/?source=pwa",
+  "scope": "/",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "orientation": "portrait",
+  "theme_color": "#141414",
+  "background_color": "#111111",
+
+  "categories": ["productivity", "security", "communication"],
+
+  "screenshots": [
+    {
+      "src": "/icon-page-500.png",
+      "sizes": "500x500",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+
+  "shortcuts": [
+    {
+      "name": "Criar Sala",
+      "short_name": "Nova Sala",
+      "url": "/create-room",
+      "icons": [{ "src": "/icon-page-200.png", "sizes": "200x200" }]
+    },
+    {
+      "name": "Meus Planos",
+      "short_name": "Planos",
+      "url": "/planos",
+      "icons": [{ "src": "/icon-page-200.png", "sizes": "200x200" }]
+    }
+  ],
+
+  "id": "/"
 }
