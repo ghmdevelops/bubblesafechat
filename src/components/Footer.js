@@ -42,10 +42,12 @@ const Footer = () => {
                 position: "top-end",
                 timer: 2000,
                 showConfirmButton: false,
+                background: "#1e1e1e", // fundo escuro
+                color: "#fff", // texto branco
+                iconColor: "#ff4d4f", // cor do ícone
             });
             return;
         }
-        // Placeholder: integrar com backend/serviço real
         Swal.fire({
             icon: "success",
             title: "Inscrito!",
@@ -54,6 +56,9 @@ const Footer = () => {
             position: "top-end",
             timer: 2000,
             showConfirmButton: false,
+            background: "#1e1e1e", // fundo escuro
+            color: "#fff", // texto branco
+            iconColor: "#4CAF50", // cor do ícone
         });
         setNewsletterEmail("");
     };

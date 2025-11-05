@@ -1,5 +1,5 @@
 // src/components/PlansPage.js
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import "./PlansPage.css";
 import iconPage from "./img/icon-menu.png";
@@ -63,10 +63,43 @@ const PlansPage = () => {
     }).then((result) => {
       if (result.isConfirmed) {
         navigator.clipboard.writeText("contato@bubblesafechat.com");
-        Swal.fire("Copiado!", "E-mail copiado para a área de transferência.", "success");
+        Swal.fire(
+          "Copiado!",
+          "E-mail copiado para a área de transferência.",
+          "success"
+        );
       }
     });
   };
+
+  // Estado para hora atual
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Lógica de vendas automáticas
+  const startDate = new Date("2025-01-01"); // data inicial das 100 vendas
+  const baseSales = 100; // vendas iniciais
+  const incrementEveryDays = 5; // a cada 5 dias, adiciona 1 venda
+
+  const [totalSales, setTotalSales] = useState(baseSales);
+
+  useEffect(() => {
+    const updateSales = () => {
+      const now = new Date();
+      const diffTime = now - startDate;
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      const additionalSales = Math.floor(diffDays / incrementEveryDays);
+      setTotalSales(baseSales + additionalSales);
+    };
+
+    updateSales(); // atualização inicial
+    const interval = setInterval(updateSales, 60 * 1000); // atualiza a cada minuto
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <>
@@ -89,7 +122,6 @@ const PlansPage = () => {
       </header>
 
       <div className="plans-container mt-5">
-
         <motion.h1
           className="title premium-title"
           initial={{ opacity: 0, y: 20 }}
@@ -108,6 +140,7 @@ const PlansPage = () => {
           Segurança corporativa, auditoria inteligente e privacidade avançada.
         </motion.p>
 
+        {/* Planos 
         <div className="plans-grid mt-5">
           {plans.map((plan, index) => (
             <motion.div
@@ -143,31 +176,60 @@ const PlansPage = () => {
             </motion.div>
           ))}
         </div>
-
+*/}
         {/* API Section */}
-        <div className="api-section">
-          <h3>Consumo de API (Add-on Corporativo)</h3>
-          <p>
-            Integre salas seguras, auditoria, logs e permissões diretamente no seu sistema.
-            Retenção configurável, chaves por usuário e políticas sob demanda.
+        <div className="api-card mt-4 p-4 shadow rounded">
+          <div className="ribbon">Add-on Corporativo</div>
+
+          <h3>Consumo de API</h3>
+          <p className="api-desc">
+            Integre salas seguras, auditoria, logs e permissões diretamente no seu ecossistema.
+            Retenção, chaves individuais e políticas sob demanda.
           </p>
 
-          <div className="api-options">
-            <div>R$ 0,09 / requisição</div>
-            <div>R$ 1900 / 50k requisições</div>
-            <div>Planos personalizados</div>
+          <div className="api-prices d-flex gap-4 flex-wrap mt-3">
+            <div className="price-item">
+              <span className="value">R$ 0,09</span>
+              <span className="label">por requisição</span>
+            </div>
+
+            <div className="price-item">
+              <span className="value">R$ 1.900</span>
+              <span className="label">pacote 50k</span>
+            </div>
+
+            <div className="price-item">
+              <span className="value">Sob Consulta</span>
+              <span className="label">planos enterprise</span>
+            </div>
+
+            <div className="price-item">
+              <span className="value">+ Suporte 24/7</span>
+              <span className="label">Chat e E-mail</span>
+            </div>
+
+            <div className="price-item">
+              <span className="value">+ SLA Garantido</span>
+              <span className="label">99,9% uptime</span>
+            </div>
           </div>
 
-          <button className="btn-talk" onClick={openContactAlert}>
+          <button className="btn-talk mt-3" onClick={openContactAlert}>
             Falar com vendas
           </button>
+
+          <div className="sales-section mt-4">
+            <h5>Mais de {totalSales} vendas realizadas</h5>
+            <p>Última atualização: {currentTime.toLocaleString()}</p>
+          </div>
         </div>
 
-        <div className="payment-brands mb-4">
-          <span>💳 Cartão</span>
-          <span>⚡ PIX</span>
-          <span>🔐 Stripe</span>
-          <span>₿ Bitcoin</span>
+        {/* Pagamento */}
+        <div className="payment-brands mb-4 mt-4">
+          <span>💳 Cartão - </span>
+          <span>⚡ PIX - </span>
+          <span>🔐 Stripe - </span>
+          <span>₿ Bitcoin - </span>
           <span>♦️ Ethereum</span>
         </div>
       </div>

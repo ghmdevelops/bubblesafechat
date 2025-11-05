@@ -111,33 +111,95 @@ li {
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.api-options div {
-  background: #14181f;
-  padding: 12px;
+.api-card {
+  position: relative;
+  padding: 28px;
+  background: #181818;
+  border-radius: 18px;
+  border: 1px solid #2b2b2b;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+  text-align: center;
+  transition: all 0.25s ease;
+}
+
+.api-card:hover {
+  transform: translateY(-4px);
+  border-color: #3affab;
+  box-shadow: 0 0 35px rgba(58, 255, 171, 0.25);
+}
+
+.api-card h3 {
+  font-size: 1.6rem;
+  color: #fff;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.api-desc {
+  font-size: 0.95rem;
+  opacity: 0.85;
+  margin-bottom: 20px;
+}
+
+.api-prices {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.price-item {
+  background: #202020;
   border-radius: 10px;
-  margin: 8px 0;
-  font-weight: 500;
+  padding: 10px 14px;
+  border: 1px solid #2a2a2a;
+  transition: 0.25s;
+}
+
+.price-item:hover {
+  border-color: #3affab;
+}
+
+.value {
+  display: block;
+  font-size: 1.2rem;
+  color: #3affab;
+  font-weight: 700;
+}
+
+.label {
+  font-size: 0.8rem;
+  opacity: 0.75;
 }
 
 .btn-talk {
-  margin-top: 18px;
-  padding: 10px 30px;
-  background: #00ffa3;
+  background: linear-gradient(90deg, #3affab, #19a8ff);
   color: #000;
-  border-radius: 50px;
-  font-weight: bold;
+  border: none;
+  outline: none;
+  font-weight: 700;
+  padding: 12px 22px;
+  border-radius: 12px;
   cursor: pointer;
+  transition: 0.25s;
 }
 
 .btn-talk:hover {
-  filter: brightness(1.15);
+  opacity: 0.9;
+  transform: scale(1.04);
 }
 
-.payment-brands {
-  margin-top: 30px;
-  display: flex;
-  justify-content: center;
-  gap: 18px;
-  opacity: 0.7;
-  font-weight: bold;
+.ribbon {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #3affab;
+  color: #000;
+  padding: 4px 14px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  box-shadow: 0 0 10px rgba(58, 255, 171, 0.4);
 }
