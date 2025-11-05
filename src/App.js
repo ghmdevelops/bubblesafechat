@@ -4,7 +4,9 @@ import {
   Routes,
   Route,
   Navigate,
+  useLocation,
 } from "react-router-dom";
+
 import CreateRoom from "./components/CreateRoom";
 import Room from "./components/Room";
 import DoorPage from './components/DoorPage';
@@ -17,10 +19,25 @@ import NotFound from "./components/NotFound";
 import LearnMorePage from "./LearnMorePage";
 import CookiePolicy from "./CookiePolicy";
 import PrivacyPolicy from "./PrivacyPolicy";
+import TermsPage from "./TermsPage";
 import IntroPage from "./components/IntroPage";
+import SupportPage from "./SupportPage";
 import Footer from "./components/Footer";
 import { auth } from "./firebaseConfig";
 import PlansPage from "./components/PlansPage";
+
+function ScrollToTopOnRouteChange() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, [pathname]);
+
+  return null;
+}
 
 function App() {
   const [user, setUser] = useState(null);
@@ -31,8 +48,7 @@ function App() {
       setUser(user);
       setLoading(false);
     });
-
-    return () => unsubscribe(); 
+    return () => unsubscribe();
   }, []);
 
   if (loading) {
@@ -52,6 +68,9 @@ function App() {
 
   return (
     <Router>
+      {/* ✅ scroll top sempre que mudar de página */}
+      <ScrollToTopOnRouteChange />
+
       <Routes>
         <Route path="/" element={<IntroPage />} />
         <Route path="/login" element={<Login />} />
@@ -78,14 +97,14 @@ function App() {
         <Route path="/learn-more" element={<LearnMorePage />} />
         <Route path="/cookie-policy" element={<CookiePolicy />} />
         <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/support" element={<SupportPage />} />
 
-        <Route
-          path="/room/:roomId"
-          element={<Room />}
-        />
+        <Route path="/room/:roomId" element={<Room />} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>
+
       <Footer />
     </Router>
   );

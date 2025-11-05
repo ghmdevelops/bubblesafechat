@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { FaUserShield, FaLock, FaClock, FaUserSecret } from "react-icons/fa";
 import { RiLoginBoxFill } from "react-icons/ri";
-import { FiSun, FiMoon } from "react-icons/fi";
 import { auth } from "../firebaseConfig";
 import { useTheme } from "./hooks/useTheme";
 import "./IntroPage.css";
@@ -77,12 +76,42 @@ const IntroPage = () => {
 
   const [showServiceModal, setShowServiceModal] = useState(true);
 
+  // ✅ Estados do PWA
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [canInstall, setCanInstall] = useState(false);
+
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) navigate("/create-room");
     });
     return unsubscribe;
   }, [navigate]);
+
+  // ✅ Captura o evento de instalação do PWA
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setCanInstall(true);
+    };
+
+    window.addEventListener("beforeinstallprompt", handler);
+
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  // ✅ Função para instalar o PWA
+  const handleInstall = async () => {
+    if (!deferredPrompt) return;
+
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice;
+
+    if (choice.outcome === "accepted") {
+      setCanInstall(false);
+      setDeferredPrompt(null);
+    }
+  };
 
   if (showServiceModal) {
     return (
@@ -208,6 +237,7 @@ const IntroPage = () => {
               >
                 Saiba Mais
               </motion.button>
+
               <motion.button
                 className="btn secondary"
                 onClick={() => navigate("/create-room")}
@@ -218,6 +248,28 @@ const IntroPage = () => {
                 Criar Sala
               </motion.button>
             </motion.div>
+
+            {canInstall && (
+              <motion.button
+                className="btn primary mt-2"
+                onClick={handleInstall}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                aria-label="Instalar App"
+                style={{
+                  padding: "clamp(10px, 2.5vw, 16px) clamp(36px, 8vw, 77px)",
+                  fontSize: "clamp(0.7rem, 1.8vw, 0.95rem)",
+                  background: "#3dcb56",
+                  borderRadius: "6px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                📱 Instalar App
+              </motion.button>
+            )}
+
             <motion.button
               className="btn primary mt-3"
               onClick={handleViewPlans}
@@ -235,8 +287,8 @@ const IntroPage = () => {
             >
               <MdOutlineAttachMoney size={22} /> Ver Planos
             </motion.button>
-
           </div>
+
           <div className="stats-cards">
             {metrics.map((m, i) => (
               <motion.div
@@ -255,7 +307,7 @@ const IntroPage = () => {
       </section>
 
       <section className="features container">
-        <h2 className="section-title">O que torna seguro</h2>
+        <h2 className="section-title mb-4">O que torna seguro</h2>
         <div className="feature-grid">
           {securityFeatures.map((f, idx) => (
             <FeatureCard

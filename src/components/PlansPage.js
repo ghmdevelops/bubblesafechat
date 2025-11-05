@@ -5,6 +5,7 @@ import "./PlansPage.css";
 import iconPage from "./img/icon-menu.png";
 import { Helmet } from "react-helmet";
 import { Link } from "react-router-dom";
+import Swal from "sweetalert2";
 
 const PlansPage = () => {
   const plans = [
@@ -49,6 +50,23 @@ const PlansPage = () => {
       highlight: false,
     },
   ];
+
+  const openContactAlert = () => {
+    Swal.fire({
+      title: "Entre em contato",
+      html: `
+        Nosso time comercial responderá rapidamente.<br><br>
+        <strong>📩 contato@bubblesafechat.com.br</strong>
+      `,
+      icon: "info",
+      confirmButtonText: "Copiar e-mail",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        navigator.clipboard.writeText("contato@bubblesafechat.com");
+        Swal.fire("Copiado!", "E-mail copiado para a área de transferência.", "success");
+      }
+    });
+  };
 
   return (
     <>
@@ -118,6 +136,7 @@ const PlansPage = () => {
                 className="btn-plan"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.96 }}
+                onClick={openContactAlert}
               >
                 Assinar agora
               </motion.button>
@@ -139,13 +158,17 @@ const PlansPage = () => {
             <div>Planos personalizados</div>
           </div>
 
-          <button className="btn-talk">Falar com vendas</button>
+          <button className="btn-talk" onClick={openContactAlert}>
+            Falar com vendas
+          </button>
         </div>
 
-        <div className="payment-brands">
+        <div className="payment-brands mb-4">
           <span>💳 Cartão</span>
           <span>⚡ PIX</span>
           <span>🔐 Stripe</span>
+          <span>₿ Bitcoin</span>
+          <span>♦️ Ethereum</span>
         </div>
       </div>
     </>

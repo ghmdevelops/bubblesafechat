@@ -126,7 +126,7 @@ const Footer = () => {
                         <h6>Empresa</h6>
                         <ul>
                             <li>
-                                <button className="link-btn" onClick={() => navigate("/about")}>
+                                <button className="link-btn" onClick={() => navigate("/learn-more")}>
                                     Sobre Nós
                                 </button>
                             </li>
@@ -136,7 +136,7 @@ const Footer = () => {
                                 </button>
                             </li>
                             <li>
-                                <button className="link-btn" onClick={() => navigate("/privacy")}>
+                                <button className="link-btn" onClick={() => navigate("/politica-de-privacidade")}>
                                     Privacidade
                                 </button>
                             </li>
