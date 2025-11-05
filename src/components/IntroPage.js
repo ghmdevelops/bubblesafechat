@@ -1,4 +1,4 @@
-// src/components/IntroPage.js
+import { MdOutlineAttachMoney } from "react-icons/md";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
@@ -12,6 +12,7 @@ import { useTheme } from "./hooks/useTheme";
 import "./IntroPage.css";
 import iconPage from "./img/icon-menu.png";
 import heroBg from "./img/rm373batch4-15.jpg";
+import ServiceModal from "./ServiceModal";
 
 const securityFeatures = [
   {
@@ -43,7 +44,6 @@ const metrics = [
   { value: "5m", label: "Links Expiram em" },
 ];
 
-// componente separado para evitar uso de hook dentro de map direto
 const FeatureCard = ({ icon, title, desc, delay = 0 }) => {
   const [ref, inView] = useInView({
     triggerOnce: true,
@@ -75,12 +75,27 @@ const IntroPage = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [heroLoaded, setHeroLoaded] = useState(false);
 
+  const [showServiceModal, setShowServiceModal] = useState(true);
+
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) navigate("/create-room");
     });
     return unsubscribe;
   }, [navigate]);
+
+  if (showServiceModal) {
+    return (
+      <ServiceModal
+        onClose={() => setShowServiceModal(false)}
+        onViewPlans={() => navigate("/planos")}
+      />
+    );
+  }
+
+  const handleViewPlans = () => {
+    navigate("/planos");
+  };
 
   return (
     <div className="intro-page">
@@ -166,7 +181,7 @@ const IntroPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              Comunicação Segura. Privacidade Inabalável.
+              Comunicação Segura Privacidade Inabalável.
             </motion.h1>
             <motion.p
               className="subtitle"
@@ -203,6 +218,24 @@ const IntroPage = () => {
                 Criar Sala
               </motion.button>
             </motion.div>
+            <motion.button
+              className="btn primary mt-3"
+              onClick={handleViewPlans}
+              style={{
+                padding: "clamp(10px, 2.5vw, 16px) clamp(36px, 8vw, 77px)",
+                fontSize: "clamp(0.7rem, 1.8vw, 0.95rem)",
+                background: "#27b082ff",
+                borderRadius: "6px",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.94 }}
+            >
+              <MdOutlineAttachMoney size={22} /> Ver Planos
+            </motion.button>
+
           </div>
           <div className="stats-cards">
             {metrics.map((m, i) => (

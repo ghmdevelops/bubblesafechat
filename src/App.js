@@ -20,7 +20,7 @@ import PrivacyPolicy from "./PrivacyPolicy";
 import IntroPage from "./components/IntroPage";
 import Footer from "./components/Footer";
 import { auth } from "./firebaseConfig";
-
+import PlansPage from "./components/PlansPage";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -58,6 +58,7 @@ function App() {
         <Route path="/magic-link" element={<MagicLinkHandler />} />
         <Route path="/register" element={<Register />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/planos" element={<PlansPage />} />
 
         <Route
           path="/create-room"
