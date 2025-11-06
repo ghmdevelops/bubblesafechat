@@ -42,6 +42,7 @@ function ScrollToTopOnRouteChange() {
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -49,6 +50,14 @@ function App() {
       setLoading(false);
     });
     return () => unsubscribe();
+  }, []);
+
+  // Detectar mobile
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   if (loading) {
@@ -68,11 +77,12 @@ function App() {
 
   return (
     <Router>
-      {/* ✅ scroll top sempre que mudar de página */}
       <ScrollToTopOnRouteChange />
 
       <Routes>
-        <Route path="/" element={<IntroPage />} />
+
+        <Route path="/" element={isMobile ? <Navigate to="/create-room" /> : <IntroPage />} />
+
         <Route path="/login" element={<Login />} />
         <Route path="/magic-link" element={<MagicLinkHandler />} />
         <Route path="/register" element={<Register />} />
@@ -105,7 +115,7 @@ function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
 
-      <Footer />
+      {!isMobile && <Footer />}
     </Router>
   );
 }

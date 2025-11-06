@@ -34,7 +34,7 @@ import {
   faQrcode,
   faShareAlt,
   faTrash,
-  faCheck,
+  faCheck,         // <--- MANTENHA AQUI
   faTimes,
   faThumbsUp,
   faHeart,
@@ -42,6 +42,12 @@ import {
   faSurprise,
   faSadTear,
   faAngry,
+  faPaperclip,
+  faImage,
+  faMicrophoneAlt,
+  faEllipsisH,
+  faChevronRight,
+  faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { faWhatsapp, faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { Helmet } from "react-helmet";
@@ -347,7 +353,7 @@ const Room = () => {
           if (snapshot.exists()) {
             setUserAvatar(
               snapshot.val().avatar ||
-                "https://secure.gravatar.com/avatar/?d=mp"
+              "https://secure.gravatar.com/avatar/?d=mp"
             );
           } else {
             setUserAvatar("https://secure.gravatar.com/avatar/?d=mp");
@@ -1667,6 +1673,11 @@ const Room = () => {
       });
   };
 
+  const setVh = () => {
+    let vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+  };
+
   return (
     <div>
       <Joyride
@@ -1702,10 +1713,10 @@ const Room = () => {
           }
         }}
       />
+
       <Helmet>
-        <title>{`Bubble Safe Chat - ${
-          roomName ? roomName : "Carregando..."
-        }`}</title>
+        <title>{`Bubble Safe Chat - ${roomName ? roomName : "Carregando..."
+          }`}</title>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
       </Helmet>
 
@@ -1780,21 +1791,19 @@ const Room = () => {
                             </li>
                             <li className="nav-item">
                               <button
-                                className={`dropdown-item d-flex justify-content-between align-items-center ${
-                                  isDestructionActive
-                                    ? "text-success"
-                                    : "text-white"
-                                }`}
+                                className={`dropdown-item d-flex justify-content-between align-items-center ${isDestructionActive
+                                  ? "text-success"
+                                  : "text-white"
+                                  }`}
                                 onClick={toggleDestruction}
                               >
                                 <span className="auds">
                                   <FontAwesomeIcon
                                     icon={faClock}
-                                    className={`me-1 ${
-                                      isDestructionActive
-                                        ? "text-success"
-                                        : "text-white"
-                                    } autodesc`}
+                                    className={`me-1 ${isDestructionActive
+                                      ? "text-success"
+                                      : "text-white"
+                                      } autodesc`}
                                   />
                                   Autodestruição
                                 </span>
@@ -1903,7 +1912,6 @@ const Room = () => {
       <div
         className="message-container mb-1"
         style={{
-          height: "500px",
           overflowY: "scroll",
           border: "1px solid transparent",
           borderRadius: "8px",
@@ -2031,9 +2039,8 @@ const Room = () => {
                     <button
                       key={reaction.type}
                       onClick={() => handleReaction(reaction.type)}
-                      className={`btn btn-sm me-1 ${
-                        userHasReacted ? "btn-primary" : "btn-outline-primary"
-                      }`}
+                      className={`btn btn-sm me-1 ${userHasReacted ? "btn-primary" : "btn-outline-primary"
+                        }`}
                       style={{ display: "flex", alignItems: "center" }}
                       aria-label={`Reagir com ${reaction.type}`}
                     >
@@ -2147,184 +2154,231 @@ const Room = () => {
         </div>
       )}
 
-      <div className="d-flex align-items-center">
+      <div className="d-flex align-items-center w-100 position-relative">
         {recording ? (
-          <>
-            <input
-              type="text"
-              value={message}
-              onChange={handleTyping}
-              placeholder="Escreva sua mensagem"
-              onFocus={markAllMessagesAsRead}
-              className="form-control me-2 msg-user2"
-              disabled
-            />
-            <button onClick={stopRecording} className="btn btn-warning me-2">
-              <FontAwesomeIcon icon={faStopCircle} />
-            </button>
-            <span className="text-warning ms-2">Gravando...</span>
-          </>
+          <div
+            className="w-100 bg-secondary d-flex align-items-center justify-content-between px-3"
+            style={{ height: "50px", borderRadius: "25px" }}
+          >
+            <FontAwesomeIcon icon={faPlus} className="text-white me-3" style={{ opacity: 0.5, fontSize: "1.5rem" }} />
+
+            <span className="text-white flex-grow-1 text-center fw-bold" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              Gravando...
+            </span>
+
+            <div className="d-flex align-items-center flex-shrink-0">
+              <button
+                onClick={stopRecording}
+                className="btn btn-link text-white p-0 me-3"
+                style={{ fontSize: "1.5rem" }}
+              >
+                <FontAwesomeIcon icon={faXmark} />
+              </button>
+
+              <button
+                disabled
+                className="btn btn-link text-white p-0"
+                style={{ fontSize: "1.5rem", opacity: 0.5 }}
+              >
+                <FontAwesomeIcon icon={faCheck} />
+              </button>
+            </div>
+          </div>
         ) : audioFile ? (
-          <div className="audio-controls-container-22 d-flex align-items-center flex-wrap">
+          <div
+            className="w-100 bg-secondary d-flex align-items-center justify-content-between px-3"
+            style={{ height: "50px", borderRadius: "25px" }}
+          >
             <audio
               controls
               src={URL.createObjectURL(audioFile)}
-              style={{ width: "100%", maxWidth: "200px", marginRight: "10px" }}
+              className="flex-grow-1 me-2"
+              style={{
+                height: "30px",
+                filter: 'invert(1)',
+                maxWidth: 'calc(100% - 100px)' // Limita o tamanho do player para garantir que os botões caibam
+              }}
             />
-            <button
-              onClick={sendAudioMessage}
-              disabled={!audioFile}
-              className="btn btn-outline-primary me-2"
-            >
-              <FontAwesomeIcon icon={faPaperPlane} />
-            </button>
-            <button
-              onClick={() => setAudioFile(null)}
-              className="btn btn-outline-danger"
-            >
-              <FontAwesomeIcon icon={faTrashAlt} />
-            </button>
+
+            {/* Agrupamento de botões no Áudio Pronto para Envio */}
+            <div className="d-flex align-items-center flex-shrink-0">
+              <button
+                onClick={() => setAudioFile(null)}
+                className="btn btn-link text-white p-0 me-3"
+                style={{ fontSize: "1.5rem" }}
+              >
+                <FontAwesomeIcon icon={faXmark} />
+              </button>
+
+              <button
+                onClick={sendAudioMessage}
+                disabled={!audioFile}
+                className="btn btn-link text-white p-0"
+                style={{ fontSize: "1.5rem" }}
+              >
+                <FontAwesomeIcon icon={faCheck} />
+              </button>
+            </div>
           </div>
         ) : (
           <>
-            <div className="input-with-icon w-100">
+            {showOptions && (
+              <div
+                className="position-absolute shadow-lg rounded-3 bg-dark text-white p-2"
+                style={{
+                  bottom: "calc(100% + 10px)",
+                  right: "0px",
+                  transform: "translateX(20px)",
+                  minWidth: "250px",
+                  zIndex: 100,
+                }}
+              >
+                <button
+                  className="d-flex align-items-center w-100 btn text-white text-start py-2"
+                  onClick={() => {
+                    Swal.fire({
+                      title: "Mensagem Protegida",
+                      text: "Este botão envia uma mensagem protegida.",
+                      icon: "info",
+                      confirmButtonText: "OK",
+                    }).then(() => {
+                      sendProtectedMessage();
+                      toggleOptions();
+                    });
+                  }}
+                  style={{ borderRadius: "5px", transition: "background-color 0.2s" }}
+                  onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#343a40')}
+                  onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                >
+                  <FontAwesomeIcon icon={faLock} className="me-3" style={{ fontSize: '1.2rem' }} />
+                  Mensagem Protegida
+                </button>
+
+                <button
+                  className="d-flex align-items-center w-100 btn text-white text-start py-2"
+                  onClick={() => {
+                    const action = recognitionActive
+                      ? stopRecognition
+                      : startRecognition;
+                    const text = recognitionActive
+                      ? "Parando o reconhecimento de voz"
+                      : "Iniciando o reconhecimento de voz";
+
+                    Swal.fire({
+                      title: "Reconhecimento de Voz",
+                      text: text,
+                      icon: "info",
+                      confirmButtonText: "OK",
+                    }).then(() => {
+                      action();
+                      toggleOptions();
+                    });
+                  }}
+                  style={{ borderRadius: "5px", transition: "background-color 0.2s" }}
+                  onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#343a40')}
+                  onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                >
+                  <FontAwesomeIcon icon={faMicrophoneAlt} className="me-3" style={{ fontSize: '1.2rem' }} />
+                  Reconhecimento de Voz
+                </button>
+
+                {isCreator && (
+                  <button
+                    className="d-flex align-items-center w-100 btn text-white text-start py-2"
+                    onClick={() => {
+                      Swal.fire({
+                        title: "Expulsar Usuário",
+                        text: "Você está prestes a expulsar um usuário da sala.",
+                        icon: "warning",
+                        confirmButtonText: "OK",
+                      }).then(() => {
+                        toggleExpelModal();
+                        toggleOptions();
+                      });
+                    }}
+                    style={{ borderRadius: "5px", transition: "background-color 0.2s" }}
+                    onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#343a40')}
+                    onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                  >
+                    <FontAwesomeIcon icon={faUserSlash} className="me-3" style={{ width: "1rem" }} />
+                    Expulsar Usuário
+                  </button>
+                )}
+
+                <div className="dropdown-divider bg-secondary my-2"></div>
+
+              </div>
+            )}
+
+            <div className="d-flex align-items-center me-2">
+              <button
+                onClick={toggleOptions}
+                className="btn btn-secondary rounded-circle shadow-lg d-flex justify-content-center align-items-center"
+                style={{
+                  width: "40px",
+                  height: "40px",
+                  padding: 0,
+                  backgroundColor: "#495057",
+                  borderColor: "#495057",
+                }}
+              >
+                <FontAwesomeIcon icon={faPlus} />
+              </button>
+            </div>
+
+            <div className="input-with-icon w-100 position-relative me-2">
               <input
                 type="text"
                 value={message}
                 onChange={handleTyping}
-                placeholder="Escreva sua mensagem"
+                placeholder="Pergunte alguma coisa"
                 onFocus={markAllMessagesAsRead}
-                className="form-control msg-user1"
+                className="form-control msg-user1 pe-5 bg-dark text-white border-secondary"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && message.trim()) {
                     e.preventDefault();
                     sendMessage();
                   }
                 }}
-                style={{ paddingRight: "40px" }}
+                style={{ height: "50px", borderRadius: "25px" }}
               />
 
               <button
                 onClick={startRecording}
                 disabled={recording}
-                className="btn-icon audusd"
+                className="btn-icon audusd border-0 p-0"
                 style={{
                   position: "absolute",
-                  right: "0.8px",
-                  top: "40%",
+                  right: "10px",
+                  top: "50%",
                   transform: "translateY(-50%)",
-                  background: "transparent",
-                  border: "none",
                   color: "#007bff",
+                  background: "transparent",
+                  zIndex: 10,
                 }}
               >
-                <FontAwesomeIcon icon={faMicrophone} />
+                <FontAwesomeIcon icon={faMicrophone} style={{ fontSize: "1.2rem" }} />
               </button>
             </div>
 
-            <div className="d-flex align-items-center">
-              <button
-                onClick={sendMessage}
-                disabled={!message.trim()}
-                className="btn btn-primary me-2 rounded-5 sendmsgd"
-              >
-                <FontAwesomeIcon icon={faPaperPlane} />
-              </button>
-
-              {showPlusButton && !showOptions ? (
+            {message.trim() ? (
+              <div className="d-flex align-items-center">
                 <button
-                  onClick={toggleOptions}
-                  className="btn rounded-5 shadow-lg hover-scale"
+                  onClick={sendMessage}
+                  disabled={!message.trim()}
+                  className="btn btn-primary rounded-circle shadow-sm d-flex justify-content-center align-items-center"
                   style={{
-                    backgroundColor: "#4CAF50",
-                    borderColor: "#388E3C",
-                    color: "#fff",
-                    fontSize: "18px",
-                    transition: "all 0.3s ease",
+                    width: "40px",
+                    height: "40px",
+                    padding: 0,
+                    backgroundColor: "#007bff",
+                    borderColor: "#007bff",
                   }}
                 >
-                  <FontAwesomeIcon icon={faPlus} />
+                  <FontAwesomeIcon icon={faPaperPlane} />
                 </button>
-              ) : null}
-
-              {!showPlusButton || showOptions ? (
-                <div className="btn-group d-flex">
-                  <button
-                    onClick={() => {
-                      Swal.fire({
-                        title: "Mensagem Protegida",
-                        text: "Este botão envia uma mensagem protegida.",
-                        icon: "info",
-                        confirmButtonText: "OK",
-                      }).then(() => {
-                        sendProtectedMessage();
-                      });
-                    }}
-                    className="btn btn-primary me-2 rounded-pill shadow-lg hover-scale"
-                    style={{
-                      backgroundColor: "#6c63ff",
-                      borderColor: "#6c63ff",
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faLock} />
-                  </button>
-
-                  <button
-                    style={{
-                      borderRadius: "50%",
-                      backgroundColor: "#ff5722",
-                      borderColor: "#ff5722",
-                    }}
-                    onClick={() => {
-                      const action = recognitionActive
-                        ? stopRecognition
-                        : startRecognition;
-                      const text = recognitionActive
-                        ? "Parando o reconhecimento de voz"
-                        : "Iniciando o reconhecimento de voz";
-
-                      Swal.fire({
-                        title: "Reconhecimento de Voz",
-                        text: text,
-                        icon: "info",
-                        confirmButtonText: "OK",
-                      }).then(() => {
-                        action();
-                      });
-                    }}
-                    className="btn btn-warning me-2 audiosescri hover-scale"
-                  >
-                    <FontAwesomeIcon icon={faPen} />
-                  </button>
-
-                  {isCreator && (
-                    <button
-                      style={{
-                        borderRadius: "50%",
-                        backgroundColor: "#e91e63",
-                        borderColor: "#e91e63",
-                      }}
-                      className="btn btn-danger excluiuserma hover-scale"
-                      onClick={() => {
-                        Swal.fire({
-                          title: "Expulsar Usuário",
-                          text: "Você está prestes a expulsar um usuário da sala.",
-                          icon: "warning",
-                          confirmButtonText: "OK",
-                        }).then(() => {
-                          toggleExpelModal();
-                        });
-                      }}
-                    >
-                      <FontAwesomeIcon
-                        icon={faUserSlash}
-                        style={{ width: "1rem" }}
-                      />
-                    </button>
-                  )}
-                </div>
-              ) : null}
-            </div>
+              </div>
+            ) : null}
           </>
         )}
       </div>
@@ -2437,9 +2491,8 @@ const Room = () => {
                       key={index}
                       src={avatarUrl}
                       alt={`Avatar ${index + 1}`}
-                      className={`avatar-option ${
-                        selectedAvatar === avatarUrl ? "selected" : ""
-                      }`}
+                      className={`avatar-option ${selectedAvatar === avatarUrl ? "selected" : ""
+                        }`}
                       onClick={() => setSelectedAvatar(avatarUrl)}
                       style={{
                         width: "80px",
