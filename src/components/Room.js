@@ -9,6 +9,7 @@ import Swal from "sweetalert2";
 import "@sweetalert2/theme-dark/dark.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSmile as faSmileRegular } from '@fortawesome/free-regular-svg-icons';
 import {
   faEllipsis,
   faPlus,
@@ -27,7 +28,7 @@ import {
   faPaperPlane,
   faMicrophone,
   faCheckCircle,
-  faStopCircle,
+  faEllipsisV,
   faTrashAlt,
   faPlayCircle,
   faClipboard,
@@ -108,7 +109,7 @@ const Room = () => {
   const [isTourActive, setIsTourActive] = useState(false);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState("");
-
+  const [messageIdWithOpenReactions, setMessageIdWithOpenReactions] = useState(null);
   const ENCRYPTION_KEY = "chaveSuperSecretaNoCliente";
 
   function encryptMessage(plainText) {
@@ -1448,21 +1449,27 @@ const Room = () => {
   };
 
   const messageStyles = (isSentByUser) => ({
-    padding: "4px",
-    borderRadius: "15px",
-    margin: isSentByUser ? "10px 0 5px auto" : "10px auto 5px 0",
-    backgroundColor: isSentByUser ? "#d6eaff" : "#f1f1f1",
-    maxWidth: "90%",
-    textAlign: isSentByUser ? "right" : "left",
+    backgroundColor: isSentByUser ? "#00305cff" : "#262d31",
+    padding: "10px 12px",
+    borderRadius: isSentByUser ? "18px 18px 0 18px" : "18px 18px 18px 0",
+    maxWidth: "85%",
+    marginLeft: isSentByUser ? "auto" : "unset",
+    marginRight: isSentByUser ? "unset" : "auto",
+    marginBottom: "12px",
     position: "relative",
-    color: "#000",
+    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.3)",
   });
 
   const replyPreviewStyles = {
-    fontSize: "12px",
-    borderLeft: "2px solid #007bff",
-    paddingLeft: "10px",
-    marginBottom: "5px",
+    backgroundColor: "rgba(255, 255, 255, 0.08)",
+    borderLeft: "4px solid #e3f6f2ff",
+    padding: "6px 10px",
+    borderRadius: "4px",
+    marginTop: "5px",
+    marginBottom: "10px",
+    fontSize: "0.85em",
+    color: "#ffffffff",
+    cursor: "pointer",
   };
 
   const QRCodeModal = ({ shareLink }) => (
@@ -1723,12 +1730,30 @@ const Room = () => {
       <header>
         <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-black">
           <div class="container-fluid">
-            <h1 className="d-flex align-items-center mb-4 mt-4">
+            <h1
+              className="d-flex align-items-center"
+              style={{
+                margin: '10px 0 15px 0',
+                fontSize: '1.4rem', // Tamanho moderno e legível
+                color: '#e9edef', // Texto principal (Sala) em cinza claro
+                fontWeight: '600', // Semibold
+                padding: '0 10px', // Adicionar um pequeno padding horizontal
+              }}
+            >
               <FontAwesomeIcon
                 icon={faDoorOpen}
-                className="icon-bordered me-2"
+                style={{ color: '#aebac1', fontSize: '1.2em', marginRight: '8px' }}
               />
-              Sala <span className="text-bordered">{roomName}</span>
+              Sala
+              <span
+                style={{
+                  color: '#02ffc8ff',
+                  fontWeight: '700',
+                  marginLeft: '8px',
+                }}
+              >
+                {roomName}
+              </span>
             </h1>
 
             <ul className="navbar-nav ms-auto mb-2 mb-md-0">
@@ -1742,21 +1767,28 @@ const Room = () => {
                       onClick={toggleDropdown}
                       className="position-relative"
                     >
-                      <motion.img
-                        src={userAvatar}
-                        alt="User Avatar"
-                        className="user-avatar"
+                      {/* 💡 MUDANÇA AQUI: Substituí motion.img por FontAwesomeIcon */}
+                      <motion.button
+                        className="btn btn-link p-0 d-flex justify-content-center align-items-center"
                         style={{
                           width: "40px",
                           height: "40px",
                           borderRadius: "50%",
                           cursor: "pointer",
-                          border: "2px solid #17a2b8",
-                          boxShadow: "0 4px 8px rgba(23, 162, 184, 0.3)",
+                          // Fundo sutil para destacar o ícone
+                          backgroundColor: "rgba(255, 255, 255, 0.1)",
+                          border: `2px solid ${isDropdownOpen ? '#02ffc8ff' : 'transparent'}`, // Destaque quando aberto
+                          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.4)",
+                          color: isDropdownOpen ? '#02ffc8ff' : '#e9edef', // Cor do ícone
+                          transition: 'color 0.2s, background-color 0.2s, border 0.2s'
                         }}
-                        whileHover={{ scale: 1.1 }}
+                        whileHover={{ scale: 1.1, backgroundColor: 'rgba(255, 255, 255, 0.2)' }}
                         whileTap={{ scale: 0.9 }}
-                      />
+                      >
+                        {/* Ícone de três pontos verticais (Opções) */}
+                        <FontAwesomeIcon icon={faEllipsisV} style={{ fontSize: '1.2rem' }} />
+                      </motion.button>
+
                       <AnimatePresence>
                         {isDropdownOpen && (
                           <motion.div
@@ -1766,43 +1798,44 @@ const Room = () => {
                             exit={{ opacity: 0, scale: 0.95, y: -10 }}
                             transition={{ duration: 0.2 }}
                             style={{
-                              left: "-150px",
+                              // Posição ajustada para alinhar com o lado direito do botão
+                              left: "-160px",
                               top: "100%",
                               zIndex: 1050,
-                              minWidth: "200px",
+                              minWidth: "220px",
+                              // Adiciona uma pequena flecha (opcional, requer CSS adicional ou uso de ::before)
+                              // Você pode manter este estilo, mas o menu flutuará corretamente abaixo e à esquerda do ícone.
                             }}
                           >
+                            {/* Botões do Dropdown (Mantidos) */}
                             <li className="nav-item">
                               <button
-                                className="dropdown-item compart"
+                                className="dropdown-item compart text-white d-flex align-items-center"
                                 onClick={() => confirmAction("share")}
                               >
-                                <FontAwesomeIcon icon={faShareAlt} />{" "}
+                                <FontAwesomeIcon icon={faShareAlt} className="me-2" style={{ color: '#02ffc8ff' }} />{" "}
                                 Compartilhar
                               </button>
                             </li>
                             <li className="nav-item">
                               <button
-                                className="dropdown-item qrcode"
+                                className="dropdown-item qrcode text-white d-flex align-items-center"
                                 onClick={() => confirmAction("qr")}
                               >
-                                <FontAwesomeIcon icon={faQrcode} /> QR Code
+                                <FontAwesomeIcon icon={faQrcode} className="me-2" style={{ color: '#02ffc8ff' }} /> QR Code
                               </button>
                             </li>
+                            {/* ... Outras opções (Autodestruição, Definir Senha, Excluir Chat) ... */}
                             <li className="nav-item">
                               <button
-                                className={`dropdown-item d-flex justify-content-between align-items-center ${isDestructionActive
-                                  ? "text-success"
-                                  : "text-white"
+                                className={`dropdown-item d-flex justify-content-between align-items-center ${isDestructionActive ? "text-success" : "text-white"
                                   }`}
                                 onClick={toggleDestruction}
                               >
-                                <span className="auds">
+                                <span className="auds d-flex align-items-center">
                                   <FontAwesomeIcon
                                     icon={faClock}
-                                    className={`me-1 ${isDestructionActive
-                                      ? "text-success"
-                                      : "text-white"
+                                    className={`me-2 ${isDestructionActive ? "text-success" : "text-white"
                                       } autodesc`}
                                   />
                                   Autodestruição
@@ -1819,18 +1852,18 @@ const Room = () => {
                             <li className="nav-item">
                               <button
                                 onClick={setRoomAccessPassword}
-                                className="dropdown-item defpass"
+                                className="dropdown-item defpass text-white d-flex align-items-center"
                               >
-                                <FontAwesomeIcon icon={faLock} /> Definir senha
+                                <FontAwesomeIcon icon={faLock} className="me-2" style={{ color: '#02ffc8ff' }} /> Definir senha
                                 de acesso
                               </button>
                             </li>
                             <li className="nav-item">
                               <button
-                                className="dropdown-item excchat"
+                                className="dropdown-item excchat text-white d-flex align-items-center"
                                 onClick={() => confirmAction("delete")}
                               >
-                                <FontAwesomeIcon icon={faTrash} /> Excluir Chat
+                                <FontAwesomeIcon icon={faTrash} className="me-2 text-danger" /> Excluir Chat
                               </button>
                             </li>
                           </motion.div>
@@ -1842,7 +1875,7 @@ const Room = () => {
               ) : (
                 <li className="nav-item exitchatsd">
                   <button className="dropdown-item" onClick={leaveRoom}>
-                    <FontAwesomeIcon icon={faSignOutAlt} /> Sair do Chat
+                    <FontAwesomeIcon icon={faSignOutAlt} className="me-2" /> Sair do Chat
                   </button>
                 </li>
               )}
@@ -1910,12 +1943,14 @@ const Room = () => {
       )}
 
       <div
-        className="message-container mb-1"
+        className="message-container"
         style={{
-          overflowY: "scroll",
-          border: "1px solid transparent",
-          borderRadius: "8px",
+          maxHeight: "calc(100vh - 120px)",
+          overflowY: "auto",
           padding: "10px",
+          backgroundColor: "transparent",
+          width: '100%',
+          boxSizing: 'border-box',
         }}
       >
         {messages.map((msg) => {
@@ -2005,8 +2040,12 @@ const Room = () => {
               key={msg.id}
               style={messageStyles(isSentByUser)}
             >
-              <strong
-                style={{ display: "block", fontSize: "0.85em", color: "#555" }}
+              <div
+                className="d-flex align-items-center mb-1"
+                style={{
+                  fontSize: "0.85em",
+                  color: isSentByUser ? "#ffffffff" : "#aebac1"
+                }}
               >
                 {msg.avatar ? (
                   <img
@@ -2017,70 +2056,49 @@ const Room = () => {
                       height: "20px",
                       borderRadius: "50%",
                       display: "inline-block",
-                      marginRight: "1px",
+                      marginRight: "6px",
                     }}
                   />
                 ) : (
                   <FontAwesomeIcon icon={faUserCircle} className="me-1" />
                 )}
-                {msg.user}
-              </strong>
-
-              <div className="reactions mt-2 d-flex">
-                {reactionTypes.map((reaction) => {
-                  const usersReacted =
-                    msg.reactions && msg.reactions[reaction.type]
-                      ? msg.reactions[reaction.type]
-                      : [];
-                  const userHasReacted = usersReacted.includes(userName);
-                  const reactionCount = usersReacted.length;
-
-                  return (
-                    <button
-                      key={reaction.type}
-                      onClick={() => handleReaction(reaction.type)}
-                      className={`btn btn-sm me-1 ${userHasReacted ? "btn-primary" : "btn-outline-primary"
-                        }`}
-                      style={{ display: "flex", alignItems: "center" }}
-                      aria-label={`Reagir com ${reaction.type}`}
-                    >
-                      <FontAwesomeIcon icon={reaction.icon} />
-                      {reactionCount > 0 && (
-                        <span className="ms-1">{reactionCount}</span>
-                      )}
-                    </button>
-                  );
-                })}
+                <strong style={{ fontWeight: "600" }}>
+                  {msg.user}
+                </strong>
               </div>
 
               {msg.replyTo && (
-                <div className="reply-preview mt-1" style={replyPreviewStyles}>
+                <div className="reply-preview" style={replyPreviewStyles}>
                   <strong>Respondendo a {msg.replyTo.user}:</strong>{" "}
-                  {msg.replyTo.text}
+                  <span style={{ color: '#e9edef', display: 'block', maxHeight: '30px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {msg.replyTo.text}
+                  </span>
                 </div>
               )}
 
-              <span
+              <div
+                className="message-content mt-2"
                 style={{
-                  fontSize: "11.7px",
+                  fontSize: "14px",
                   fontWeight: "400",
-                  marginBottom: "20px",
+                  marginBottom: "8px",
+                  color: "#e9edef"
                 }}
               >
                 {msg.requiresPassword ? (
                   <button
                     onClick={promptPasswordAndDisplayMessage}
-                    className="btn btn-link"
-                    style={{ fontSize: "11px", color: "#007bff" }}
+                    className="btn btn-link p-0"
+                    style={{ fontSize: "12px", color: "#6fe776" }}
                   >
-                    <FontAwesomeIcon icon={faLock} /> Mensagem Protegida (Clique
+                    <FontAwesomeIcon icon={faLock} className="me-1" /> Mensagem Protegida (Clique
                     para digitar senha)
                   </button>
                 ) : messageContent ? (
                   messageContent
                 ) : (
                   <button
-                    style={{ color: "#fff", fontSize: "20px" }}
+                    style={{ color: "#fff", fontSize: "24px" }}
                     className="play-button"
                     onClick={() => togglePlayPause(msg.audioUrl, msg.id)}
                     aria-label={`Play áudio da mensagem de ${msg.user}`}
@@ -2092,36 +2110,133 @@ const Room = () => {
                     />
                   </button>
                 )}
-              </span>
+              </div>
 
-              {msg.readBy && (
-                <div className="sub-textMsg">
-                  <small>lido por: {msg.readBy.join(", ")}</small>
+              <div
+                className="message-footer d-flex justify-content-between align-items-center pt-1"
+                style={{
+                  borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+                  position: 'relative'
+                }}
+              >
+                <div className="info-actions d-flex align-items-center">
+                  {msg.user !== "Sistema" && (
+                    <button
+                      className="btn btn-link p-0 me-2"
+                      onClick={() => setReplyingTo(msg)}
+                      style={{
+                        fontSize: "10px",
+                        color: "#02ffc8ff",
+                        fontWeight: 'bold',
+                        textDecoration: 'none',
+                      }}
+                      aria-label={`Responder a mensagem de ${msg.user}`}
+                    >
+                      Responder
+                    </button>
+                  )}
+                  {isDestructionActive && timeRemaining > 0 && (
+                    <small style={{ color: '#ff6b6b', fontSize: '10px' }}>
+                      Destrói em: {Math.max(timeRemaining.toFixed(0), 0)}s
+                    </small>
+                  )}
                 </div>
-              )}
 
-              {isDestructionActive && timeRemaining > 0 && (
-                <div>
-                  <small>
-                    Destrói em: {Math.max(timeRemaining.toFixed(0), 0)}s
-                  </small>
+                {/* Status e Reações do lado direito (Lido por e Botão de Reação) */}
+                <div className="status-reactions d-flex align-items-center">
+                  {msg.readBy && (
+                    <div className="sub-textMsg me-2">
+                      <small style={{ color: '#999', fontSize: '10px' }}>lido por: {msg.readBy.join(", ")}</small>
+                    </div>
+                  )}
+
+                  {/* BOTÃO PARA ABRIR/FECHAR o menu de reações flutuante */}
+                  <button
+                    onClick={() => setMessageIdWithOpenReactions(
+                      messageIdWithOpenReactions === msg.id ? null : msg.id
+                    )}
+                    className="btn btn-sm p-0 me-1"
+                    style={{
+                      backgroundColor: "transparent",
+                      color: "#aebac1",
+                      border: '1px solid #aebac1',
+                      borderRadius: '12px',
+                      fontSize: '10px',
+                      lineHeight: '1',
+                      minWidth: '24px',
+                      height: '20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                    aria-label="Adicionar reação"
+                  >
+                    <FontAwesomeIcon
+                      // Exibe 'X' se estiver aberto, ou 'sorriso/plus' se estiver fechado
+                      icon={messageIdWithOpenReactions === msg.id ? faXmark : faSmileRegular}
+                      style={{ fontSize: '0.7em' }}
+                    />
+                  </button>
+
+                  {/* MENU FLUTUANTE DE REAÇÕES (position: absolute) */}
+                  {messageIdWithOpenReactions === msg.id && (
+                    <div
+                      className="reaction-picker-menu d-flex p-2 shadow-lg"
+                      style={{
+                        position: 'absolute',
+                        bottom: 'calc(100% + 5px)', // 5px acima da borda superior do footer
+                        right: isSentByUser ? '0' : 'unset', // Alinha à direita se a bolha for do usuário
+                        left: isSentByUser ? 'unset' : '0', // Alinha à esquerda se a bolha for de outro usuário
+                        backgroundColor: '#262d31', // Fundo escuro
+                        borderRadius: '18px',
+                        zIndex: 10,
+                        minWidth: '200px',
+                        justifyContent: 'space-around',
+                        gap: '5px'
+                      }}
+                    >
+                      {reactionTypes.map((reaction) => {
+                        const usersReacted =
+                          msg.reactions && msg.reactions[reaction.type]
+                            ? msg.reactions[reaction.type]
+                            : [];
+                        const userHasReacted = usersReacted.includes(userName);
+                        const reactionCount = usersReacted.length;
+
+                        return (
+                          <button
+                            key={reaction.type}
+                            onClick={() => {
+                              handleReaction(reaction.type);
+                              // Fecha o menu após a reação
+                              setMessageIdWithOpenReactions(null);
+                            }}
+                            className={`btn btn-link p-0 me-1`}
+                            style={{
+                              color: userHasReacted ? "#007bff" : "#aebac1",
+                              fontSize: '1.2em',
+                              transition: 'transform 0.1s',
+                              position: 'relative', // Para posicionar a contagem
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
+                            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1.0)'}
+                            aria-label={`Reagir com ${reaction.type}`}
+                          >
+                            <FontAwesomeIcon icon={reaction.icon} />
+                            {reactionCount > 0 && (
+                              <span className="ms-1" style={{ fontSize: '0.5em', position: 'absolute', top: '0', right: '0' }}>
+                                {reactionCount}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+
                 </div>
-              )}
+              </div>
 
-              {msg.user !== "Sistema" && (
-                <button
-                  className="btn btn-link"
-                  onClick={() => setReplyingTo(msg)}
-                  style={{
-                    fontSize: "11px",
-                    color: "#007bff",
-                    padding: "1px 1px",
-                  }}
-                  aria-label={`Responder a mensagem de ${msg.user}`}
-                >
-                  Responder
-                </button>
-              )}
             </div>
           );
         })}
@@ -2154,7 +2269,18 @@ const Room = () => {
         </div>
       )}
 
-      <div className="d-flex align-items-center w-100 position-relative">
+      <div
+        className="d-flex align-items-center w-100"
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          padding: '10px',
+          backgroundColor: 'transparent',
+          zIndex: 1000,
+        }}
+      >
         {recording ? (
           <div
             className="w-100 bg-secondary d-flex align-items-center justify-content-between px-3"
@@ -2196,11 +2322,10 @@ const Room = () => {
               style={{
                 height: "30px",
                 filter: 'invert(1)',
-                maxWidth: 'calc(100% - 100px)' // Limita o tamanho do player para garantir que os botões caibam
+                maxWidth: 'calc(100% - 100px)'
               }}
             />
 
-            {/* Agrupamento de botões no Áudio Pronto para Envio */}
             <div className="d-flex align-items-center flex-shrink-0">
               <button
                 onClick={() => setAudioFile(null)}
@@ -2221,14 +2346,15 @@ const Room = () => {
             </div>
           </div>
         ) : (
-          <>
+          <div className="d-flex align-items-center w-100 position-relative">
             {showOptions && (
               <div
                 className="position-absolute shadow-lg rounded-3 bg-dark text-white p-2"
                 style={{
                   bottom: "calc(100% + 10px)",
-                  right: "0px",
-                  transform: "translateX(20px)",
+                  left: "0px",
+                  right: "unset",
+                  transform: "unset",
                   minWidth: "250px",
                   zIndex: 100,
                 }}
@@ -2379,7 +2505,7 @@ const Room = () => {
                 </button>
               </div>
             ) : null}
-          </>
+          </div>
         )}
       </div>
 

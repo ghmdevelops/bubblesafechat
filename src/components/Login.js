@@ -511,18 +511,16 @@ const Login = () => {
       <div className="login-methods-toggle">
         <button
           type="button"
-          className={`btn ${
-            !isPasswordless ? "btn-secondary" : "btn-outline-secondary"
-          }`}
+          className={`btn ${!isPasswordless ? "btn-secondary" : "btn-outline-secondary"
+            }`}
           onClick={() => setIsPasswordless(false)}
         >
           Com Senha
         </button>
         <button
           type="button"
-          className={`btn ${
-            isPasswordless ? "btn-secondary" : "btn-outline-secondary"
-          }`}
+          className={`btn ${isPasswordless ? "btn-secondary" : "btn-outline-secondary"
+            }`}
           onClick={() => setIsPasswordless(true)}
         >
           Sem Senha
@@ -594,66 +592,96 @@ const Login = () => {
             )}
           </button>
 
-          <div className="d-flex justify-content-center gap-3 mt-4 div-btn-log">
+          <p className="text-white-50 mt-2 mb-1" style={{ fontSize: '0.9rem', fontWeight: '300' }}>
+            ou continue com:
+          </p>
+
+          <div className="d-flex justify-content-center gap-3 div-btn-log">
+            {/* Botão Google */}
             <button
               type="button"
-              className="btn btn-primary btn-social google-btn"
+              className="btn btn-outline-info rounded-circle d-flex justify-content-center align-items-center btn-social"
               onClick={handleGoogleLogin}
               disabled={isLoading || isLockedOut}
+              style={{
+                width: "55px",
+                height: "55px",
+                backgroundColor: 'transparent',
+                color: '#FFF',
+                borderWidth: '2px',
+                fontSize: '1.5rem' // Ícone maior
+              }}
             >
               {isLoading ? (
-                "Carregando..."
+                <FontAwesomeIcon icon={faSpinner} spin className="text-info" />
               ) : (
-                <>
-                  <BsGoogle size={24} />
-                </>
+                <BsGoogle size={28} /> // Tamanho do ícone ajustado
               )}
             </button>
 
+            {/* Botão GitHub */}
             <button
               type="button"
-              className="btn btn-primary btn-social github-btn"
+              className="btn btn-outline-info rounded-circle d-flex justify-content-center align-items-center btn-social"
               onClick={handleGithubLogin}
               disabled={isLoading || isLockedOut}
+              style={{
+                width: "55px",
+                height: "55px",
+                backgroundColor: 'transparent',
+                color: '#FFF',
+                borderWidth: '2px',
+                fontSize: '1.5rem' // Ícone maior
+              }}
             >
               {isLoading ? (
-                "Carregando..."
+                <FontAwesomeIcon icon={faSpinner} spin className="text-info" />
               ) : (
-                <>
-                  <AiFillGithub size={30} />
-                </>
+                <AiFillGithub size={32} /> // Tamanho do ícone ajustado
               )}
             </button>
 
             {/*<button
-              type="button"
-              className="btn btn-primary btn-social facebook-btn"
-              onClick={handleFacebookLogin}
-              disabled={isLoading || isLockedOut}
-            >
-              {isLoading ? (
-                "Carregando..."
-              ) : (
-                <>
-                  <BsFacebook size={24} />
-                </>
-              )}
-            </button>
+        type="button"
+        className="btn btn-outline-info rounded-circle d-flex justify-content-center align-items-center btn-social"
+        onClick={handleFacebookLogin}
+        disabled={isLoading || isLockedOut}
+        style={{ 
+            width: "55px", 
+            height: "55px", 
+            backgroundColor: 'transparent', 
+            color: '#FFF',
+            borderWidth: '2px',
+            fontSize: '1.5rem'
+        }}
+    >
+        {isLoading ? (
+            "Carregando..."
+        ) : (
+            <BsFacebook size={28} />
+        )}
+    </button>
 
-            <button
-              type="button"
-              className="btn btn-primary btn-social apple-btn"
-              onClick={handleAppleLogin}
-              disabled={isLoading || isLockedOut}
-            >
-              {isLoading ? (
-                "Carregando..."
-              ) : (
-                <>
-                  <AiFillApple size={35} />
-                </>
-              )}
-            </button>*/}
+    <button
+        type="button"
+        className="btn btn-outline-info rounded-circle d-flex justify-content-center align-items-center btn-social"
+        onClick={handleAppleLogin}
+        disabled={isLoading || isLockedOut}
+        style={{ 
+            width: "55px", 
+            height: "55px", 
+            backgroundColor: 'transparent', 
+            color: '#FFF',
+            borderWidth: '2px',
+            fontSize: '1.5rem'
+        }}
+    >
+        {isLoading ? (
+            "Carregando..."
+        ) : (
+            <AiFillApple size={35} />
+        )}
+    </button>*/}
           </div>
         </form>
       ) : (
