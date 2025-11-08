@@ -1,12 +1,12 @@
 // src/components/DoorPage.js
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Swal from 'sweetalert2'; // Importa o SweetAlert2
-import 'sweetalert2/dist/sweetalert2.min.css'; // Importa os estilos do SweetAlert2
-import './DoorPage.css'; // Certifique-se de que o CSS está corretamente importado
-import doorSound from './sounds/open-door.mp3'; // Caminho correto para o arquivo de áudio
-import { database } from '../firebaseConfig'; // Importa a configuração do Firebase
-import { ref as dbRef, onValue } from 'firebase/database'; // Importa funções do Firebase Realtime Database
+import Swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
+import './DoorPage.css';
+import doorSound from './sounds/open-door.mp3';
+import { database } from '../firebaseConfig';
+import { ref as dbRef, onValue } from 'firebase/database';
 
 const DoorPage = () => {
   const [isOpen, setIsOpen] = useState(false);

@@ -54,6 +54,23 @@ button {
   border: 2px solid #000000;
 }
 
+/* Correção de ponto preto/máscara no ícone de sucesso do SweetAlert2 */
+.swal2-icon.swal2-success .swal2-success-circular-line-right,
+.swal2-icon.swal2-success .swal2-success-circular-line-left,
+.swal2-icon.swal2-success .swal2-success-fix,
+.swal2-icon.swal2-success:before,
+.swal2-icon.swal2-success:after {
+  /* O mais importante: Força o fundo a ser a cor exata do seu popup. */
+  background-color: #1c1b1b !important;
+}
+
+/* Opcional, mas recomendado para corrigir desalinhamento/tamanho no mobile */
+.swal2-success-line-tip,
+.swal2-success-line-long {
+  /* Garante que o tamanho das linhas do check não seja afetado por CSS global */
+  font-size: 16px !important;
+}
+
 .benefits-list {
   list-style-type: none;
   padding: 0;
@@ -202,11 +219,11 @@ button {
 
 @media (max-width: 768px) {
   .welcome-section h2 {
-    font-size: 1rem; 
+    font-size: 1rem;
   }
 
   .welcome-section h1 {
-    font-size: 1rem; 
+    font-size: 1rem;
   }
 
   .benefits-list li {

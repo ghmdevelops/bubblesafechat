@@ -51,7 +51,7 @@ const Login = () => {
   const [isSendingLink, setIsSendingLink] = useState(false);
 
   const [deferredPrompt, setDeferredPrompt] = useState(null);
-  const [canInstall, setCanInstall] = useState(true);
+  const [canInstall, setCanInstall] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [hasSeenCtaSwal, setHasSeenCtaSwal] = useState(false);
 
@@ -74,6 +74,12 @@ const Login = () => {
     };
     window.addEventListener("beforeinstallprompt", handler);
 
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setCanInstall(false);
+    } else {
+      setCanInstall(false);
+    }
+
     return () => {
       window.removeEventListener("resize", checkMobile);
       window.removeEventListener("beforeinstallprompt", handler);
@@ -83,12 +89,16 @@ const Login = () => {
   const handleInstall = async () => {
     if (!deferredPrompt) return;
 
+    // 1. Chame o prompt diretamente.
     deferredPrompt.prompt();
+
+    // 2. Aguarde a escolha do usuário
     const choice = await deferredPrompt.userChoice;
 
     if (choice.outcome === "accepted") {
       setCanInstall(false);
       setDeferredPrompt(null);
+
       Swal.fire({
         icon: "success",
         title: "Instalação Iniciada",
@@ -101,117 +111,113 @@ const Login = () => {
   useEffect(() => {
     const showMobileCtaSwal = () => {
       if (!isMobile || hasSeenCtaSwal) return;
-      const installButtonHtml = canInstall
-        ? `
-        <button id="install-btn" class="swal2-styled d-flex align-items-center justify-content-center" 
-            style="
-                /* Cores Suaves e Confortáveis (Tons de Azul/Verde) */
-                background-color: #38c172; /* Verde suave e amigável */
-                color: #f0f0f0; /* Texto quase branco para conforto */
-                border-radius: 12px;
-                padding: 14px 28px;
-                font-weight: 600;
-                font-size: 1.05rem;
-                min-width: 160px;
-                /* Sombra sutil para profundidade (Dark Neumorphism effect) */
-                box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4), inset 0 0 5px rgba(255, 255, 255, 0.1);
-                border: 1px solid rgba(255, 255, 255, 0.05); /* Borda muito sutil */
-                transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
-            "
-            onMouseOver="this.style.backgroundColor='#30a160'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 20px rgba(0, 0, 0, 0.6), inset 0 0 8px rgba(255, 255, 255, 0.15)'"
-            onMouseOut="this.style.backgroundColor='#38c172'; this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 15px rgba(0, 0, 0, 0.4), inset 0 0 5px rgba(255, 255, 255, 0.1)'"
-        >
-            <span style="font-size: 1.3rem; margin-right: 8px;">📲</span>
-            Instalar App
-        </button>`
-        : '';
+
+      const plansButtonHtml = `
+          <button id="plans-btn" class="swal2-styled d-flex align-items-center justify-content-center" 
+              style="
+                  background-color: #4c77ba;
+                  color: #f0f0f0;
+                  border-radius: 12px;
+                  padding: 14px 28px;
+                  font-weight: 600;
+                  font-size: 1.05rem;
+                  min-width: 160px;
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 0 5px rgba(255, 255, 255, 0.1);
+                  border: 1px solid rgba(255, 255, 255, 0.05);
+                  transition: all 0.2s;
+              "
+              onMouseOver="this.style.backgroundColor='#406aae'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 15px rgba(0, 0, 0, 0.6), inset 0 0 8px rgba(255, 255, 255, 0.15)'"
+              onMouseOut="this.style.backgroundColor='#4c77ba'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0, 0, 0, 0.4), inset 0 0 5px rgba(255, 255, 255, 0.1)'"
+          >
+              <span style="font-size: 1.3rem; margin-right: 8px;">💰</span>
+              Conhecer Planos
+          </button>
+      `;
 
       Swal.fire({
-        title: '<span style="color: #63b3ed; font-weight: 700; font-size: 1.5rem;">✨ Experiência Otimizada para Mobile</span>', /* Título em tom de azul claro */
+        title: '<span style="color: #63b3ed; font-weight: 700; font-size: 1.5rem;">✨ Experiência Otimizada para Mobile</span>',
         icon: 'info',
         html: `
-        <div style="text-align: center; margin-top: 15px; padding: 0 10px;"> 
-            <p style="font-size: 1.15rem; margin-bottom: 12px; color: #e0e0e0; font-weight: 500;">
-                Desbloqueie todos os recursos e desfrute de uma navegação mais rápida e segura.
-            </p>
-            <p style="font-size: 0.95rem; margin-bottom: 35px; color: #a0a0a0;">
-                Instale o aplicativo progressivo (PWA) para acesso instantâneo e confira nossos planos exclusivos.
-            </p>
-            <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
-                ${installButtonHtml}
-                <button id="plans-btn" class="swal2-styled d-flex align-items-center justify-content-center" 
-                    style="
-                        /* Cor secundária suave (Azul) */
-                        background-color: #4c77ba; /* Azul um pouco dessaturado */
-                        color: #f0f0f0;
-                        border-radius: 12px;
-                        padding: 14px 28px;
-                        font-weight: 600;
-                        font-size: 1.05rem;
-                        min-width: 160px;
-                        /* Sombra sutil para profundidade */
-                        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4), inset 0 0 5px rgba(255, 255, 255, 0.1);
-                        border: 1px solid rgba(255, 255, 255, 0.05);
-                        transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
-                    "
-                    onMouseOver="this.style.backgroundColor='#406aae'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 20px rgba(0, 0, 0, 0.6), inset 0 0 8px rgba(255, 255, 255, 0.15)'"
-                    onMouseOut="this.style.backgroundColor='#4c77ba'; this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 15px rgba(0, 0, 0, 0.4), inset 0 0 5px rgba(255, 255, 255, 0.1)'"
-                >
-                    <span style="font-size: 1.3rem; margin-right: 8px;">💰</span>
-                    Conhecer Planos
-                </button>
-            </div>
-        </div>
-    `,
-        showConfirmButton: false,
+          <div style="text-align: center; margin-top: 15px; padding: 0 10px;"> 
+              <p style="font-size: 1.15rem; margin-bottom: 12px; color: #e0e0e0; font-weight: 500;">
+                  Desbloqueie todos os recursos e desfrute de uma navegação mais rápida e segura.
+              </p>
+              <p style="font-size: 0.95rem; margin-bottom: 35px; color: #a0a0a0;">
+                  Instale o aplicativo progressivo (PWA) para acesso instantâneo.
+              </p>
+              <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                  ${plansButtonHtml}
+              </div>
+          </div>
+        `,
+        showConfirmButton: canInstall,
+        confirmButtonText: '<span style="font-size: 1.05rem;"><span style="font-size: 1.3rem; margin-right: 8px;">📲</span> Instalar App</span>',
         showCloseButton: true,
         allowOutsideClick: true,
-        allowEscapeKey: true,
-        // Estilos para o pop-up SweetAlert (Ajusta o modal inteiro)
         customClass: {
-          // Assume que o fundo do modal do SweetAlert já é escuro.
-          // Se precisar de mais controle na cor do fundo:
-          // popup: 'swal2-dark-mode-popup', 
+          confirmButton: 'swal2-install-button', // Adiciona classe para customização de cor
+        },
+        buttonsStyling: false, // Desativa o estilo padrão do Swal para aplicar o nosso
+        confirmButtonColor: '#38c172', // Cor de fundo do botão de instalação
+        preConfirm: () => {
+          if (canInstall) {
+            return handleInstall();
+          }
+          return true;
         },
         didOpen: () => {
           const swalContainer = Swal.getPopup();
           if (swalContainer) {
-            // Adiciona uma sombra de modal mais suave e profunda
             swalContainer.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.6)';
 
-            // Reajusta a cor do ícone "i" padrão do SweetAlert
             const iconElement = swalContainer.querySelector('.swal2-icon');
             if (iconElement) {
-              iconElement.style.color = '#63b3ed'; // Cor do ícone
+              iconElement.style.color = '#63b3ed';
               iconElement.style.borderColor = '#63b3ed';
             }
 
-            // A lógica de navegação permanece a mesma
+            // Apenas o listener do botão de planos
             swalContainer.querySelector('#plans-btn')?.addEventListener('click', () => {
               Swal.close();
               navigate("/planos");
             });
-            swalContainer.querySelector('#install-btn')?.addEventListener('click', () => {
-              Swal.close();
-              handleInstall();
-            });
+
+            // Aplica o estilo customizado ao botão de confirmação do Swal
+            const installButton = swalContainer.querySelector('.swal2-install-button');
+            if (installButton) {
+              installButton.style.backgroundColor = '#38c172';
+              installButton.style.color = '#f0f0f0';
+              installButton.style.borderRadius = '12px';
+              installButton.style.padding = '14px 28px';
+              installButton.style.fontWeight = '600';
+              installButton.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.4), inset 0 0 5px rgba(255, 255, 255, 0.1)';
+              installButton.style.border = '1px solid rgba(255, 255, 255, 0.05)';
+              installButton.style.transition = 'all 0.2s';
+
+              // Adiciona os efeitos de hover/active (necessário jQuery ou similar se não for usar onMouseOver/Out inline)
+              // Usaremos um breve CSS Inject para garantir o hover-effect
+              if (!document.getElementById('swal2-install-style')) {
+                const style = document.createElement('style');
+                style.id = 'swal2-install-style';
+                style.innerHTML = `
+                        .swal2-install-button:hover {
+                            background-color: #30a160 !important;
+                            transform: translateY(-3px);
+                            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6), inset 0 0 8px rgba(255, 255, 255, 0.15) !important;
+                        }
+                        .swal2-install-button:active {
+                            transform: translateY(0);
+                            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6), inset 0 0 8px rgba(0, 0, 0, 0.2) !important;
+                        }
+                    `;
+                document.head.appendChild(style);
+              }
+            }
           }
         }
       }).then(() => {
         setHasSeenCtaSwal(true);
       });
-
-      const swalContainer = Swal.getPopup();
-      if (swalContainer) {
-        swalContainer.querySelector('#plans-btn')?.addEventListener('click', () => {
-          Swal.close();
-          navigate("/planos");
-        });
-        swalContainer.querySelector('#install-btn')?.addEventListener('click', () => {
-          Swal.close();
-          handleInstall();
-        });
-      }
     };
 
     const timer = setTimeout(showMobileCtaSwal, 500);

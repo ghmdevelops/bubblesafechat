@@ -112,6 +112,9 @@ const Room = () => {
   const [messageIdWithOpenReactions, setMessageIdWithOpenReactions] = useState(null);
   const ENCRYPTION_KEY = "chaveSuperSecretaNoCliente";
 
+  const [currentAudio, setCurrentAudio] = useState(null);
+  const [audioProgress, setAudioProgress] = useState({});
+
   function encryptMessage(plainText) {
     return CryptoJS.AES.encrypt(plainText, ENCRYPTION_KEY).toString();
   }
@@ -1311,28 +1314,72 @@ const Room = () => {
     }
   };
 
+  let progressInterval = null;
+
+  const updateProgress = (audio, messageId) => {
+    // Limpa qualquer intervalo anterior
+    if (progressInterval) {
+      clearInterval(progressInterval);
+    }
+
+    // Inicia um novo intervalo para atualizar a cada 100ms
+    progressInterval = setInterval(() => {
+      if (audio.duration) {
+        const percentage = (audio.currentTime / audio.duration) * 100;
+
+        // Atualiza o estado do progresso apenas para a mensagem atual
+        setAudioProgress(prev => ({
+          ...prev,
+          [messageId]: percentage
+        }));
+      }
+    }, 100);
+  };
+
   const playAudio = (audioUrl, messageId) => {
+    if (currentAudio && currentAudio.src === audioUrl && currentAudio.currentTime > 0) {
+      currentAudio.play();
+      setPlayingAudioId(messageId);
+      updateProgress(currentAudio, messageId); // **REINICIA O PROGRESSO**
+      return;
+    }
+
+    if (currentAudio) {
+      currentAudio.pause();
+      if (progressInterval) clearInterval(progressInterval); // Limpa o anterior
+    }
+
     const audio = new Audio(audioUrl);
 
-    if (playingAudioId !== null && playingAudioId !== messageId) {
+    audio.onended = () => {
+      audio.currentTime = 0;
       setPlayingAudioId(null);
-    }
+      setCurrentAudio(null);
+      setAudioProgress(prev => ({ // Reseta o progresso visual
+        ...prev,
+        [messageId]: 0
+      }));
+      if (progressInterval) clearInterval(progressInterval); // Para o loop
+    };
 
     audio.play();
     setPlayingAudioId(messageId);
+    setCurrentAudio(audio);
+    updateProgress(audio, messageId); // **INICIA O PROGRESSO**
+  };
 
-    audio.onended = () => {
+  const pauseAudio = () => {
+    if (currentAudio) {
+      currentAudio.pause();
       setPlayingAudioId(null);
-    };
-
-    audio.onpause = () => {
-      setPlayingAudioId(null);
-    };
+      if (progressInterval) clearInterval(progressInterval); // **PARA O LOOP**
+      // Mantemos o currentAudio para retomar, mas paramos o loop de atualização visual.
+    }
   };
 
   const togglePlayPause = (audioUrl, messageId) => {
     if (playingAudioId === messageId) {
-      setPlayingAudioId(null);
+      pauseAudio();
     } else {
       playAudio(audioUrl, messageId);
     }
@@ -2105,347 +2152,412 @@ const Room = () => {
             checkPassword();
           };
 
-          return (
-            <div
-              className="message"
-              key={msg.id}
-              style={messageStyles(isSentByUser)}
-            >
-              <div
-                className="d-flex align-items-center mb-1"
-                style={{
-                  fontSize: "0.85em",
-                  color: isSentByUser ? "#ffffffff" : "#aebac1",
-                }}
-              >
-                {/* O avatar do cabeçalho permanece para mensagens de texto/protegidas */}
-                {(messageContent || msg.requiresPassword) && (
-                  <>
-                    {msg.avatar ? (
-                      <img
-                        src={msg.avatar}
-                        alt={`${msg.user}'s avatar`}
-                        style={{
-                          width: "20px",
-                          height: "20px",
-                          borderRadius: "50%",
-                          display: "inline-block",
-                          marginRight: "6px",
-                        }}
-                      />
-                    ) : (
-                      <FontAwesomeIcon icon={faUserCircle} className="me-1" />
-                    )}
-                    <strong style={{ fontWeight: "600" }}>
-                      {msg.user}
-                    </strong>
-                  </>
-                )}
-              </div>
+          const totalReactions = msg.reactions ? Object.values(msg.reactions).flat().length : 0;
 
-              {msg.replyTo && (
+          const displayedReactions = {};
+          if (msg.reactions) {
+            for (const [type, users] of Object.entries(msg.reactions)) {
+              if (users.length > 0) {
+                const reactionItem = reactionTypes.find(r => r.type === type);
+                if (reactionItem) {
+                  displayedReactions[type] = {
+                    icon: reactionItem.icon,
+                    count: users.length,
+                    reactedByMe: users.includes(userName)
+                  };
+                }
+              }
+            }
+          }
+          const hasVisibleReactions = Object.keys(displayedReactions).length > 0;
+
+          const currentProgress = audioProgress[msg.id] || 0;
+          const progressStyle = {
+            left: `${currentProgress}%`,
+            width: '8px',
+            height: '8px',
+            borderRadius: '50%',
+            backgroundColor: isSentByUser ? '#fff' : '#02ffc8ff',
+            position: 'absolute',
+            top: '50%',
+            transform: 'translateY(-50%)',
+          };
+
+          return (
+            <div key={msg.id}>
+              <div
+                className="message-bubble"
+                style={messageStyles(isSentByUser)}
+              >
                 <div
-                  className="reply-preview mt-2"
+                  className="d-flex align-items-center mb-1"
                   style={{
-                    ...replyPreviewStyles,
-                    zIndex: 10,
-                    marginBottom: '5px',
-                    backgroundColor: 'rgba(2, 255, 200, 0.1)',
-                    padding: '8px',
-                    borderRadius: '8px',
-                    borderLeft: '4px solid #02ffc8ff',
-                    marginTop: '-5px'
+                    fontSize: "0.85em",
+                    color: isSentByUser ? "#ffffffff" : "#aebac1",
                   }}
                 >
-                  <strong style={{ fontSize: '0.8rem', color: '#02ffc8ff' }}>
-                    Respondendo a {msg.replyTo.user}:
-                  </strong>{" "}
-                  <span style={{
-                    color: '#E9EDEF',
-                    display: 'block',
-                    maxHeight: '30px',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    fontSize: '0.9rem'
-                  }}>
-                    {msg.replyTo.text}
-                  </span>
+                  {(messageContent || msg.requiresPassword) && (
+                    <>
+                      {msg.avatar ? (
+                        <img
+                          src={msg.avatar}
+                          alt={`${msg.user}'s avatar`}
+                          style={{
+                            width: "20px",
+                            height: "20px",
+                            borderRadius: "50%",
+                            display: "inline-block",
+                            marginRight: "6px",
+                          }}
+                        />
+                      ) : (
+                        <FontAwesomeIcon icon={faUserCircle} className="me-1" />
+                      )}
+                      <strong style={{ fontWeight: "600" }}>
+                        {msg.user}
+                      </strong>
+                    </>
+                  )}
                 </div>
-              )}
 
-              <div
-                className="message-content mt-2"
-                style={{
-                  fontSize: "14px",
-                  fontWeight: "400",
-                  marginBottom: "8px",
-                  color: "#e9edef",
-                  wordWrap: 'break-word',
-                  whiteSpace: 'pre-wrap'
-                }}
-              >
-                {msg.requiresPassword ? (
-                  <button
-                    onClick={promptPasswordAndDisplayMessage}
-                    className="btn btn-link p-0"
-                    style={{ fontSize: "12px", color: "#6fe776" }}
-                  >
-                    <FontAwesomeIcon icon={faLock} className="me-1" /> Mensagem Protegida (Clique
-                    para digitar senha)
-                  </button>
-                ) : messageContent ? (
-                  messageContent
-                ) : (
-                  /* NOVO ESTILO DE MENSAGEM DE ÁUDIO (Microfone Laranja) */
+                {msg.replyTo && (
                   <div
-                    className="audio-message-bubble d-flex align-items-center"
+                    className="reply-preview mt-2"
                     style={{
-                      backgroundColor: isSentByUser ? "#0050a7ff" : "#202c33",
-                      borderRadius: "15px",
-                      padding: "8px",
-                      minWidth: "180px",
-                      maxWidth: "100%",
-                      gap: '8px',
-                      position: 'relative',
+                      ...replyPreviewStyles,
+                      zIndex: 10,
+                      marginBottom: '5px',
+                      backgroundColor: 'rgba(2, 255, 200, 0.1)',
+                      padding: '8px',
+                      borderRadius: '8px',
+                      borderLeft: '4px solid #02ffc8ff',
+                      marginTop: '-5px'
                     }}
                   >
-                    {/* Ícone de Microfone Laranja (substitui o avatar) */}
-                    <div
-                      style={{
-                        flexShrink: 0,
-                        width: "38px",
-                        height: "38px",
-                        borderRadius: "50%",
-                        backgroundColor: "#FF6347", // Laranja vibrante
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faMicrophoneAlt} style={{ color: '#fff', fontSize: '18px' }} />
-                    </div>
-
-                    {/* Resto dos controles de áudio (Play/Pause, Onda Sonora, Duração, Velocidade) */}
-                    <div className="d-flex align-items-center" style={{ flexGrow: 1, gap: '5px' }}>
-                      {/* Ícone Play/Pause */}
-                      <button
-                        style={{
-                          color: "#fff",
-                          fontSize: "20px",
-                          background: 'none',
-                          border: 'none',
-                          padding: '0',
-                          flexShrink: 0
-                        }}
-                        className="play-button"
-                        onClick={() => togglePlayPause(msg.audioUrl, msg.id)}
-                        aria-label={`Play áudio da mensagem de ${msg.user}`}
-                      >
-                        <FontAwesomeIcon
-                          icon={
-                            playingAudioId === msg.id ? faPauseCircle : faPlayCircle
-                          }
-                        />
-                      </button>
-
-                      {/* Simulação da Onda Sonora */}
-                      <div
-                        className="audio-waveform-container"
-                        style={{
-                          flexGrow: 1,
-                          display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'center',
-                          position: 'relative',
-                          height: '30px',
-                          minWidth: '80px'
-                        }}
-                      >
-                        <div
-                          className="audio-waveform"
-                          style={{
-                            width: '100%',
-                            height: '10px',
-                            backgroundColor: isSentByUser ? '#A1D9A7' : '#5E676C',
-                            borderRadius: '5px',
-                            position: 'relative',
-                          }}
-                        >
-                          {/* Cursor de progresso */}
-                          <div
-                            className="audio-current-position"
-                            style={{
-                              width: '8px',
-                              height: '8px',
-                              borderRadius: '50%',
-                              backgroundColor: isSentByUser ? '#fff' : '#02ffc8ff',
-                              position: 'absolute',
-                              top: '50%',
-                              left: '40%',
-                              transform: 'translateY(-50%)',
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Duração e Velocidade 1x */}
-                    <div
-                      className="audio-controls-footer"
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        marginLeft: '8px',
-                        flexShrink: 0,
-                        alignSelf: 'center'
-                      }}
-                    >
-                      <button
-                        style={{
-                          backgroundColor: '#1C6F6F',
-                          color: '#fff',
-                          fontSize: '10px',
-                          padding: '2px 4px',
-                          borderRadius: '10px',
-                          border: 'none',
-                          marginBottom: '4px',
-                          cursor: 'pointer',
-                          fontWeight: 'bold',
-                          lineHeight: '1'
-                        }}
-                      >
-                        1x
-                      </button>
-                      <small style={{ color: '#aebac1', fontSize: '10px', lineHeight: '1' }}>
-                        {msg.duration || '0:08'}
-                      </small>
-                    </div>
-
+                    <strong style={{ fontSize: '0.8rem', color: '#02ffc8ff' }}>
+                      Respondendo a {msg.replyTo.user}:
+                    </strong>{" "}
+                    <span style={{
+                      color: '#E9EDEF',
+                      display: 'block',
+                      maxHeight: '30px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      fontSize: '0.9rem'
+                    }}>
+                      {msg.replyTo.text}
+                    </span>
                   </div>
                 )}
-              </div>
 
-              <div
-                className="message-footer d-flex justify-content-between align-items-center pt-1"
-                style={{
-                  borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-                  position: 'relative'
-                }}
-              >
-                <div className="info-actions d-flex align-items-center">
-                  {msg.user !== "Sistema" && (
+                <div
+                  className="message-content mt-2"
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: "400",
+                    marginBottom: "8px",
+                    color: "#e9edef",
+                    wordWrap: 'break-word',
+                    whiteSpace: 'pre-wrap'
+                  }}
+                >
+                  {msg.requiresPassword ? (
                     <button
-                      className="btn btn-link p-0 me-2"
-                      onClick={() => setReplyingTo(msg)}
-                      style={{
-                        fontSize: "10px",
-                        color: "#02ffc8ff",
-                        fontWeight: 'bold',
-                        textDecoration: 'none',
-                      }}
-                      aria-label={`Responder a mensagem de ${msg.user}`}
+                      onClick={promptPasswordAndDisplayMessage}
+                      className="btn btn-link p-0"
+                      style={{ fontSize: "12px", color: "#6fe776" }}
                     >
-                      Responder
+                      <FontAwesomeIcon icon={faLock} className="me-1" /> Mensagem Protegida (Clique
+                      para digitar senha)
                     </button>
-                  )}
-                  {isDestructionActive && timeRemaining > 0 && (
-                    <small style={{ color: '#ff6b6b', fontSize: '10px' }}>
-                      Destrói em: {Math.max(timeRemaining.toFixed(0), 0)}s
-                    </small>
-                  )}
-                </div>
-
-                <div className="status-reactions d-flex align-items-center">
-                  {msg.readBy && (
-                    <div className="sub-textMsg me-2">
-                      <small style={{ color: '#999', fontSize: '10px' }}>lido por: {msg.readBy.join(", ")}</small>
-                    </div>
-                  )}
-
-                  <button
-                    onClick={() => setMessageIdWithOpenReactions(
-                      messageIdWithOpenReactions === msg.id ? null : msg.id
-                    )}
-                    className="btn btn-sm p-0 me-1"
-                    style={{
-                      backgroundColor: "transparent",
-                      color: "#aebac1",
-                      border: '1px solid #aebac1',
-                      borderRadius: '12px',
-                      fontSize: '10px',
-                      lineHeight: '1',
-                      minWidth: '24px',
-                      height: '20px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                    aria-label="Adicionar reação"
-                  >
-                    <FontAwesomeIcon
-                      icon={messageIdWithOpenReactions === msg.id ? faXmark : faSmileRegular}
-                      style={{ fontSize: '0.7em' }}
-                    />
-                  </button>
-
-                  {messageIdWithOpenReactions === msg.id && (
+                  ) : messageContent ? (
+                    messageContent
+                  ) : (
                     <div
-                      className="reaction-picker-menu d-flex p-2 shadow-lg"
+                      className="audio-message-bubble d-flex align-items-center"
                       style={{
-                        position: 'absolute',
-                        bottom: 'calc(100% + 5px)',
-                        right: isSentByUser ? '0' : 'unset',
-                        left: isSentByUser ? 'unset' : '0',
-                        backgroundColor: '#262d31',
-                        borderRadius: '18px',
-                        zIndex: 10,
-                        minWidth: '200px',
-                        justifyContent: 'space-around',
-                        gap: '5px'
+                        backgroundColor: isSentByUser ? "#0050a7ff" : "#202c33",
+                        borderRadius: "15px",
+                        padding: "8px",
+                        minWidth: "180px",
+                        maxWidth: "100%",
+                        gap: '8px',
+                        position: 'relative',
                       }}
                     >
-                      {reactionTypes.map((reaction) => {
-                        const usersReacted =
-                          msg.reactions && msg.reactions[reaction.type]
-                            ? msg.reactions[reaction.type]
-                            : [];
-                        const userHasReacted = usersReacted.includes(userName);
-                        const reactionCount = usersReacted.length;
+                      <div
+                        style={{
+                          flexShrink: 0,
+                          width: "38px",
+                          height: "38px",
+                          borderRadius: "50%",
+                          backgroundColor: "#FF6347",
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faMicrophoneAlt} style={{ color: '#fff', fontSize: '18px' }} />
+                      </div>
 
-                        return (
-                          <button
-                            key={reaction.type}
-                            onClick={() => {
-                              handleReaction(reaction.type);
-                              setMessageIdWithOpenReactions(null);
-                            }}
-                            className={`btn btn-link p-0 me-1`}
+                      <div className="d-flex align-items-center" style={{ flexGrow: 1, gap: '5px' }}>
+                        <button
+                          style={{
+                            color: "#fff",
+                            fontSize: "20px",
+                            background: 'none',
+                            border: 'none',
+                            padding: '0',
+                            flexShrink: 0
+                          }}
+                          className="play-button"
+                          // Esta é a chamada correta para a função
+                          onClick={() => togglePlayPause(msg.audioUrl, msg.id)}
+                          aria-label={`Play áudio da mensagem de ${msg.user}`}
+                        >
+                          <FontAwesomeIcon
+                            icon={
+                              // E a lógica de ícone continua funcionando com o estado atualizado
+                              playingAudioId === msg.id ? faPauseCircle : faPlayCircle
+                            }
+                          />
+                        </button>
+
+                        <div
+                          className="audio-waveform-container"
+                          style={{
+                            flexGrow: 1,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'center',
+                            position: 'relative',
+                            height: '30px',
+                            minWidth: '80px'
+                          }}
+                        >
+                          <div
+                            className="audio-waveform"
                             style={{
-                              color: userHasReacted ? "#007bff" : "#aebac1",
-                              fontSize: '1.2em',
-                              transition: 'transform 0.1s',
+                              width: '100%',
+                              height: '10px',
+                              backgroundColor: isSentByUser ? '#A1D9A7' : '#5E676C',
+                              borderRadius: '5px',
                               position: 'relative',
                             }}
-                            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
-                            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1.0)'}
-                            aria-label={`Reagir com ${reaction.type}`}
                           >
-                            <FontAwesomeIcon icon={reaction.icon} />
-                            {reactionCount > 0 && (
-                              <span className="ms-1" style={{ fontSize: '0.5em', position: 'absolute', top: '0', right: '0' }}>
-                                {reactionCount}
-                              </span>
-                            )}
-                          </button>
-                        );
-                      })}
+                            <div
+                              className="audio-current-position"
+                              style={progressStyle}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div
+                        className="audio-controls-footer"
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          marginLeft: '8px',
+                          flexShrink: 0,
+                          alignSelf: 'center'
+                        }}
+                      >
+                        <button
+                          style={{
+                            backgroundColor: '#1C6F6F',
+                            color: '#fff',
+                            fontSize: '10px',
+                            padding: '2px 4px',
+                            borderRadius: '10px',
+                            border: 'none',
+                            marginBottom: '4px',
+                            cursor: 'pointer',
+                            fontWeight: 'bold',
+                            lineHeight: '1'
+                          }}
+                        >
+                          1x
+                        </button>
+                        <small style={{ color: '#aebac1', fontSize: '10px', lineHeight: '1' }}>
+                          {msg.duration || '0:08'}
+                        </small>
+                      </div>
+
                     </div>
                   )}
+                </div>
 
+                <div
+                  className="message-footer d-flex justify-content-between align-items-center pt-1"
+                  style={{
+                    borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+                    position: 'relative'
+                  }}
+                >
+                  <div className="info-actions d-flex align-items-center">
+                    {msg.user !== "Sistema" && (
+                      <button
+                        className="btn btn-link p-0 me-2"
+                        onClick={() => setReplyingTo(msg)}
+                        style={{
+                          fontSize: "10px",
+                          color: "#02ffc8ff",
+                          fontWeight: 'bold',
+                          textDecoration: 'none',
+                        }}
+                        aria-label={`Responder a mensagem de ${msg.user}`}
+                      >
+                        Responder
+                      </button>
+                    )}
+                    {isDestructionActive && timeRemaining > 0 && (
+                      <small style={{ color: '#ff6b6b', fontSize: '10px' }}>
+                        Destrói em: {Math.max(timeRemaining.toFixed(0), 0)}s
+                      </small>
+                    )}
+                  </div>
+
+                  <div className="status-reactions d-flex align-items-center">
+                    {msg.readBy && (
+                      <div className="sub-textMsg me-2">
+                        <small style={{ color: '#999', fontSize: '10px' }}>lido por: {msg.readBy.join(", ")}</small>
+                      </div>
+                    )}
+
+                    <button
+                      onClick={() => setMessageIdWithOpenReactions(
+                        messageIdWithOpenReactions === msg.id ? null : msg.id
+                      )}
+                      className="btn btn-sm p-0 me-1"
+                      style={{
+                        backgroundColor: "transparent",
+                        color: "#aebac1",
+                        border: '1px solid #aebac1',
+                        borderRadius: '12px',
+                        fontSize: '10px',
+                        lineHeight: '1',
+                        minWidth: '24px',
+                        height: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                      aria-label="Adicionar reação"
+                    >
+                      <FontAwesomeIcon
+                        icon={messageIdWithOpenReactions === msg.id ? faXmark : faSmileRegular}
+                        style={{ fontSize: '0.7em' }}
+                      />
+                    </button>
+
+                    {messageIdWithOpenReactions === msg.id && (
+                      <div
+                        className="reaction-picker-menu d-flex p-2 shadow-lg"
+                        style={{
+                          position: 'absolute',
+                          bottom: 'calc(100% + 5px)',
+                          right: isSentByUser ? '0' : 'unset',
+                          left: isSentByUser ? 'unset' : '0',
+                          backgroundColor: '#262d31',
+                          borderRadius: '18px',
+                          zIndex: 10,
+                          minWidth: '200px',
+                          justifyContent: 'space-around',
+                          gap: '5px'
+                        }}
+                      >
+                        {reactionTypes.map((reaction) => {
+                          const usersReacted =
+                            msg.reactions && msg.reactions[reaction.type]
+                              ? msg.reactions[reaction.type]
+                              : [];
+                          const userHasReacted = usersReacted.includes(userName);
+
+                          return (
+                            <button
+                              key={reaction.type}
+                              onClick={() => {
+                                handleReaction(reaction.type);
+                                setMessageIdWithOpenReactions(null);
+                              }}
+                              className={`btn btn-link p-0 me-1`}
+                              style={{
+                                color: userHasReacted ? "#007bff" : "#aebac1",
+                                fontSize: '1.2em',
+                                transition: 'transform 0.1s',
+                                position: 'relative',
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
+                              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1.0)'}
+                              aria-label={`Reagir com ${reaction.type}`}
+                            >
+                              <FontAwesomeIcon icon={reaction.icon} />
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
+              {hasVisibleReactions && (
+                <div
+                  className={`reactions-group ${isSentByUser ? 'justify-content-end' : 'justify-content-start'}`}
+                  style={{
+                    display: 'flex',
+                    marginTop: '-10px',
+                    marginBottom: '10px',
+                    padding: '0 8px',
+                    [isSentByUser ? 'marginLeft' : 'marginRight']: 'auto',
+                    [isSentByUser ? 'marginRight' : 'marginLeft']: '20px',
+                  }}
+                >
+                  <div
+                    className="d-flex p-1 shadow-sm"
+                    style={{
+                      backgroundColor: '#202c33',
+                      borderRadius: '10px',
+                      border: '1px solid #333',
+                      gap: '3px',
+                      zIndex: 5,
+                      transform: 'translateY(-50%)',
+                      maxHeight: '24px'
+                    }}
+                  >
+                    {Object.entries(displayedReactions).map(([type, reactionData]) => (
+                      <div
+                        key={type}
+                        className="d-flex align-items-center"
+                        style={{
+                          cursor: 'pointer',
+                          padding: '0 2px'
+                        }}
+                        onClick={() => handleReaction(type)}
+                        aria-label={`${reactionData.count} reagiram com ${type}`}
+                      >
+                        <FontAwesomeIcon
+                          icon={reactionData.icon}
+                          style={{
+                            color: reactionData.reactedByMe ? "#007bff" : "#aebac1",
+                            fontSize: '0.8em',
+                            marginRight: '3px'
+                          }}
+                        />
+                        <span style={{
+                          color: '#aebac1',
+                          fontSize: '0.7em',
+                          fontWeight: 'bold'
+                        }}>
+                          {reactionData.count}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}

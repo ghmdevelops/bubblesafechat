@@ -25,8 +25,9 @@ import {
   faSpinner,
   faEdit,
   faTrash,
+  faCamera,
 } from "@fortawesome/free-solid-svg-icons";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from 'framer-motion';
 import { EmailAuthProvider } from "firebase/auth";
 import iconPage from "./img/icon-menu.png";
 import "./UserProfile.css";
@@ -43,18 +44,69 @@ const UserProfile = () => {
   const topRef = useRef(null);
   const saveAvatarRef = useRef(null);
   const [loading, setLoading] = useState(true);
+  const [showAvatarSelector, setShowAvatarSelector] = useState(false);
 
   const avatars = [
     "https://i.pravatar.cc/150?img=1",
     "https://i.pravatar.cc/150?img=3",
     "https://i.pravatar.cc/150?img=5",
-    "https://i.pravatar.cc/150?img=6",
     "https://i.pravatar.cc/150?img=7",
-    "https://i.pravatar.cc/150?img=8",
     "https://i.pravatar.cc/150?img=9",
-    "https://i.pravatar.cc/150?img=10",
-    "https://i.pravatar.cc/150?img=11",
     "https://i.pravatar.cc/150?img=12",
+    "https://i.pravatar.cc/150?img=15",
+    "https://i.pravatar.cc/150?img=18",
+    "https://i.pravatar.cc/150?img=21",
+    "https://i.pravatar.cc/150?img=24",
+    "https://i.pravatar.cc/150?img=27",
+    "https://i.pravatar.cc/150?img=30",
+    "https://i.pravatar.cc/150?img=33",
+    "https://i.pravatar.cc/150?img=36",
+    "https://i.pravatar.cc/150?img=39",
+    "https://i.pravatar.cc/150?img=42",
+    "https://i.pravatar.cc/150?img=45",
+    "https://i.pravatar.cc/150?img=48",
+    "https://i.pravatar.cc/150?img=51",
+    "https://i.pravatar.cc/150?img=54",
+    "https://i.pravatar.cc/150?img=57",
+    "https://i.pravatar.cc/150?img=60",
+
+    "https://robohash.org/random-robot-a.png?size=150x150&set=set1",
+    "https://robohash.org/random-robot-b.png?size=150x150&set=set1",
+    "https://robohash.org/monster-avatar-a.png?size=150x150&set=set2",
+    "https://robohash.org/monster-avatar-b.png?size=150x150&set=set2",
+    "https://robohash.org/head-robot-a.png?size=150x150&set=set3",
+    "https://robohash.org/head-robot-b.png?size=150x150&set=set3",
+    "https://robohash.org/cat-avatar-a.png?size=150x150&set=set4",
+    "https://robohash.org/cat-avatar-b.png?size=150x150&set=set4",
+
+    "https://api.dicebear.com/8.x/pixel-art/svg?seed=Programmer",
+    "https://api.dicebear.com/8.x/pixel-art/svg?seed=Artist",
+    "https://api.dicebear.com/8.x/pixel-art/svg?seed=Gamer",
+    "https://api.dicebear.com/8.x/pixel-art/svg?seed=Coder",
+
+    "https://api.dicebear.com/8.x/initials/svg?seed=AB&backgroundColor=00BCD4,FF9800",
+    "https://api.dicebear.com/8.x/initials/svg?seed=MZ&backgroundColor=8BC34A,E91E63",
+    "https://api.dicebear.com/8.x/initials/svg?seed=CD&backgroundColor=9C27B0,009688",
+    "https://api.dicebear.com/8.x/initials/svg?seed=XY&backgroundColor=FFC107,3F51B5",
+
+
+    "https://api.dicebear.com/8.x/adventurer/svg?seed=Elf&eyes=variant01",
+    "https://api.dicebear.com/8.x/adventurer/svg?seed=Dwarf&mouth=variant01",
+
+    "https://api.dicebear.com/8.x/rings/svg?seed=Abstract1",
+    "https://api.dicebear.com/8.x/rings/svg?seed=Abstract2",
+    "https://api.dicebear.com/8.x/rings/svg?seed=Abstract3",
+    "https://api.dicebear.com/8.x/rings/svg?seed=Abstract4",
+
+    "https://api.dicebear.com/8.x/lorelei/svg?seed=Girl1",
+    "https://api.dicebear.com/8.x/lorelei/svg?seed=Girl2",
+    "https://api.dicebear.com/8.x/lorelei/svg?seed=Woman1",
+    "https://api.dicebear.com/8.x/lorelei/svg?seed=Woman2",
+
+    "https://api.dicebear.com/8.x/fun-emoji/svg?seed=Happy",
+    "https://api.dicebear.com/8.x/fun-emoji/svg?seed=Curious",
+    "https://api.dicebear.com/8.x/fun-emoji/svg?seed=Angry",
+    "https://api.dicebear.com/8.x/fun-emoji/svg?seed=Sleepy",
   ];
 
   useEffect(() => {
@@ -415,6 +467,13 @@ const UserProfile = () => {
     );
   }
 
+  const handleToggleAvatarSelector = () => {
+    if (isEditing) {
+      handleCancelEdit();
+    }
+    setShowAvatarSelector(prev => !prev);
+  };
+
   return (
     <div className="container mt-5" ref={topRef}>
       <Helmet>
@@ -444,9 +503,27 @@ const UserProfile = () => {
       >
         Perfil do Usuário
       </motion.h1>
-      <div className="card mx-auto" style={{ maxWidth: "500px" }}>
-        <div className="card-body">
-          <div className="text-center mb-4">
+
+      <div className="profile-container mx-auto p-4" style={{
+        maxWidth: "500px",
+        backgroundColor: '#1E2328',
+        borderRadius: '12px',
+        boxShadow: '0 8px 20px rgba(0, 0, 0, 0.5)',
+        color: '#E9EDEF'
+      }}>
+        {/* --- Seção do Avatar --- */}
+        <div className="text-center mb-5">
+          <motion.div
+            onClick={handleToggleAvatarSelector}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.98 }}
+            style={{
+              cursor: 'pointer',
+              display: 'inline-block',
+              position: 'relative'
+            }}
+            title="Clique para mudar o Avatar"
+          >
             <img
               src={
                 userData.avatar || "https://secure.gravatar.com/avatar/?d=mp"
@@ -454,192 +531,263 @@ const UserProfile = () => {
               alt="User Avatar"
               className="rounded-circle"
               style={{
-                width: "100px",
-                height: "100px",
-                border: "2px solid #17a2b8",
-                boxShadow: "0 4px 8px rgba(23, 162, 184, 0.3)",
+                width: "120px",
+                height: "120px",
+                border: "4px solid #02ffc8ff",
+                boxShadow: "0 0 15px rgba(2, 255, 200, 0.4)",
+                objectFit: 'cover'
               }}
             />
-          </div>
+            {/* Ícone de edição flutuante para indicar interatividade */}
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 5,
+                right: 5,
+                backgroundColor: '#02ffc8ff',
+                borderRadius: '50%',
+                padding: '6px',
+                lineHeight: '1',
+                boxShadow: '0 0 8px rgba(0, 0, 0, 0.5)'
+              }}
+            >
+              <FontAwesomeIcon icon={faCamera} style={{ color: '#1E2328', fontSize: '14px' }} />
+            </div>
+          </motion.div>
+        </div>
 
-          <motion.h5
-            className="card-title d-flex align-items-center"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
+        {/* --- Seletor de Avatar (Toggle) --- */}
+        <AnimatePresence>
+          {showAvatarSelector && (
+            <motion.div
+              className="mt-5 mb-5 p-3"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              style={{ backgroundColor: '#2C3136', borderRadius: '8px' }}
+            >
+              <h4 className="text-center" style={{ color: '#02ffc8ff', marginBottom: '15px' }}>Escolha um Avatar</h4>
+              <div
+                className="avatar-grid d-flex flex-wrap justify-content-center" // Mantemos o flex-wrap para permitir múltiplas linhas
+                style={{
+                  gap: '10px',
+                  maxHeight: '220px', // Define a altura máxima para mostrar cerca de 3 linhas (60px * 3 + padding/gap)
+                  overflowY: 'auto',   // Habilita a rolagem vertical
+                  overflowX: 'hidden', // Esconde a rolagem horizontal
+                  padding: '10px 5px', // Adiciona padding interno para melhor visualização
+                  backgroundColor: '#1E2328', // Fundo sutil para o scroll
+                  borderRadius: '6px'
+                }}
+              >
+                {avatars.map((avatar, index) => (
+                  <motion.div
+                    key={index}
+                    className={`avatar-item`}
+                    onClick={() => handleAvatarSelect(avatar)}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.2, delay: index * 0.05 }}
+                    style={{
+                      width: '60px',
+                      height: '60px',
+                      borderRadius: '50%',
+                      overflow: 'hidden',
+                      border: selectedAvatar === avatar ? '3px solid #02ffc8ff' : '1px solid #495057',
+                      transition: 'border 0.2s',
+                      // Removemos flexShrink: 0, pois o flex-wrap já lida com o layout
+                    }}
+                  >
+                    <img
+                      src={avatar}
+                      alt={`Avatar ${index + 1}`}
+                      className="img-fluid"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  </motion.div>
+                ))}
+              </div>
+
+              {selectedAvatar && (
+                <div className="text-center mt-4" ref={saveAvatarRef}>
+                  <motion.button
+                    className="btn me-3"
+                    onClick={handleSaveAvatar}
+                    disabled={isSaving}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    style={{
+                      backgroundColor: '#02ffc8ff',
+                      borderColor: '#02ffc8ff',
+                      color: '#1E2328',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    {isSaving ? (
+                      <>
+                        <FontAwesomeIcon icon={faSpinner} className="me-2" spin />
+                        Salvando...
+                      </>
+                    ) : (
+                      <>
+                        <FontAwesomeIcon icon={faCheck} className="me-2" />
+                        Salvar Novo Avatar
+                      </>
+                    )}
+                  </motion.button>
+                  <motion.button
+                    className="btn btn-secondary"
+                    onClick={handleToggleAvatarSelector} // Ação de cancelar fecha o seletor
+                    disabled={isSaving}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    style={{
+                      backgroundColor: '#495057',
+                      borderColor: '#495057'
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faTimes} className="me-2" />
+                    Fechar
+                  </motion.button>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* --- Campo: Nome Completo --- */}
+        <motion.div
+          className="mb-4 pb-2"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+          style={{ borderBottom: '1px solid #3A414A' }}
+        >
+          <h6 className="text-uppercase mb-1" style={{ fontSize: '0.8rem', color: '#A9B0B7' }}>
             <FontAwesomeIcon icon={faUser} className="me-2 text-info" />
             Nome Completo
-          </motion.h5>
-          <motion.p
-            className="card-text mb-4"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
+          </h6>
+          <p className="lead fw-bold" style={{ fontSize: '1.1rem', color: '#FFFFFF' }}>
             {userData.firstName}
-          </motion.p>
+          </p>
+        </motion.div>
 
-          <motion.h5
-            className="card-title d-flex align-items-center"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
+        {/* --- Campo: Email --- */}
+        <motion.div
+          className="mb-4 pb-2"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+          style={{ borderBottom: '1px solid #3A414A' }}
+        >
+          <h6 className="text-uppercase mb-1" style={{ fontSize: '0.8rem', color: '#A9B0B7' }}>
             <FontAwesomeIcon icon={faEnvelope} className="me-2 text-info" />
             Email
-          </motion.h5>
-          <motion.p
-            className="card-text mb-4"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-          >
+          </h6>
+          <p className="lead fw-bold" style={{ fontSize: '1.1rem', color: '#FFFFFF' }}>
             {userData.email}
-          </motion.p>
+          </p>
+        </motion.div>
 
-          <motion.h5
-            className="card-title d-flex align-items-center"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.8 }}
-          >
-            <FontAwesomeIcon icon={faPhone} className="me-2 text-info" />
-            Celular
+        {/* --- Campo: Celular (Editável) --- */}
+        <motion.div
+          className="mb-4 pb-2"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, delay: 0.4 }}
+          style={{ borderBottom: '1px solid #3A414A' }}
+        >
+          <h6 className="text-uppercase d-flex justify-content-between align-items-center mb-1" style={{ fontSize: '0.8rem', color: '#A9B0B7' }}>
+            <span>
+              <FontAwesomeIcon icon={faPhone} className="me-2 text-info" />
+              Celular
+            </span>
             {!isEditing && (
               <FontAwesomeIcon
                 icon={faEdit}
-                className="ms-2 text-secondary edit-icon"
-                style={{ cursor: "pointer" }}
+                className="edit-icon p-1 rounded-circle"
+                style={{
+                  cursor: "pointer",
+                  color: "#02ffc8ff",
+                  backgroundColor: 'rgba(2, 255, 200, 0.1)'
+                }}
                 onClick={handleEditProfile}
-                title="Editar Perfil"
+                title="Editar Celular e Apelido"
               />
             )}
-          </motion.h5>
-          <motion.div
-            className="card-text mb-4"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.9 }}
-          >
+          </h6>
+          <div className="mt-2">
             {isEditing ? (
               <input
                 type="text"
                 className="form-control"
+                style={{
+                  backgroundColor: '#2C3136',
+                  color: '#FFFFFF',
+                  border: '1px solid #02ffc8ff'
+                }}
                 value={editedCelular}
                 onChange={(e) => setEditedCelular(e.target.value)}
                 placeholder="Digite seu celular"
               />
             ) : (
-              userData.celular
+              <p className="lead fw-bold" style={{ fontSize: '1.1rem', color: '#FFFFFF' }}>
+                {userData.celular || 'Não fornecido'}
+              </p>
             )}
-          </motion.div>
+          </div>
+        </motion.div>
 
-          <motion.h5
-            className="card-title d-flex align-items-center"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 1.0 }}
-          >
+        {/* --- Campo: Apelido (Editável) --- */}
+        <motion.div
+          className="mb-5 pb-2"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, delay: 0.5 }}
+        >
+          <h6 className="text-uppercase mb-1" style={{ fontSize: '0.8rem', color: '#A9B0B7' }}>
             <FontAwesomeIcon icon={faLock} className="me-2 text-info" />
             Apelido
-            {!isEditing && (
-              <FontAwesomeIcon
-                icon={faEdit}
-                className="ms-2 text-secondary edit-icon"
-                style={{ cursor: "pointer" }}
-                onClick={handleEditProfile}
-                title="Editar Perfil"
-              />
-            )}
-          </motion.h5>
-          <motion.div
-            className="card-text mb-4"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 1.1 }}
-          >
+          </h6>
+          <div className="mt-2">
             {isEditing ? (
               <input
                 type="text"
                 className="form-control"
+                style={{
+                  backgroundColor: '#2C3136',
+                  color: '#FFFFFF',
+                  border: '1px solid #02ffc8ff'
+                }}
                 value={editedApelido}
                 onChange={(e) => setEditedApelido(e.target.value)}
                 placeholder="Digite seu apelido"
               />
             ) : (
-              userData.apelido
+              <p className="lead fw-bold" style={{ fontSize: '1.1rem', color: '#FFFFFF' }}>
+                {userData.apelido}
+              </p>
             )}
-          </motion.div>
+          </div>
+        </motion.div>
 
-          {isEditing && (
-            <div className="d-flex justify-content-end">
-              <motion.button
-                className="btn btn-success me-2"
-                onClick={handleSaveProfile}
-                disabled={isSaving}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                {isSaving ? (
-                  <>
-                    <FontAwesomeIcon icon={faSpinner} className="me-2" spin />
-                    Salvando...
-                  </>
-                ) : (
-                  <>
-                    <FontAwesomeIcon icon={faCheck} className="me-2" />
-                    Salvar
-                  </>
-                )}
-              </motion.button>
-              <motion.button
-                className="btn btn-secondary"
-                onClick={handleCancelEdit}
-                disabled={isSaving}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <FontAwesomeIcon icon={faTimes} className="me-2" />
-                Cancelar
-              </motion.button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="mt-5">
-        <h2 className="text-center text-info mb-4">Escolha um Avatar</h2>
-        <div className="avatar-grid">
-          {avatars.map((avatar, index) => (
-            <motion.div
-              key={index}
-              className={`avatar-item ${
-                selectedAvatar === avatar ? "selected" : ""
-              }`}
-              onClick={() => handleAvatarSelect(avatar)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-            >
-              <img
-                src={avatar}
-                alt={`Avatar ${index + 1}`}
-                className="img-fluid rounded-circle"
-              />
-            </motion.div>
-          ))}
-        </div>
-        {selectedAvatar && (
-          <div className="text-center mt-4" ref={saveAvatarRef}>
+        {/* --- Botões de Ação do Perfil (Salvar/Cancelar) --- */}
+        {isEditing && (
+          <div className="d-flex justify-content-end pt-3" style={{ borderTop: '1px solid #3A414A' }}>
             <motion.button
-              className="btn btn-primary me-2"
-              onClick={handleSaveAvatar}
+              className="btn me-3"
+              onClick={handleSaveProfile}
               disabled={isSaving}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              style={{
+                backgroundColor: '#02ffc8ff',
+                borderColor: '#02ffc8ff',
+                color: '#1E2328',
+                fontWeight: 'bold'
+              }}
             >
               {isSaving ? (
                 <>
@@ -649,16 +797,20 @@ const UserProfile = () => {
               ) : (
                 <>
                   <FontAwesomeIcon icon={faCheck} className="me-2" />
-                  Salvar Avatar
+                  Salvar
                 </>
               )}
             </motion.button>
             <motion.button
-              className="btn btn-danger"
-              onClick={() => setSelectedAvatar("")}
+              className="btn btn-secondary"
+              onClick={handleCancelEdit}
               disabled={isSaving}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              style={{
+                backgroundColor: '#495057',
+                borderColor: '#495057'
+              }}
             >
               <FontAwesomeIcon icon={faTimes} className="me-2" />
               Cancelar
@@ -668,36 +820,85 @@ const UserProfile = () => {
       </div>
 
       <div className="mt-5">
-        <h2 className="text-center text-info mb-4">Salas Criadas por Você</h2>
+        <h2 className="text-center mb-4" style={{ color: '#17a2b8' }}>
+          Salas Criadas por Você
+        </h2>
+
         {userRooms.length === 0 ? (
-          <p className="text-center">Você ainda não criou nenhuma sala.</p>
+          <div className="text-center p-4" style={{
+            backgroundColor: '#2C3136',
+            borderRadius: '8px',
+            color: '#A9B0B7'
+          }}>
+            <p className="mb-0">Você ainda não criou nenhuma sala. Comece agora!</p>
+          </div>
         ) : (
-          <div className="list-group">
-            {userRooms.map((room) => (
-              <div
-                className="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+          <div className="d-grid gap-3">
+            {userRooms.map((room, index) => (
+              <motion.div
+                key={room.id}
+                className="p-3 d-flex align-items-center"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                whileHover={{ scale: 1.02, boxShadow: '0 4px 15px rgba(2, 255, 200, 0.2)' }}
+                style={{
+                  backgroundColor: '#2C3136', // Fundo sutil do card
+                  borderRadius: '8px',
+                  borderLeft: '4px solid #02ffc8ff', // Destaque na lateral
+                  boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+                  color: '#E9EDEF',
+                  transition: 'all 0.3s ease',
+                }}
               >
-                {room.name || `Sala ${room.id}`}
-                <span className="badge bg-info text-white">
-                  {room.participants
-                    ? Object.keys(room.participants).length
-                    : 0}{" "}
-                  Participantes
-                </span>
-                <FontAwesomeIcon
-                  icon={faTrash}
-                  className="text-danger"
-                  style={{ cursor: "pointer" }}
+                {/* --- 1. Nome da Sala (Expansível) --- */}
+                <div className="flex-grow-1">
+                  <h5 className="mb-0 fw-bold" style={{ color: '#FFFFFF' }}>
+                    {room.name || `Sala ${room.id}`}
+                  </h5>
+                </div>
+
+                {/* --- 2. Participantes (Badge Moderno) --- */}
+                <div
+                  className="d-flex align-items-center me-4"
+                  title="Número de participantes"
+                  style={{ color: '#A9B0B7' }}
+                >
+                  <span style={{
+                    backgroundColor: 'rgba(2, 255, 200, 0.2)', // Fundo transparente ciano
+                    color: '#02ffc8ff', // Texto ciano
+                    borderRadius: '4px',
+                    padding: '4px 8px',
+                    fontSize: '0.85rem',
+                    fontWeight: 'bold'
+                  }}>
+                    {/* Ícone de Pessoas (se você tiver o faUsers) */}
+                    {/* <FontAwesomeIcon icon={faUsers} className="me-2" /> */}
+                    {Object.keys(room.participants || {}).length} Participantes
+                  </span>
+                </div>
+
+                {/* --- 3. Botão de Excluir (Destaque e Segurança) --- */}
+                <motion.div
+                  className="p-2 rounded-circle"
+                  whileHover={{ scale: 1.15, backgroundColor: 'rgba(220, 53, 69, 0.15)' }} // Destaque vermelho sutil no hover
+                  whileTap={{ scale: 0.9 }}
                   onClick={() => handleDeleteRoom(room.id)}
                   title="Excluir Sala"
-                />
-              </div>
+                  style={{ cursor: "pointer" }}
+                >
+                  <FontAwesomeIcon
+                    icon={faTrash}
+                    className="text-danger" // Mantemos o ícone vermelho para indicar perigo
+                  />
+                </motion.div>
+              </motion.div>
             ))}
           </div>
         )}
       </div>
 
-      <div className="mt-5 d-flex justify-content-center">
+      <div className="mt-5 d-flex justify-content-center mb-3">
         <motion.button
           className="btn btn-outline-danger me-3"
           onClick={deleteAccount}

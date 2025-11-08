@@ -19,6 +19,7 @@ import {
   faCheck,
   faPowerOff,
   faUserCircle,
+  faArrowRight,
 } from "@fortawesome/free-solid-svg-icons";
 import iconPage from "./img/icon-menu.png";
 import { EmailAuthProvider, getAuth } from "firebase/auth";
@@ -618,7 +619,17 @@ const CreateRoom = () => {
                 Escolha um nome criativo para sua jornada
               </motion.span>
 
-              <div className="input-group mb-1">
+              <div
+                className="mb-3"
+                style={{
+                  display: "flex", // Torna o container um flexbox
+                  alignItems: "center", // CENTRALIZA verticalmente o input e o botão!
+                  gap: "0px",
+                  maxWidth: "500px",
+                  margin: "0 auto",
+                  minHeight: "45px"
+                }}
+              >
                 <motion.input
                   type="text"
                   value={userName}
@@ -627,14 +638,16 @@ const CreateRoom = () => {
                     setUserName(e.target.value);
                   }}
                   placeholder="Ex: CyberNovaX"
-                  className="form-control"
+                  className="form-control mt-2"
                   style={{
+                    flexGrow: 1,
                     border: "2px solid #17a2b8",
-                    borderRadius: "8px",
-                    padding: "10px 10px",
+                    borderRight: "none",
+                    borderRadius: "8px 0 0 8px",
+                    padding: "6px 10px", // Padding vertical de 10px
                     fontSize: "15px",
-                    background: "#f8f9fa",
-                    color: "#212529",
+                    background: "#2c313a",
+                    color: "#e9edef",
                     boxShadow: "0 4px 8px rgba(23, 162, 184, 0.2)",
                   }}
                   initial={{ scale: 0.9, opacity: 0 }}
@@ -644,28 +657,32 @@ const CreateRoom = () => {
 
                 {userName.trim() && (
                   <motion.button
-                    className="btn btn-info w-100 w-md-auto"
+                    className="btn btn-info"
                     onClick={handleConfirmName}
                     disabled={!userName.trim() || loading}
                     whileHover={{ scale: 1.07 }}
                     whileTap={{ scale: 0.95 }}
                     style={{
-                      padding: "12px 14px",
+                      flexShrink: 0,
+                      width: "50px",
+                      padding: "10px 0px", // Padding vertical de 10px, igual ao input
                       fontWeight: "bold",
                       color: "#fff",
-                      border: "none",
-                      borderRadius: "8px",
-                      marginLeft: "1px",
-                      background:
-                        "linear-gradient(90deg,rgb(23, 117, 184), #138496)",
+                      border: "2px solid #138496",
+                      borderLeft: "none",
+                      borderRadius: "0 8px 8px 0",
+                      background: "linear-gradient(90deg, #138496, rgb(23, 117, 184))",
                       boxShadow: "0 4px 10px rgba(23, 162, 184, 0.4)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      height: '100%' // Garante que o botão se estique verticalmente
                     }}
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ duration: 0.3, delay: 0.3 }}
                   >
-                    <FontAwesomeIcon icon={faCheck} className="me-2" />
-                    Pronto
+                    <FontAwesomeIcon icon={faArrowRight} />
                   </motion.button>
                 )}
               </div>
@@ -757,26 +774,37 @@ const CreateRoom = () => {
                   Nomeie sua sala de forma única e criativa
                 </motion.span>
 
-                <div className="input-group mb-1">
+                <div
+                  className="mb-3"
+                  style={{
+                    display: "flex", // Contêiner Flex principal para todos os três elementos
+                    alignItems: "center",
+                    gap: "0px", // Remove espaçamento entre os itens
+                    maxWidth: "550px", // Aumentei um pouco o max-width para caber 3 itens
+                    margin: "0 auto",
+                    minHeight: "45px",
+                  }}
+                >
                   <motion.input
                     type="text"
                     value={roomName}
                     onChange={(e) => setRoomName(e.target.value)}
                     placeholder="Ex: CyberLounge"
-                    className="form-control mb-1"
+                    className="form-control mt-2"
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5, delay: 0.5 }}
                     style={{
+                      flexGrow: 1, // Cresce para ocupar o espaço
                       border: "2px solid #17a2b8",
-                      borderRadius: "8px",
-                      padding: "10px 10px",
+                      borderRight: "none", // Cola no botão Confirmar
+                      borderRadius: "8px 0 0 8px", // Cantos arredondados apenas na extrema esquerda
+                      padding: "5px 10px",
                       fontSize: "1rem",
-                      background: "#f8f9fa",
-                      color: "#212529",
+                      background: "#2c313a",
+                      color: "#e9edef",
                       boxShadow: "0 4px 8px rgba(23, 162, 184, 0.2)",
-                      transition:
-                        "box-shadow 0.3s ease, border-color 0.3s ease",
+                      transition: "box-shadow 0.3s ease, border-color 0.3s ease",
                       outline: "none",
                     }}
                     whileFocus={{
@@ -786,68 +814,68 @@ const CreateRoom = () => {
                   />
 
                   {roomName.trim() && (
-                    <>
+                    <div style={{ display: 'flex', flexShrink: 0 }}>
                       <motion.button
-                        className="btn btn-info w-100 w-md-auto"
+                        className="btn btn-info"
                         onClick={createRoom}
                         disabled={!roomName.trim() || loading}
                         whileHover={{ scale: 1.07 }}
                         whileTap={{ scale: 0.95 }}
                         style={{
-                          padding: "12px 14px",
+                          width: "50px",
+                          padding: "10px 0px",
                           fontWeight: "bold",
                           color: "#fff",
-                          border: "none",
-                          borderRadius: "8px",
-                          marginLeft: "1px",
-                          background:
-                            "linear-gradient(90deg,rgb(23, 117, 184), #138496)",
+                          border: "2px solid #138496",
+                          borderLeft: "none", // Cola no input
+                          borderRight: "none", // Cola no botão Cancelar
+                          borderRadius: "0", // Sem cantos arredondados
+                          background: "linear-gradient(90deg, #138496, rgb(23, 117, 184))",
                           boxShadow: "0 4px 10px rgba(23, 162, 184, 0.4)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          height: '100%',
+                          zIndex: 2,
                         }}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.2, delay: 0.2 }}
                       >
                         {loading ? (
-                          <>
-                            <FontAwesomeIcon
-                              icon={faSpinner}
-                              className="me-2"
-                              spin
-                            />
-                            Criando...
-                          </>
+                          <FontAwesomeIcon icon={faSpinner} spin />
                         ) : (
-                          <>
-                            <FontAwesomeIcon icon={faCheck} className="me-2" />
-                            Confirmar
-                          </>
+                          <FontAwesomeIcon icon={faCheck} />
                         )}
                       </motion.button>
 
                       <motion.button
-                        className="btn btn-danger w-100 w-md-auto cancroom"
+                        className="btn btn-danger cancroom"
                         onClick={handleCancelName}
-                        whileHover={{ scale: 1.07 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.98 }}
                         style={{
-                          padding: "12px 14px",
+                          width: "50px", // Largura fixa
+                          padding: "10px 0px",
                           fontWeight: "bold",
                           color: "#fff",
-                          border: "none",
-                          borderRadius: "8px",
-                          background:
-                            "linear-gradient(90deg,rgb(203, 81, 81), rgb(184, 23, 23))",
-                          boxShadow: "0 4px 10px rgba(23, 162, 184, 0.4)",
+                          border: "2px solid rgb(184, 23, 23)",
+                          borderLeft: "none", // Cola no botão Confirmar
+                          borderRadius: "0 8px 8px 0", // Cantos arredondados apenas na extrema direita
+                          background: "linear-gradient(90deg,rgb(203, 81, 81), rgb(184, 23, 23))",
+                          boxShadow: "0 4px 10px rgba(203, 81, 81, 0.4)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          height: '100%'
                         }}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.5, delay: 0.7 }}
                       >
-                        <FontAwesomeIcon icon={faTimes} className="me-2" />
-                        Cancelar
+                        <FontAwesomeIcon icon={faTimes} />
                       </motion.button>
-                    </>
+                    </div>
                   )}
                 </div>
               </label>
