@@ -3,7 +3,6 @@ body,
 #root {
   height: 100%;
   margin: 0;
-  overflow: hidden; /* impede scroll no body */
 }
 
 :root {
@@ -462,31 +461,6 @@ h3 {
 
 .input-audio-container.audio-active audio {
   display: block;
-}
-
-.play-button {
-  background-color: #0059ac;
-  border: none;
-  border-radius: 5%;
-  width: 240px;
-  height: 45px;
-  cursor: pointer;
-  margin-right: 12px;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.play-button:hover {
-  background-color: #0059ac;
-  transform: scale(1.1);
-}
-
-.play-button:focus {
-  outline: none;
-}
-
-.play-button i {
-  color: white;
-  font-size: 10rem;
 }
 
 .div-title-expul {

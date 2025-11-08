@@ -20,7 +20,7 @@ import {
   faUserSlash,
   faPauseCircle,
   faDoorOpen,
-  faSignInAlt,
+  faArrowRight,
   faUser,
   faClock,
   faSignOutAlt,
@@ -1544,32 +1544,43 @@ const Room = () => {
           >
             Insira seu nome ou nick para solicitação de acesso à sala
           </motion.p>
+
           <div className="d-flex justify-content-center">
+            {/* Input de Nome/Nick */}
             <motion.input
               type="text"
               value={userName}
               onChange={(e) => setUserName(e.target.value)}
               placeholder="Digite seu nome ou nick"
               className="form-control"
+              // O max-width e width garantem que o input ocupe o espaço restante
               style={{ maxWidth: "100%", width: "100%", borderRadius: "10rem" }}
               autoFocus
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.7 }}
             />
+
+            {/* Botão de Solicitação de Acesso (Visível somente com texto) */}
             {userName.trim() && (
               <motion.button
                 onClick={requestAccess}
-                disabled={!userName.trim() || loading}
-                className="btn btn-primary ms-2"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                style={{ borderRadius: "10rem" }}
+                disabled={loading} // O disabled por texto já é coberto pela renderização condicional
+                className="btn btn-primary ms-2 d-flex align-items-center justify-content-center" // Adiciona flex para centralizar o ícone
+                whileHover={{ scale: 1.05 }} // Ajustei um pouco o hover para ser menos agressivo
+                whileTap={{ scale: 0.95 }} // Ajustei um pouco o tap
+                initial={{ opacity: 0, x: -10 }} // Adicionei um pequeno movimento ao aparecer
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: 0.1 }}
+                // Ajustamos o estilo para o botão azul com o mesmo raio do input
+                style={{
+                  borderRadius: "10rem",
+                  width: "48px", // Largura fixa para um botão quadrado/circular pequeno
+                  height: "48px", // Altura fixa para um botão quadrado/circular pequeno
+                  flexShrink: 0, // Garante que o botão não encolha
+                }}
               >
-                <FontAwesomeIcon icon={faSignInAlt} />
+                <FontAwesomeIcon icon={faArrowRight} size="lg" /> {/* Use faArrowRight e ajuste o tamanho */}
               </motion.button>
             )}
           </div>
@@ -1680,9 +1691,25 @@ const Room = () => {
       });
   };
 
-  const setVh = () => {
-    let vh = window.innerHeight * 0.01;
-    document.documentElement.style.setProperty('--vh', `${vh}px`);
+  const PRIMARY_COLOR = '#00f7d2'; // Um ciano/verde neon
+  const BACKGROUND_COLOR = '#171721'; // Fundo bem escuro
+  const CARD_COLOR = '#1f202b'; // Cor do cartão um pouco mais clara
+  const ALERT_COLOR = '#ff4d4d'; // Vermelho vibrante
+
+  // Definições de Animação para a lista
+  const listContainerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08, // Transição mais rápida
+      },
+    },
+  };
+
+  const listItemVariants = {
+    hidden: { x: -30, opacity: 0 },
+    visible: { x: 0, opacity: 1 },
   };
 
   return (
@@ -1898,48 +1925,92 @@ const Room = () => {
         </div>
       )}
 
+
+
       {isCreator && pendingRequests.length > 0 && (
-        <div className="mb-3">
-          <ul className="list-group bg-dark">
-            <h5 className="text-light text-center">
-              <FontAwesomeIcon
-                icon={faBell}
-                className="me-2"
-                style={{ color: "#F75D59" }}
-              />
-              Solicitações de entradas no chat
-            </h5>
+        <motion.div
+          className="mb-4 p-4 rounded-3"
+          style={{
+            backgroundColor: CARD_COLOR,
+            boxShadow: `0 0 10px rgba(0, 0, 0, 0.4)`, // Sombra suave
+            border: `1px solid ${CARD_COLOR}` // Borda para consistência
+          }}
+          variants={listContainerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {/* Título - Mais Subtil */}
+          <h5 className="text-center mb-3 pb-2" style={{
+            color: PRIMARY_COLOR,
+            borderBottom: `2px solid ${PRIMARY_COLOR}55`, // Linha de destaque suave
+            textShadow: `0 0 5px ${PRIMARY_COLOR}55` // Efeito de brilho suave
+          }}>
+            <FontAwesomeIcon
+              icon={faBell}
+              className="me-2"
+              style={{ color: ALERT_COLOR }}
+            />
+            SOLICITAÇÕES DE ACESSO
+          </h5>
+
+          {/* Lista de Solicitações */}
+          <ul className="list-group list-unstyled">
             {pendingRequests.map((request) => (
-              <li
+              <motion.li
                 key={request.id}
-                className="list-group-item d-flex justify-content-between align-items-center bg-dark text-light border-dark"
+                className="d-flex justify-content-between align-items-center py-2 px-3 mb-2 rounded-2"
+                style={{
+                  backgroundColor: BACKGROUND_COLOR, // Contraste com o CARD_COLOR
+                  color: '#EDEDED', // Cor do texto claro
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s',
+                }}
+                variants={listItemVariants}
+                whileHover={{
+                  backgroundColor: '#2e2e40', // Fundo sutilmente mais claro no hover
+                  scale: 1.01,
+                }}
               >
-                <div className="d-flex align-items-center">
+                {/* Informação do Usuário */}
+                <div className="d-flex align-items-center fw-normal">
                   <FontAwesomeIcon
-                    icon={faUserSecret}
-                    className="me-2"
-                    style={{ color: "#FFA62F" }}
+                    icon={faUser}
+                    className="me-3"
+                    style={{ color: PRIMARY_COLOR }}
                   />
-                  {request.userName}
+                  <span className="fw-bold">{request.userName}</span>
                 </div>
-                <div>
-                  <button
-                    className="btn btn-outline-info btn-sm me-2"
+
+                {/* Botões de Ação */}
+                <div className="d-flex gap-2">
+                  {/* Botão Aceitar (Apenas Ícone) */}
+                  <motion.button
+                    className="btn p-0" // Remove padding do Bootstrap para controle total
+                    style={{ color: PRIMARY_COLOR, border: 'none' }}
                     onClick={() => handleRequest(request.id, "accept")}
+                    whileHover={{ scale: 1.2, color: '#00ffaa' }} // Brilho mais intenso
+                    whileTap={{ scale: 0.9 }}
+                    title="Aceitar"
                   >
-                    <FontAwesomeIcon icon={faCheck} />
-                  </button>
-                  <button
-                    className="btn btn-outline-danger btn-sm"
+                    <FontAwesomeIcon icon={faCheck} size="lg" />
+                  </motion.button>
+
+                  {/* Botão Negar (Apenas Ícone) */}
+                  <motion.button
+                    className="btn p-0"
+                    style={{ color: ALERT_COLOR, border: 'none' }}
                     onClick={() => handleRequest(request.id, "deny")}
+                    whileHover={{ scale: 1.2, color: '#ff7a7a' }} // Brilho mais intenso
+                    whileTap={{ scale: 0.9 }}
+                    title="Negar"
                   >
-                    <FontAwesomeIcon icon={faTimes} />
-                  </button>
+                    <FontAwesomeIcon icon={faTimes} size="lg" />
+                  </motion.button>
                 </div>
-              </li>
+              </motion.li>
             ))}
           </ul>
-        </div>
+        </motion.div>
       )}
 
       <div
@@ -2044,27 +2115,32 @@ const Room = () => {
                 className="d-flex align-items-center mb-1"
                 style={{
                   fontSize: "0.85em",
-                  color: isSentByUser ? "#ffffffff" : "#aebac1"
+                  color: isSentByUser ? "#ffffffff" : "#aebac1",
                 }}
               >
-                {msg.avatar ? (
-                  <img
-                    src={msg.avatar}
-                    alt={`${msg.user}'s avatar`}
-                    style={{
-                      width: "20px",
-                      height: "20px",
-                      borderRadius: "50%",
-                      display: "inline-block",
-                      marginRight: "6px",
-                    }}
-                  />
-                ) : (
-                  <FontAwesomeIcon icon={faUserCircle} className="me-1" />
+                {/* O avatar do cabeçalho permanece para mensagens de texto/protegidas */}
+                {(messageContent || msg.requiresPassword) && (
+                  <>
+                    {msg.avatar ? (
+                      <img
+                        src={msg.avatar}
+                        alt={`${msg.user}'s avatar`}
+                        style={{
+                          width: "20px",
+                          height: "20px",
+                          borderRadius: "50%",
+                          display: "inline-block",
+                          marginRight: "6px",
+                        }}
+                      />
+                    ) : (
+                      <FontAwesomeIcon icon={faUserCircle} className="me-1" />
+                    )}
+                    <strong style={{ fontWeight: "600" }}>
+                      {msg.user}
+                    </strong>
+                  </>
                 )}
-                <strong style={{ fontWeight: "600" }}>
-                  {msg.user}
-                </strong>
               </div>
 
               {msg.replyTo && (
@@ -2103,7 +2179,9 @@ const Room = () => {
                   fontSize: "14px",
                   fontWeight: "400",
                   marginBottom: "8px",
-                  color: "#e9edef"
+                  color: "#e9edef",
+                  wordWrap: 'break-word',
+                  whiteSpace: 'pre-wrap'
                 }}
               >
                 {msg.requiresPassword ? (
@@ -2118,18 +2196,133 @@ const Room = () => {
                 ) : messageContent ? (
                   messageContent
                 ) : (
-                  <button
-                    style={{ color: "#fff", fontSize: "24px" }}
-                    className="play-button"
-                    onClick={() => togglePlayPause(msg.audioUrl, msg.id)}
-                    aria-label={`Play áudio da mensagem de ${msg.user}`}
+                  /* NOVO ESTILO DE MENSAGEM DE ÁUDIO (Microfone Laranja) */
+                  <div
+                    className="audio-message-bubble d-flex align-items-center"
+                    style={{
+                      backgroundColor: isSentByUser ? "#0050a7ff" : "#202c33",
+                      borderRadius: "15px",
+                      padding: "8px",
+                      minWidth: "180px",
+                      maxWidth: "100%",
+                      gap: '8px',
+                      position: 'relative',
+                    }}
                   >
-                    <FontAwesomeIcon
-                      icon={
-                        playingAudioId === msg.id ? faPauseCircle : faPlayCircle
-                      }
-                    />
-                  </button>
+                    {/* Ícone de Microfone Laranja (substitui o avatar) */}
+                    <div
+                      style={{
+                        flexShrink: 0,
+                        width: "38px",
+                        height: "38px",
+                        borderRadius: "50%",
+                        backgroundColor: "#FF6347", // Laranja vibrante
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faMicrophoneAlt} style={{ color: '#fff', fontSize: '18px' }} />
+                    </div>
+
+                    {/* Resto dos controles de áudio (Play/Pause, Onda Sonora, Duração, Velocidade) */}
+                    <div className="d-flex align-items-center" style={{ flexGrow: 1, gap: '5px' }}>
+                      {/* Ícone Play/Pause */}
+                      <button
+                        style={{
+                          color: "#fff",
+                          fontSize: "20px",
+                          background: 'none',
+                          border: 'none',
+                          padding: '0',
+                          flexShrink: 0
+                        }}
+                        className="play-button"
+                        onClick={() => togglePlayPause(msg.audioUrl, msg.id)}
+                        aria-label={`Play áudio da mensagem de ${msg.user}`}
+                      >
+                        <FontAwesomeIcon
+                          icon={
+                            playingAudioId === msg.id ? faPauseCircle : faPlayCircle
+                          }
+                        />
+                      </button>
+
+                      {/* Simulação da Onda Sonora */}
+                      <div
+                        className="audio-waveform-container"
+                        style={{
+                          flexGrow: 1,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'center',
+                          position: 'relative',
+                          height: '30px',
+                          minWidth: '80px'
+                        }}
+                      >
+                        <div
+                          className="audio-waveform"
+                          style={{
+                            width: '100%',
+                            height: '10px',
+                            backgroundColor: isSentByUser ? '#A1D9A7' : '#5E676C',
+                            borderRadius: '5px',
+                            position: 'relative',
+                          }}
+                        >
+                          {/* Cursor de progresso */}
+                          <div
+                            className="audio-current-position"
+                            style={{
+                              width: '8px',
+                              height: '8px',
+                              borderRadius: '50%',
+                              backgroundColor: isSentByUser ? '#fff' : '#02ffc8ff',
+                              position: 'absolute',
+                              top: '50%',
+                              left: '40%',
+                              transform: 'translateY(-50%)',
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Duração e Velocidade 1x */}
+                    <div
+                      className="audio-controls-footer"
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        marginLeft: '8px',
+                        flexShrink: 0,
+                        alignSelf: 'center'
+                      }}
+                    >
+                      <button
+                        style={{
+                          backgroundColor: '#1C6F6F',
+                          color: '#fff',
+                          fontSize: '10px',
+                          padding: '2px 4px',
+                          borderRadius: '10px',
+                          border: 'none',
+                          marginBottom: '4px',
+                          cursor: 'pointer',
+                          fontWeight: 'bold',
+                          lineHeight: '1'
+                        }}
+                      >
+                        1x
+                      </button>
+                      <small style={{ color: '#aebac1', fontSize: '10px', lineHeight: '1' }}>
+                        {msg.duration || '0:08'}
+                      </small>
+                    </div>
+
+                  </div>
                 )}
               </div>
 
@@ -2191,22 +2384,20 @@ const Room = () => {
                     aria-label="Adicionar reação"
                   >
                     <FontAwesomeIcon
-                      // Exibe 'X' se estiver aberto, ou 'sorriso/plus' se estiver fechado
                       icon={messageIdWithOpenReactions === msg.id ? faXmark : faSmileRegular}
                       style={{ fontSize: '0.7em' }}
                     />
                   </button>
 
-                  {/* MENU FLUTUANTE DE REAÇÕES (position: absolute) */}
                   {messageIdWithOpenReactions === msg.id && (
                     <div
                       className="reaction-picker-menu d-flex p-2 shadow-lg"
                       style={{
                         position: 'absolute',
-                        bottom: 'calc(100% + 5px)', // 5px acima da borda superior do footer
-                        right: isSentByUser ? '0' : 'unset', // Alinha à direita se a bolha for do usuário
-                        left: isSentByUser ? 'unset' : '0', // Alinha à esquerda se a bolha for de outro usuário
-                        backgroundColor: '#262d31', // Fundo escuro
+                        bottom: 'calc(100% + 5px)',
+                        right: isSentByUser ? '0' : 'unset',
+                        left: isSentByUser ? 'unset' : '0',
+                        backgroundColor: '#262d31',
                         borderRadius: '18px',
                         zIndex: 10,
                         minWidth: '200px',
@@ -2227,7 +2418,6 @@ const Room = () => {
                             key={reaction.type}
                             onClick={() => {
                               handleReaction(reaction.type);
-                              // Fecha o menu após a reação
                               setMessageIdWithOpenReactions(null);
                             }}
                             className={`btn btn-link p-0 me-1`}
@@ -2235,7 +2425,7 @@ const Room = () => {
                               color: userHasReacted ? "#007bff" : "#aebac1",
                               fontSize: '1.2em',
                               transition: 'transform 0.1s',
-                              position: 'relative', // Para posicionar a contagem
+                              position: 'relative',
                             }}
                             onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
                             onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1.0)'}
@@ -2271,7 +2461,6 @@ const Room = () => {
         </div>
       )}
 
-      {/* Container Principal FIXO: Gerencia o Z-Index, a Sombra e o Fundo SÓLIDO */}
       <div
         className="w-100"
         style={{
