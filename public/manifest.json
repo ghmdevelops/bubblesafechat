@@ -11,7 +11,7 @@
       "purpose": "any maskable"
     },
     {
-      "src": "/icon-page-500.png",
+      "src": "/icon-page-500-preview.jpg",
       "sizes": "500x500",
       "type": "image/png",
       "purpose": "any maskable"
@@ -29,7 +29,7 @@
 
   "screenshots": [
     {
-      "src": "/icon-page-500.png",
+      "src": "/icon-page-500-preview.jpg",
       "sizes": "500x500",
       "type": "image/png",
       "form_factor": "narrow"
