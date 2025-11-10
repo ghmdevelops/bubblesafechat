@@ -1,12 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { auth } from "../firebaseConfig";
 import { Helmet } from "react-helmet";
 import { useNavigate } from "react-router-dom";
 import {
   GoogleAuthProvider,
   GithubAuthProvider,
-  FacebookAuthProvider,
-  OAuthProvider,
   signInWithPopup,
   signInWithEmailAndPassword,
   sendSignInLinkToEmail,
@@ -25,6 +23,8 @@ import {
 import { BsFillDoorOpenFill, BsGoogle } from "react-icons/bs";
 import { AiFillGithub } from "react-icons/ai";
 import Swal from "sweetalert2";
+import MobileCtaModal from './MobileCtaModal';
+import PromoModal from './PromoModal';
 import "./Login.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -53,12 +53,18 @@ const Login = () => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [canInstall, setCanInstall] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [hasSeenCtaSwal, setHasSeenCtaSwal] = useState(false);
+  const [showCtaModal, setShowCtaModal] = useState(false);
 
   const actionCodeSettings = {
     url: "https://bubblesafechat.com.br/#/magic-link",
     handleCodeInApp: true,
   };
+
+  const showMobileCtaModal = useCallback(() => {
+    if (!isMobile) return;
+
+    setShowCtaModal(true);
+  }, [isMobile]);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -89,10 +95,8 @@ const Login = () => {
   const handleInstall = async () => {
     if (!deferredPrompt) return;
 
-    // 1. Chame o prompt diretamente.
     deferredPrompt.prompt();
 
-    // 2. Aguarde a escolha do usuário
     const choice = await deferredPrompt.userChoice;
 
     if (choice.outcome === "accepted") {
@@ -107,123 +111,6 @@ const Login = () => {
       });
     }
   };
-
-  useEffect(() => {
-    const showMobileCtaSwal = () => {
-      if (!isMobile || hasSeenCtaSwal) return;
-
-      const plansButtonHtml = `
-          <button id="plans-btn" class="swal2-styled d-flex align-items-center justify-content-center" 
-              style="
-                  background-color: #4c77ba;
-                  color: #f0f0f0;
-                  border-radius: 12px;
-                  padding: 14px 28px;
-                  font-weight: 600;
-                  font-size: 1.05rem;
-                  min-width: 160px;
-                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 0 5px rgba(255, 255, 255, 0.1);
-                  border: 1px solid rgba(255, 255, 255, 0.05);
-                  transition: all 0.2s;
-              "
-              onMouseOver="this.style.backgroundColor='#406aae'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 15px rgba(0, 0, 0, 0.6), inset 0 0 8px rgba(255, 255, 255, 0.15)'"
-              onMouseOut="this.style.backgroundColor='#4c77ba'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0, 0, 0, 0.4), inset 0 0 5px rgba(255, 255, 255, 0.1)'"
-          >
-              <span style="font-size: 1.3rem; margin-right: 8px;">💰</span>
-              Conhecer Planos
-          </button>
-      `;
-
-      Swal.fire({
-        title: '<span style="color: #63b3ed; font-weight: 700; font-size: 1.5rem;">✨ Experiência Otimizada para Mobile</span>',
-        icon: 'info',
-        html: `
-          <div style="text-align: center; margin-top: 15px; padding: 0 10px;"> 
-              <p style="font-size: 1.15rem; margin-bottom: 12px; color: #e0e0e0; font-weight: 500;">
-                  Desbloqueie todos os recursos e desfrute de uma navegação mais rápida e segura.
-              </p>
-              <p style="font-size: 0.95rem; margin-bottom: 35px; color: #a0a0a0;">
-                  Instale o aplicativo progressivo (PWA) para acesso instantâneo.
-              </p>
-              <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
-                  ${plansButtonHtml}
-              </div>
-          </div>
-        `,
-        showConfirmButton: canInstall,
-        confirmButtonText: '<span style="font-size: 1.05rem;"><span style="font-size: 1.3rem; margin-right: 8px;">📲</span> Instalar App</span>',
-        showCloseButton: true,
-        allowOutsideClick: true,
-        customClass: {
-          confirmButton: 'swal2-install-button', // Adiciona classe para customização de cor
-        },
-        buttonsStyling: false, // Desativa o estilo padrão do Swal para aplicar o nosso
-        confirmButtonColor: '#38c172', // Cor de fundo do botão de instalação
-        preConfirm: () => {
-          if (canInstall) {
-            return handleInstall();
-          }
-          return true;
-        },
-        didOpen: () => {
-          const swalContainer = Swal.getPopup();
-          if (swalContainer) {
-            swalContainer.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.6)';
-
-            const iconElement = swalContainer.querySelector('.swal2-icon');
-            if (iconElement) {
-              iconElement.style.color = '#63b3ed';
-              iconElement.style.borderColor = '#63b3ed';
-            }
-
-            // Apenas o listener do botão de planos
-            swalContainer.querySelector('#plans-btn')?.addEventListener('click', () => {
-              Swal.close();
-              navigate("/planos");
-            });
-
-            // Aplica o estilo customizado ao botão de confirmação do Swal
-            const installButton = swalContainer.querySelector('.swal2-install-button');
-            if (installButton) {
-              installButton.style.backgroundColor = '#38c172';
-              installButton.style.color = '#f0f0f0';
-              installButton.style.borderRadius = '12px';
-              installButton.style.padding = '14px 28px';
-              installButton.style.fontWeight = '600';
-              installButton.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.4), inset 0 0 5px rgba(255, 255, 255, 0.1)';
-              installButton.style.border = '1px solid rgba(255, 255, 255, 0.05)';
-              installButton.style.transition = 'all 0.2s';
-
-              // Adiciona os efeitos de hover/active (necessário jQuery ou similar se não for usar onMouseOver/Out inline)
-              // Usaremos um breve CSS Inject para garantir o hover-effect
-              if (!document.getElementById('swal2-install-style')) {
-                const style = document.createElement('style');
-                style.id = 'swal2-install-style';
-                style.innerHTML = `
-                        .swal2-install-button:hover {
-                            background-color: #30a160 !important;
-                            transform: translateY(-3px);
-                            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6), inset 0 0 8px rgba(255, 255, 255, 0.15) !important;
-                        }
-                        .swal2-install-button:active {
-                            transform: translateY(0);
-                            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6), inset 0 0 8px rgba(0, 0, 0, 0.2) !important;
-                        }
-                    `;
-                document.head.appendChild(style);
-              }
-            }
-          }
-        }
-      }).then(() => {
-        setHasSeenCtaSwal(true);
-      });
-    };
-
-    const timer = setTimeout(showMobileCtaSwal, 500);
-    return () => clearTimeout(timer);
-
-  }, [isMobile, canInstall, hasSeenCtaSwal, navigate]);
 
   useEffect(() => {
     if (isSignInWithEmailLink(auth, window.location.href)) {
@@ -463,7 +350,7 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const result = await signInWithPopup(auth, provider);
+      await signInWithPopup(auth, provider);
       Swal.fire({
         icon: "success",
         title: "Login com Google bem-sucedido",
@@ -510,7 +397,7 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const result = await signInWithPopup(auth, provider);
+      await signInWithPopup(auth, provider);
       Swal.fire({
         icon: "success",
         title: "Login com GitHub bem-sucedido",
@@ -588,6 +475,15 @@ const Login = () => {
       <Helmet>
         <title>Bubble Safe Chat - Login</title>
       </Helmet>
+
+      <PromoModal onPromoSeen={showMobileCtaModal} />
+
+      <MobileCtaModal
+        show={showCtaModal}
+        handleClose={() => setShowCtaModal(false)}
+        handleInstall={handleInstall}
+        canInstall={canInstall}
+      />
 
       <img
         onClick={() => navigate("/")}

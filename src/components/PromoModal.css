@@ -1,0 +1,87 @@
+/* PromoModal.css - SOLUÇÃO CORRIGIDA */
+
+/* 1. Remove Fundo, Borda e Padding do Conteúdo do Modal */
+.promo-modal-dialog .modal-content {
+    background-color: transparent !important; /* FORÇA a transparência */
+    border: none !important; /* Remove a borda */
+    box-shadow: none !important; /* Remove a sombra */
+    padding: 0 !important;
+    margin: 0;
+    overflow: hidden;
+}
+
+/* 2. Remove Padding e Fundo do CORPO do Modal (Onde o Branco Aparece) */
+.promo-modal-body {
+    padding: 0 !important;
+    background-color: transparent !important; /* FORÇA a transparência do body */
+    display: flex; 
+    justify-content: center;
+    align-items: center;
+    position: relative; /* Mantém a posição relativa para o botão sobreposto */
+    min-height: 100%; /* Garante altura mínima, se necessário */
+}
+
+/* 3. Contêiner que envolve a imagem e o botão */
+.promo-content-container {
+    position: relative;
+    width: 100%;
+    /* Use 'max-content' para que o modal se ajuste ao tamanho intrínseco da imagem (se ela não for muito grande) */
+    /* Caso contrário, use '100%' */
+    width: max-content; 
+    max-width: 90vw; /* Limita o tamanho máximo */
+}
+
+/* 4. Estilo para a imagem preencher o contêiner */
+.promo-image-full {
+    width: 100%;
+    height: auto;
+    display: block;
+    /* Remove qualquer espaçamento indesejado */
+    line-height: 0; 
+    object-fit: contain;
+}
+
+/* 5. Botão de Fechar Sobreposto (Ajuste para evitar o quadrado branco) */
+.close-button-overlay {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    /* Fundo preto semi-transparente para contrastar e cobrir o ícone 'X' */
+    background: rgba(0, 0, 0, 0.5) !important; 
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: background-color 0.3s ease;
+}
+
+.close-button-overlay:hover {
+    background: rgba(0, 0, 0, 0.7) !important;
+}
+
+/* 6. Estilo para o botão de ação (Saiba Mais) */
+.promo-action-button {
+    position: absolute;
+    bottom: 8%; /* Ajuste a posição vertical */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+    
+    background-color: #007bff;
+    background-image: linear-gradient(45deg, #007bff, #00bfff);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    display: block; 
+}

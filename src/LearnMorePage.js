@@ -14,7 +14,7 @@ import { Helmet } from "react-helmet";
 import { motion } from "framer-motion";
 import "bootstrap/dist/css/bootstrap.min.css";
 import iconPage from "./components/img/icon-menu.png";
-import iconPageVisual from "./components/img/iIJrUoeRoCQ-resized.jpg";
+import iconPageVisual from "./components/img/icon-page.png";
 
 const LearnMorePage = () => {
   const navigate = useNavigate();
@@ -84,6 +84,73 @@ const LearnMorePage = () => {
           mundial e funcionalidades avançadas para manter suas conversas e
           informações pessoais sob total controle.
         </motion.p>
+
+        <motion.h2
+          initial="hidden"
+          animate="visible"
+          variants={fadeInUp}
+          transition={{ duration: 0.5, delay: 1.9 }}
+          className="section-title-dados text-center mt-5"
+        >
+          🚫 Por que Não Temos um Aplicativo (App) para Instalar?
+        </motion.h2>
+
+        <motion.p
+          initial="hidden"
+          animate="visible"
+          variants={fadeInUp}
+          transition={{ duration: 0.5, delay: 2.0 }}
+          className="page-description mt-3 mb-5 text-center"
+        >
+          O **Bubble Safe Chat** foi desenvolvido como uma **Aplicação Web Progressiva (PWA)**. Essa arquitetura é uma escolha estratégica que visa **maximizar sua segurança e privacidade** em comparação com apps nativos.
+        </motion.p>
+
+        <div className="row features-container justify-content-center mt-4 mb-5">
+          {/* Card 1: Maior Privacidade */}
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={fadeInUp}
+            transition={{ duration: 0.5, delay: 2.1 }}
+            className="feature-card col-12 col-md-6 col-lg-4 mb-4 d-flex flex-column align-items-center text-center p-3"
+          >
+            <FontAwesomeIcon icon={faShieldAlt} className="feature-icon mb-3" />
+            <h3>Máxima Privacidade (Sem Permissões Invasivas)</h3>
+            <p>
+              Ao usar o navegador, **evitamos as permissões invasivas** que muitos apps nativos solicitam (como acesso à sua lista de contatos ou localização em segundo plano). Sua interação é mais isolada e segura.
+            </p>
+          </motion.div>
+
+          {/* Card 2: Leve e Sem Instalação Obrigatória */}
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={fadeInUp}
+            transition={{ duration: 0.5, delay: 2.2 }}
+            className="feature-card col-12 col-md-6 col-lg-4 mb-4 d-flex flex-column align-items-center text-center p-3"
+          >
+            <FontAwesomeIcon icon={faQrcode} className="feature-icon mb-3" />
+            <h3>Leveza e Sem Bloqueio de Armazenamento</h3>
+            <p>
+              Funciona como um atalho do navegador (PWA), **economizando o valioso espaço de armazenamento** que um aplicativo tradicional consumiria. Você tem a experiência de um app sem o peso de um.
+            </p>
+          </motion.div>
+
+          {/* Card 3: Atualização e Segurança Garantida */}
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={fadeInUp}
+            transition={{ duration: 0.5, delay: 2.3 }}
+            className="feature-card col-12 col-md-6 col-lg-4 mb-4 d-flex flex-column align-items-center text-center p-3"
+          >
+            <FontAwesomeIcon icon={faLock} className="feature-icon mb-3" />
+            <h3>Atualizações Imediatas de Segurança</h3>
+            <p>
+              As PWAs se atualizam automaticamente sempre que você acessa a plataforma, eliminando a necessidade de visitar lojas de apps e garantindo que você esteja **sempre utilizando a versão mais segura**.
+            </p>
+          </motion.div>
+        </div>
 
         <motion.h2
           initial="hidden"
