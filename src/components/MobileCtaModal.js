@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import iconMenu from './img/icon-page.png';
+import iconMenu from './img/name.png';
 import './MobileCtaModal.css';
 import { motion } from 'framer-motion'; // Importação do motion
 
@@ -26,7 +26,7 @@ const MobileCtaModal = ({ show, handleClose, handleInstall, canInstall }) => {
 
     const formattedUsers = activeUsers.toLocaleString('pt-BR');
 
-    const accentColor = 'var(--accent-color-premium, #10b981)';
+    const accentColor = 'var(--accent-color-premium, #11afedff)';
 
     // Variantes de animação para os elementos
     const itemVariants = {
@@ -82,7 +82,6 @@ const MobileCtaModal = ({ show, handleClose, handleInstall, canInstall }) => {
             </Modal.Header>
 
             <Modal.Body className="bg-dark text-light pt-0 px-4 pb-4">
-                {/* Contêiner principal com animação cascata */}
                 <motion.div
                     className="d-flex flex-column align-items-center text-center"
                     initial="hidden"
@@ -100,10 +99,10 @@ const MobileCtaModal = ({ show, handleClose, handleInstall, canInstall }) => {
                             src={iconMenu}
                             alt="Menu Icon"
                             className="app-icon"
+                            style={{ width: '194px', height: '100px' }} // Adicionado ou ajustado
                         />
                     </motion.div>
 
-                    {/* Título com Animação: y e opacidade */}
                     <motion.h5
                         className="fw-bold mb-2 title-text"
                         style={{ color: accentColor }}
@@ -112,12 +111,11 @@ const MobileCtaModal = ({ show, handleClose, handleInstall, canInstall }) => {
                         Recursos Exclusivos (Premium)
                     </motion.h5>
 
-                    {/* Texto Principal (propaganda) com Animação: y e opacidade */}
                     <motion.p
                         className="mb-3 main-text"
                         variants={itemVariants}
                     >
-                        <strong>ATENÇÃO:</strong> Seus dados merecem o melhor! Faça um upgrade para o <strong>Plano Pago</strong> e pare de correr riscos. Você terá:
+                        Seus dados merecem o melhor! Faça um upgrade para o <strong>Plano Pago</strong> e pare de correr riscos. Você terá:
                     </motion.p>
 
                     {/* Lista de Vantagens com Animação: y e opacidade */}
