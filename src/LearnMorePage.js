@@ -89,7 +89,7 @@ const LearnMorePage = () => {
           initial="hidden"
           animate="visible"
           variants={fadeInUp}
-          transition={{ duration: 0.5, delay: 1.9 }}
+          transition={{ duration: 0.7, delay: 0.3 }}
           className="section-title-dados text-center mt-5"
         >
           🚫 Por que Não Temos um Aplicativo (App) para Instalar?
@@ -99,10 +99,10 @@ const LearnMorePage = () => {
           initial="hidden"
           animate="visible"
           variants={fadeInUp}
-          transition={{ duration: 0.5, delay: 2.0 }}
+          transition={{ duration: 0.7, delay: 0.3 }}
           className="page-description mt-3 mb-5 text-center"
         >
-          O **Bubble Safe Chat** foi desenvolvido como uma **Aplicação Web Progressiva (PWA)**. Essa arquitetura é uma escolha estratégica que visa **maximizar sua segurança e privacidade** em comparação com apps nativos.
+          Conheça a <strong>Arquitetura do Futuro</strong>: O <strong>Bubble Safe Chat</strong>, um <strong>Progressive Web App (PWA)</strong>, foi estrategicamente desenhado para <strong>MAXIMIZAR sua segurança e privacidade</strong>. É a escolha inteligente, comprovadamente mais forte que os apps nativos!
         </motion.p>
 
         <div className="row features-container justify-content-center mt-4 mb-5">
@@ -111,7 +111,7 @@ const LearnMorePage = () => {
             initial="hidden"
             animate="visible"
             variants={fadeInUp}
-            transition={{ duration: 0.5, delay: 2.1 }}
+            transition={{ duration: 0.7, delay: 0.3 }}
             className="feature-card col-12 col-md-6 col-lg-4 mb-4 d-flex flex-column align-items-center text-center p-3"
           >
             <FontAwesomeIcon icon={faShieldAlt} className="feature-icon mb-3" />
@@ -126,7 +126,7 @@ const LearnMorePage = () => {
             initial="hidden"
             animate="visible"
             variants={fadeInUp}
-            transition={{ duration: 0.5, delay: 2.2 }}
+            transition={{ duration: 0.7, delay: 0.3 }}
             className="feature-card col-12 col-md-6 col-lg-4 mb-4 d-flex flex-column align-items-center text-center p-3"
           >
             <FontAwesomeIcon icon={faQrcode} className="feature-icon mb-3" />
@@ -141,7 +141,7 @@ const LearnMorePage = () => {
             initial="hidden"
             animate="visible"
             variants={fadeInUp}
-            transition={{ duration: 0.5, delay: 2.3 }}
+            transition={{ duration: 0.7, delay: 0.3 }}
             className="feature-card col-12 col-md-6 col-lg-4 mb-4 d-flex flex-column align-items-center text-center p-3"
           >
             <FontAwesomeIcon icon={faLock} className="feature-icon mb-3" />

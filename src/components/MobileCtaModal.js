@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import iconMenu from './img/icon-page.png'; // IMPORTAÇÃO DO ÍCONE
+import iconMenu from './img/icon-page.png';
+import './MobileCtaModal.css';
+import { motion } from 'framer-motion'; // Importação do motion
 
 const MobileCtaModal = ({ show, handleClose, handleInstall, canInstall }) => {
     const navigate = useNavigate();
@@ -11,53 +13,157 @@ const MobileCtaModal = ({ show, handleClose, handleInstall, canInstall }) => {
         navigate('/planos');
     };
 
+    // --- Lógica de Dados Dinâmicos ---
+    const [activeUsers, setActiveUsers] = useState(1570);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setActiveUsers(prev => prev + Math.floor(Math.random() * 5));
+        }, 30000);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    const formattedUsers = activeUsers.toLocaleString('pt-BR');
+
+    const accentColor = 'var(--accent-color-premium, #10b981)';
+
+    // Variantes de animação para os elementos
+    const itemVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+    };
+
+    // Variantes de animação para o contêiner principal (para criar o efeito cascata)
+    const containerVariants = {
+        hidden: {},
+        visible: { transition: { staggerChildren: 0.1 } },
+    };
+
+    // --- Componente de Métrica para ser injetado no Modal ---
+    const MetricBar = () => (
+        // motion.div dentro do fluxo principal de staggering
+        <motion.div
+            className="metric-bar mb-4 w-100"
+            variants={itemVariants} // Usando a variante padrão
+        >
+            <div className="metric-item">
+                <span className="metric-value" style={{ color: accentColor }}>{formattedUsers}+</span>
+                <span className="metric-label">Usuários Ativos</span>
+            </div>
+            <div className="metric-divider"></div>
+            <div className="metric-item">
+                <span className="metric-value" style={{ color: accentColor }}>99.9%</span>
+                <span className="metric-label">SLA Garantido</span>
+            </div>
+            <div className="metric-divider"></div>
+            <div className="metric-item">
+                <span className="metric-value" style={{ color: accentColor }}>30 Dias</span>
+                <span className="metric-label">Garantia</span>
+            </div>
+        </motion.div>
+    );
+    // -----------------------------------------------------
+
     return (
-        <Modal show={show} onHide={handleClose} centered>
+        <Modal
+            show={show}
+            onHide={handleClose}
+            centered
+            size="sm"
+            dialogClassName="modal-premium-dialog"
+            contentClassName="modal-premium-content"
+        >
             <Modal.Header
                 closeButton
-                className="bg-dark text-light border-secondary"
-                data-bs-theme="dark" // FORÇA O ÍCONE DE FECHAR PARA BRANCO
+                className="bg-dark border-0 pb-0"
+                data-bs-theme="dark"
             >
-                <Modal.Title className="d-flex align-items-center">
-                    <img
-                        src={iconMenu}
-                        alt="Menu Icon"
-                        style={{ width: '74px', height: '74px', marginRight: '10px' }}
-                    />
-                    <span style={{ color: '#63b3ed', fontWeight: 700, fontSize: '1.5rem' }}>
-                        Experiência Otimizada para Mobile
-                    </span>
-                </Modal.Title>
             </Modal.Header>
-            <Modal.Body className="bg-dark text-light">
-                <div style={{ textAlign: 'center' }}>
-                    <p style={{ fontSize: '1.15rem', marginBottom: '12px' }}>
-                        Desbloqueie todos os recursos e desfrute de uma navegação mais rápida e segura.
-                    </p>
-                    <p style={{ fontSize: '0.95rem', marginBottom: '25px', color: '#a0a0a0' }}>
-                        Instale o aplicativo progressivo (PWA) para acesso instantâneo.
-                    </p>
 
-                    <Button
-                        variant="info"
-                        onClick={handleGoToPlans}
-                        className="mb-3 w-75"
-                        style={{ fontWeight: 600, borderRadius: '12px' }}
+            <Modal.Body className="bg-dark text-light pt-0 px-4 pb-4">
+                {/* Contêiner principal com animação cascata */}
+                <motion.div
+                    className="d-flex flex-column align-items-center text-center"
+                    initial="hidden"
+                    animate={show ? "visible" : "hidden"} // Anima apenas quando o modal está visível
+                    variants={containerVariants}
+                >
+
+                    {/* Ícone com Animação: escala e opacidade */}
+                    <motion.div
+                        className="mb-3 p-2 rounded-circle icon-container"
+                        variants={{ hidden: { opacity: 0, scale: 0.5 }, visible: { opacity: 1, scale: 1 } }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
                     >
-                        💰 Conhecer Planos
-                    </Button>
+                        <img
+                            src={iconMenu}
+                            alt="Menu Icon"
+                            className="app-icon"
+                        />
+                    </motion.div>
 
-                    {canInstall && (
+                    {/* Título com Animação: y e opacidade */}
+                    <motion.h5
+                        className="fw-bold mb-2 title-text"
+                        style={{ color: accentColor }}
+                        variants={itemVariants}
+                    >
+                        Recursos Exclusivos (Premium)
+                    </motion.h5>
+
+                    {/* Texto Principal (propaganda) com Animação: y e opacidade */}
+                    <motion.p
+                        className="mb-3 main-text"
+                        variants={itemVariants}
+                    >
+                        <strong>ATENÇÃO:</strong> Seus dados merecem o melhor! Faça um upgrade para o <strong>Plano Pago</strong> e pare de correr riscos. Você terá:
+                    </motion.p>
+
+                    {/* Lista de Vantagens com Animação: y e opacidade */}
+                    <motion.ul
+                        className="text-start p-0 px-3 w-100 feature-list"
+                        variants={itemVariants}
+                    >
+                        <li>🔒 Navegação Ilimitada</li>
+                        <li>⚡️ Velocidade Máxima</li>
+                        <li>🛡️ Segurança Reforçada</li>
+                        <li>📊 Relatórios Avançados</li>
+                    </motion.ul>
+
+                    {/* Barra de Métricas (já usa a variante itemVariants) */}
+                    <MetricBar />
+
+                    {/* Botão de Planos (Ação Principal) com Animação: y e opacidade */}
+                    <motion.div
+                        className="w-100"
+                        variants={itemVariants}
+                    >
                         <Button
-                            variant="success"
-                            onClick={handleInstall}
-                            className="w-75"
-                            style={{ fontWeight: 600, borderRadius: '12px' }}
+                            onClick={handleGoToPlans}
+                            className="mb-3 w-100 btn-cta-main-premium"
+                            style={{ backgroundColor: accentColor, borderColor: accentColor }}
                         >
-                            📲 Instalar App
+                            👑 CONHECER PLANOS PAGOS
                         </Button>
+                    </motion.div>
+
+                    {/* Botão de Instalar (Ação Secundária) com Animação: y e opacidade */}
+                    {canInstall && (
+                        <motion.div
+                            className="w-100"
+                            variants={itemVariants}
+                        >
+                            <Button
+                                variant="outline-light"
+                                onClick={handleInstall}
+                                className="w-100 btn-cta-secondary"
+                            >
+                                ⬇️ Instalar App (PWA)
+                            </Button>
+                        </motion.div>
                     )}
-                </div>
+                </motion.div>
             </Modal.Body>
         </Modal>
     );
