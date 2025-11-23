@@ -1,11 +1,9 @@
-/* src/components/DoorPage.css */
-
 .body {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: #2f3234;
+  background-color: #000000ff;
   margin: 0;
   perspective: 1000px;
   overflow: hidden;

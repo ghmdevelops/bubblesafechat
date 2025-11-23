@@ -49,6 +49,9 @@ import {
   faEllipsisH,
   faChevronRight,
   faXmark,
+  faExclamationTriangle,
+  faReply,
+  faCopy,
 } from "@fortawesome/free-solid-svg-icons";
 import { faWhatsapp, faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { Helmet } from "react-helmet";
@@ -111,6 +114,14 @@ const Room = () => {
   const [selectedAvatar, setSelectedAvatar] = useState("");
   const [messageIdWithOpenReactions, setMessageIdWithOpenReactions] = useState(null);
   const ENCRYPTION_KEY = "chaveSuperSecretaNoCliente";
+
+  const menuRef = useRef(null);
+  const buttonRef = useRef(null);
+
+  const toggleOptions = () => {
+    setShowOptions(prev => !prev);
+  };
+
 
   const [currentAudio, setCurrentAudio] = useState(null);
   const [audioProgress, setAudioProgress] = useState({});
@@ -228,45 +239,166 @@ const Room = () => {
     let attemptCount = 0;
 
     const checkPassword = async () => {
-      const { value: enteredPassword } = await Swal.fire({
-        title: "Digite a senha para ver a mensagem",
+      const { value: enteredPassword, isConfirmed, dismiss } = await Swal.fire({
+        title: "Desbloquear Mensagem",
+        html: `
+      <div style="color: #9d9fa3; font-size: 1rem; margin-bottom: 10px;">
+        Digite a senha para visualizar o conteúdo protegido.
+      </div>
+    `,
         input: "password",
         inputLabel: "Senha",
-        inputPlaceholder: "Digite a senha",
+        inputPlaceholder: "Digite a senha (máx. 10 caracteres)",
         inputAttributes: {
           maxlength: 10,
           autocapitalize: "off",
           autocorrect: "off",
         },
+
+        // Estilos do Modal Principal
+        background: '#1e2125', // Fundo escuro
+        color: '#E9EDEF',     // Texto claro
         showCancelButton: true,
+        confirmButtonText: "Desbloquear",
+        cancelButtonText: "Cancelar",
+        focusConfirm: true,
+
+        // Classes customizadas para estilização
+        customClass: {
+          popup: 'bubble-safe-popup-decrypt',
+          title: 'bubble-safe-title',
+          input: 'bubble-safe-input',
+          confirmButton: 'bubble-safe-confirm-button',
+          cancelButton: 'bubble-safe-cancel-button',
+        },
+
+        // Aplicação de estilos
+        didOpen: (popup) => {
+          // Estilo do Popup (Borda e Sombra Ciano)
+          popup.style.borderRadius = '15px';
+          popup.style.border = '1px solid #17a2b8';
+          popup.style.boxShadow = '0 0 20px rgba(23, 162, 184, 0.4)';
+
+          // Estilo do Título (Ciano)
+          const titleElement = popup.querySelector('.bubble-safe-title');
+          if (titleElement) {
+            titleElement.style.color = '#17a2b8';
+            titleElement.style.fontWeight = '700';
+            titleElement.style.fontSize = '1.5rem';
+          }
+
+          // Estilo do Input (Fundo escuro e Borda Ciano)
+          const inputElement = popup.querySelector('.bubble-safe-input');
+          if (inputElement) {
+            inputElement.style.backgroundColor = '#2c313a';
+            inputElement.style.color = '#E9EDEF';
+            inputElement.style.border = '2px solid #17a2b8';
+            inputElement.style.borderRadius = '8px';
+            inputElement.style.boxShadow = 'inset 0 1px 3px rgba(0, 0, 0, 0.6)';
+          }
+
+          // Estilo do Botão Confirmar (Ciano)
+          const confirmButton = popup.querySelector('.bubble-safe-confirm-button');
+          if (confirmButton) {
+            confirmButton.style.background = '#17a2b8';
+            confirmButton.style.color = 'white';
+            confirmButton.style.borderRadius = '8px';
+            confirmButton.style.fontWeight = 'bold';
+            confirmButton.onmouseover = () => confirmButton.style.background = '#138496';
+            confirmButton.onmouseout = () => confirmButton.style.background = '#17a2b8';
+          }
+
+          // Estilo do Botão Cancelar (Cinza)
+          const cancelButton = popup.querySelector('.bubble-safe-cancel-button');
+          if (cancelButton) {
+            cancelButton.style.background = '#6c757d';
+            cancelButton.style.color = 'white';
+            cancelButton.style.borderRadius = '8px';
+            cancelButton.style.fontWeight = 'bold';
+            cancelButton.onmouseover = () => cancelButton.style.background = '#5a6268';
+            cancelButton.onmouseout = () => cancelButton.style.background = '#6c757d';
+          }
+        },
       });
 
-      if (enteredPassword) {
+      if (isConfirmed && enteredPassword) {
         if (enteredPassword === msg.password) {
-          Swal.fire(
-            "Correto!",
-            "Aqui está sua mensagem: " + msg.text,
-            "success"
-          );
+          // ⭐ Cenário 1: Sucesso (Senha Correta) ⭐
+          Swal.fire({
+            title: "Acesso Concedido! 🔓",
+            html: `<div style="text-align: left; max-height: 200px; overflow-y: auto; padding: 10px; border: 1px solid #28a745; border-radius: 5px; background-color: #2c313a;">
+                 <strong style="color: #28a745;">Mensagem:</strong><br/>${msg.text}
+               </div>`,
+            icon: "success",
+            background: '#1e2125',
+            color: '#E9EDEF',
+            confirmButtonText: "Fechar",
+            customClass: {
+              popup: 'bubble-safe-popup-success',
+              title: 'bubble-safe-title-success',
+              confirmButton: 'bubble-safe-confirm-button-success',
+            },
+            didOpen: (popup) => {
+              popup.style.borderRadius = '15px';
+              popup.style.border = '1px solid #28a745';
+              popup.style.boxShadow = '0 0 20px rgba(40, 167, 69, 0.4)';
+              const titleElement = popup.querySelector('.bubble-safe-title-success');
+              if (titleElement) titleElement.style.color = '#28a745';
+            }
+          });
         } else {
           attemptCount++;
+          const attemptsLeft = 3 - attemptCount;
 
           if (attemptCount >= 3) {
+            // ⭐ Cenário 3: Bloqueio e Exclusão (3 Tentativas) ⭐
             const messageRef = database.ref(
               `rooms/${roomId}/messages/${msg.id}`
             );
             messageRef.remove();
-            Swal.fire(
-              "Erro!",
-              "A senha estava incorreta 3 vezes. A mensagem foi excluída.",
-              "error"
-            );
+
+            Swal.fire({
+              title: "Mensagem Autodestruída! 💥",
+              text: `A senha estava incorreta 3 vezes. A mensagem foi excluída permanentemente.`,
+              icon: "error",
+              background: '#1e2125',
+              color: '#E9EDEF',
+              confirmButtonText: "Entendi",
+              customClass: {
+                popup: 'bubble-safe-popup-error',
+                title: 'bubble-safe-title-error',
+                confirmButton: 'bubble-safe-confirm-button-error',
+              },
+              didOpen: (popup) => {
+                popup.style.borderRadius = '15px';
+                popup.style.border = '1px solid #dc3545';
+                popup.style.boxShadow = '0 0 20px rgba(220, 53, 69, 0.4)';
+                const titleElement = popup.querySelector('.bubble-safe-title-error');
+                if (titleElement) titleElement.style.color = '#dc3545';
+              }
+            });
           } else {
-            Swal.fire(
-              "Erro!",
-              "Senha incorreta. Tente novamente.",
-              "error"
-            ).then(checkPassword);
+            // ⭐ Cenário 2: Erro Leve (Tentar Novamente) ⭐
+            Swal.fire({
+              title: "Senha Incorreta ⚠️",
+              text: `Tente novamente. Você tem ${attemptsLeft} tentativa(s) restante(s).`,
+              icon: "warning",
+              background: '#1e2125',
+              color: '#E9EDEF',
+              confirmButtonText: "Tentar Novamente",
+              customClass: {
+                popup: 'bubble-safe-popup-warning',
+                title: 'bubble-safe-title-warning',
+                confirmButton: 'bubble-safe-confirm-button',
+              },
+              didOpen: (popup) => {
+                popup.style.borderRadius = '15px';
+                popup.style.border = '1px solid #ffc107';
+                popup.style.boxShadow = '0 0 20px rgba(255, 193, 7, 0.4)';
+                const titleElement = popup.querySelector('.bubble-safe-title-warning');
+                if (titleElement) titleElement.style.color = '#ffc107';
+              }
+            }).then(checkPassword);
           }
         }
       }
@@ -277,27 +409,91 @@ const Room = () => {
 
   const sendProtectedMessage = () => {
     Swal.fire({
-      title: "Digite uma senha para proteger a mensagem",
+      title: "Proteger Mensagem",
+      html: `
+      <div style="color: #9d9fa3; font-size: 1rem; margin-bottom: 10px;">
+        Digite uma senha para criptografar esta mensagem.
+      </div>
+    `,
       input: "password",
-      inputLabel: "Senha",
-      inputPlaceholder: "Digite uma senha",
+      inputLabel: "Senha de Proteção",
+      inputPlaceholder: "Digite uma senha (máx. 10 caracteres)",
       inputAttributes: {
         maxlength: 10,
         autocapitalize: "off",
         autocorrect: "off",
       },
+
+      // Estilos do Modal
+      background: '#1e2125', // Fundo escuro
+      color: '#E9EDEF', // Texto claro
       showCancelButton: true,
-      confirmButtonText: "Enviar",
+      confirmButtonText: "Enviar Protegido",
+      cancelButtonText: "Cancelar",
+      focusConfirm: true,
+
+      // Classes customizadas para estilização
+      customClass: {
+        popup: 'bubble-safe-popup-protect',
+        title: 'bubble-safe-title',
+        input: 'bubble-safe-input',
+        confirmButton: 'bubble-safe-confirm-button',
+        cancelButton: 'bubble-safe-cancel-button',
+      },
+
+      // Aplicação de estilos após a abertura
+      didOpen: (popup) => {
+        // Estilo do Popup (Borda e Sombra Ciano)
+        popup.style.borderRadius = '15px';
+        popup.style.border = '1px solid #17a2b8';
+        popup.style.boxShadow = '0 0 20px rgba(23, 162, 184, 0.4)';
+
+        // Estilo do Título (Ciano)
+        const titleElement = popup.querySelector('.bubble-safe-title');
+        if (titleElement) {
+          titleElement.style.color = '#17a2b8';
+          titleElement.style.fontWeight = '700';
+          titleElement.style.fontSize = '1.5rem';
+        }
+
+        // Estilo do Input (Fundo escuro e Borda Ciano)
+        const inputElement = popup.querySelector('.bubble-safe-input');
+        if (inputElement) {
+          inputElement.style.backgroundColor = '#2c313a';
+          inputElement.style.color = '#E9EDEF';
+          inputElement.style.border = '2px solid #17a2b8';
+          inputElement.style.borderRadius = '8px';
+          inputElement.style.boxShadow = 'inset 0 1px 3px rgba(0, 0, 0, 0.6)';
+        }
+
+        // Estilo do Botão Confirmar (Ciano)
+        const confirmButton = popup.querySelector('.bubble-safe-confirm-button');
+        if (confirmButton) {
+          confirmButton.style.background = '#17a2b8';
+          confirmButton.style.color = 'white';
+          confirmButton.style.borderRadius = '8px';
+          confirmButton.style.fontWeight = 'bold';
+          confirmButton.onmouseover = () => confirmButton.style.background = '#138496';
+          confirmButton.onmouseout = () => confirmButton.style.background = '#17a2b8';
+        }
+
+        // Estilo do Botão Cancelar (Cinza)
+        const cancelButton = popup.querySelector('.bubble-safe-cancel-button');
+        if (cancelButton) {
+          cancelButton.style.background = '#6c757d';
+          cancelButton.style.color = 'white';
+          cancelButton.style.borderRadius = '8px';
+          cancelButton.style.fontWeight = 'bold';
+          cancelButton.onmouseover = () => cancelButton.style.background = '#5a6268';
+          cancelButton.onmouseout = () => cancelButton.style.background = '#6c757d';
+        }
+      },
     }).then((result) => {
       if (result.value) {
+        // Chama a função existente para enviar a mensagem com a senha
         sendMessageWithPassword(result.value);
       }
     });
-  };
-
-  const toggleOptions = () => {
-    setShowOptions(!showOptions);
-    setShowPlusButton(!showOptions);
   };
 
   const startRecognition = () => {
@@ -452,6 +648,23 @@ const Room = () => {
     };
   }, [roomId]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        if (showOptions) {
+          setShowOptions(false);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showOptions]);
+
   const expelAllUsers = () => {
     const allowedUsersRef = database.ref(`rooms/${roomId}/allowedUsers`);
     const expelledRef = database.ref(`rooms/${roomId}/expelledUsers`);
@@ -492,7 +705,8 @@ const Room = () => {
 
   const setRoomAccessPassword = async () => {
     const { value: password } = await Swal.fire({
-      title: "Definir senha para acesso à sala",
+      title: "Definir Acesso Restrito",
+      html: `<div style="color: #9d9fa3; font-size: 1rem; margin-bottom: 10px;">Defina uma senha de até 10 caracteres para esta sala.</div>`,
       input: "password",
       inputLabel: "Senha",
       inputPlaceholder: "Digite uma senha para a sala",
@@ -501,8 +715,71 @@ const Room = () => {
         autocapitalize: "off",
         autocorrect: "off",
       },
+
+      // Estilos do Modal
+      background: '#1e2125', // Fundo escuro
+      color: '#E9EDEF', // Texto claro
       showCancelButton: true,
-      confirmButtonText: "Definir",
+      confirmButtonText: "Ativar Senha",
+      cancelButtonText: "Cancelar",
+      focusConfirm: true,
+
+      // Classes customizadas para estilização via didOpen
+      customClass: {
+        popup: 'bubble-safe-popup-password',
+        title: 'bubble-safe-title',
+        input: 'bubble-safe-input',
+        confirmButton: 'bubble-safe-confirm-button',
+        cancelButton: 'bubble-safe-cancel-button',
+      },
+
+      // Aplicação de estilos após a abertura
+      didOpen: (popup) => {
+        // Estilo do Popup (Borda e Sombra Ciano)
+        popup.style.borderRadius = '15px';
+        popup.style.border = '1px solid #17a2b8';
+        popup.style.boxShadow = '0 0 20px rgba(23, 162, 184, 0.4)';
+
+        // Estilo do Título (Ciano)
+        const titleElement = popup.querySelector('.bubble-safe-title');
+        if (titleElement) {
+          titleElement.style.color = '#17a2b8';
+          titleElement.style.fontWeight = '700';
+          titleElement.style.fontSize = '1.5rem';
+        }
+
+        // Estilo do Input (Fundo escuro e Borda Ciano)
+        const inputElement = popup.querySelector('.bubble-safe-input');
+        if (inputElement) {
+          inputElement.style.backgroundColor = '#2c313a';
+          inputElement.style.color = '#E9EDEF';
+          inputElement.style.border = '2px solid #17a2b8';
+          inputElement.style.borderRadius = '8px';
+          inputElement.style.boxShadow = 'inset 0 1px 3px rgba(0, 0, 0, 0.6)';
+        }
+
+        // Estilo do Botão Confirmar (Ciano)
+        const confirmButton = popup.querySelector('.bubble-safe-confirm-button');
+        if (confirmButton) {
+          confirmButton.style.background = '#17a2b8';
+          confirmButton.style.color = 'white';
+          confirmButton.style.borderRadius = '8px';
+          confirmButton.style.fontWeight = 'bold';
+          confirmButton.onmouseover = () => confirmButton.style.background = '#138496';
+          confirmButton.onmouseout = () => confirmButton.style.background = '#17a2b8';
+        }
+
+        // Estilo do Botão Cancelar (Cinza)
+        const cancelButton = popup.querySelector('.bubble-safe-cancel-button');
+        if (cancelButton) {
+          cancelButton.style.background = '#6c757d';
+          cancelButton.style.color = 'white';
+          cancelButton.style.borderRadius = '8px';
+          cancelButton.style.fontWeight = 'bold';
+          cancelButton.onmouseover = () => cancelButton.style.background = '#5a6268';
+          cancelButton.onmouseout = () => cancelButton.style.background = '#6c757d';
+        }
+      },
     });
 
     if (password) {
@@ -514,11 +791,41 @@ const Room = () => {
         isPasswordEnabled: true,
       });
 
-      Swal.fire(
-        "Senha definida!",
-        "A senha foi configurada para a sala.",
-        "success"
-      );
+      // Modal de Sucesso (Também estilizado)
+      Swal.fire({
+        title: "Senha Definida!",
+        text: "O acesso à sala agora requer a senha.",
+        icon: "success",
+        background: '#1e2125',
+        color: '#E9EDEF',
+        customClass: {
+          popup: 'bubble-safe-popup-success',
+          title: 'bubble-safe-title-success',
+          confirmButton: 'bubble-safe-confirm-button',
+        },
+        didOpen: (popup) => {
+          popup.style.borderRadius = '15px';
+          popup.style.border = '1px solid #28a745'; // Borda verde para sucesso
+          popup.style.boxShadow = '0 0 20px rgba(40, 167, 69, 0.4)';
+
+          const titleElement = popup.querySelector('.bubble-safe-title-success');
+          if (titleElement) {
+            titleElement.style.color = '#28a745';
+            titleElement.style.fontWeight = '700';
+            titleElement.style.fontSize = '1.5rem';
+          }
+
+          const confirmButton = popup.querySelector('.bubble-safe-confirm-button');
+          if (confirmButton) {
+            confirmButton.style.background = '#17a2b8';
+            confirmButton.style.color = 'white';
+            confirmButton.style.borderRadius = '8px';
+            confirmButton.style.fontWeight = 'bold';
+            confirmButton.onmouseover = () => confirmButton.style.background = '#138496';
+            confirmButton.onmouseout = () => confirmButton.style.background = '#17a2b8';
+          }
+        }
+      });
     }
   };
 
@@ -530,8 +837,9 @@ const Room = () => {
       let attemptCount = 0;
 
       while (attemptCount < 3) {
-        const { value: enteredPassword } = await Swal.fire({
-          title: "Digite a senha para acessar a sala",
+        const { value: enteredPassword, dismiss } = await Swal.fire({
+          title: "Acesso Restrito",
+          html: `<div style="color: #9d9fa3; font-size: 1rem; margin-bottom: 10px;">Digite a senha para acessar a sala.</div>`,
           input: "password",
           inputLabel: "Senha",
           inputPlaceholder: "Digite a senha de acesso",
@@ -540,28 +848,157 @@ const Room = () => {
             autocapitalize: "off",
             autocorrect: "off",
           },
+
+          // Estilos do Modal
+          background: '#1e2125', // Fundo escuro
+          color: '#E9EDEF', // Texto claro
           showCancelButton: true,
+          confirmButtonText: "Entrar",
+          cancelButtonText: "Sair", // Mais claro
+          focusConfirm: true,
+
+          // Classes customizadas
+          customClass: {
+            popup: 'bubble-safe-popup-verify',
+            title: 'bubble-safe-title',
+            input: 'bubble-safe-input',
+            confirmButton: 'bubble-safe-confirm-button',
+            cancelButton: 'bubble-safe-cancel-button',
+          },
+
+          // Aplicação de estilos após a abertura
+          didOpen: (popup) => {
+            // Estilo do Popup (Borda e Sombra Ciano)
+            popup.style.borderRadius = '15px';
+            popup.style.border = '1px solid #17a2b8';
+            popup.style.boxShadow = '0 0 20px rgba(23, 162, 184, 0.4)';
+
+            // Estilo do Título (Ciano)
+            const titleElement = popup.querySelector('.bubble-safe-title');
+            if (titleElement) {
+              titleElement.style.color = '#17a2b8';
+              titleElement.style.fontWeight = '700';
+              titleElement.style.fontSize = '1.5rem';
+            }
+
+            // Estilo do Input (Fundo escuro e Borda Ciano)
+            const inputElement = popup.querySelector('.bubble-safe-input');
+            if (inputElement) {
+              inputElement.style.backgroundColor = '#2c313a';
+              inputElement.style.color = '#E9EDEF';
+              inputElement.style.border = '2px solid #17a2b8';
+              inputElement.style.borderRadius = '8px';
+              inputElement.style.boxShadow = 'inset 0 1px 3px rgba(0, 0, 0, 0.6)';
+            }
+
+            // Estilo do Botão Confirmar (Ciano)
+            const confirmButton = popup.querySelector('.bubble-safe-confirm-button');
+            if (confirmButton) {
+              confirmButton.style.background = '#17a2b8';
+              confirmButton.style.color = 'white';
+              confirmButton.style.borderRadius = '8px';
+              confirmButton.style.fontWeight = 'bold';
+              confirmButton.onmouseover = () => confirmButton.style.background = '#138496';
+              confirmButton.onmouseout = () => confirmButton.style.background = '#17a2b8';
+            }
+
+            // Estilo do Botão Cancelar (Cinza)
+            const cancelButton = popup.querySelector('.bubble-safe-cancel-button');
+            if (cancelButton) {
+              cancelButton.style.background = '#6c757d';
+              cancelButton.style.color = 'white';
+              cancelButton.style.borderRadius = '8px';
+              cancelButton.style.fontWeight = 'bold';
+              cancelButton.onmouseover = () => cancelButton.style.background = '#5a6268';
+              cancelButton.onmouseout = () => cancelButton.style.background = '#6c757d';
+            }
+          },
         });
+
+        // Se o usuário clicar em Cancelar ou fechar o modal
+        if (dismiss === Swal.DismissReason.cancel || dismiss === Swal.DismissReason.close) {
+          navigate("/");
+          return false;
+        }
 
         if (enteredPassword === roomData.roomPassword) {
           return true;
         } else {
           attemptCount++;
-          setAttempts(attemptCount);
+          // setAttempts(attemptCount); // Assumindo que setAttempts é usado para algo na interface
+
+          // ===============================================
+          // ⭐ Estilização das Mensagens de Erro (Senha Incorreta) ⭐
+          // ===============================================
+
           if (attemptCount >= 3) {
-            Swal.fire(
-              "Acesso bloqueado",
-              "Você excedeu o número de tentativas.",
-              "error"
-            );
-            navigate("/"); // Redireciona após 3 tentativas incorretas
+            Swal.fire({
+              title: "Acesso Bloqueado",
+              text: "Você excedeu o número de tentativas permitidas.",
+              icon: "error",
+              background: '#1e2125',
+              color: '#E9EDEF',
+              confirmButtonText: "Voltar para o Início",
+              customClass: {
+                popup: 'bubble-safe-popup-error',
+                title: 'bubble-safe-title-error',
+                confirmButton: 'bubble-safe-confirm-button-error',
+              },
+              didOpen: (popup) => {
+                popup.style.borderRadius = '15px';
+                popup.style.border = '1px solid #dc3545';
+                popup.style.boxShadow = '0 0 20px rgba(220, 53, 69, 0.4)';
+
+                const titleElement = popup.querySelector('.bubble-safe-title-error');
+                if (titleElement) titleElement.style.color = '#dc3545';
+
+                const confirmButton = popup.querySelector('.bubble-safe-confirm-button-error');
+                if (confirmButton) {
+                  confirmButton.style.background = '#dc3545';
+                  confirmButton.style.color = 'white';
+                  confirmButton.style.borderRadius = '8px';
+                  confirmButton.style.fontWeight = 'bold';
+                  confirmButton.onmouseover = () => confirmButton.style.background = '#c82333';
+                  confirmButton.onmouseout = () => confirmButton.style.background = '#dc3545';
+                }
+              }
+            }).then(() => {
+              navigate("/"); // Garante o redirecionamento após o usuário fechar o alerta
+            });
             return false;
           } else {
-            Swal.fire(
-              "Senha incorreta",
-              `Você tem ${3 - attemptCount} tentativa(s) restante(s).`,
-              "error"
-            );
+            Swal.fire({
+              title: "Senha Incorreta!",
+              text: `Você tem ${3 - attemptCount} tentativa(s) restante(s).`,
+              icon: "warning",
+              background: '#1e2125',
+              color: '#E9EDEF',
+              confirmButtonText: "Tentar Novamente",
+              customClass: {
+                popup: 'bubble-safe-popup-warning',
+                title: 'bubble-safe-title-warning',
+                confirmButton: 'bubble-safe-confirm-button-warning',
+              },
+              didOpen: (popup) => {
+                popup.style.borderRadius = '15px';
+                popup.style.border = '1px solid #ffc107'; // Borda amarela para aviso
+                popup.style.boxShadow = '0 0 20px rgba(255, 193, 7, 0.4)';
+
+                const titleElement = popup.querySelector('.bubble-safe-title-warning');
+                if (titleElement) titleElement.style.color = '#ffc107';
+
+                const confirmButton = popup.querySelector('.bubble-safe-confirm-button-warning');
+                if (confirmButton) {
+                  confirmButton.style.background = '#17a2b8';
+                  confirmButton.style.color = 'white';
+                  confirmButton.style.borderRadius = '8px';
+                  confirmButton.style.fontWeight = 'bold';
+                  confirmButton.onmouseover = () => confirmButton.style.background = '#138496';
+                  confirmButton.onmouseout = () => confirmButton.style.background = '#17a2b8';
+                }
+              }
+            });
+            // O loop while voltará para a próxima tentativa
           }
         }
       }
@@ -1204,21 +1641,84 @@ const Room = () => {
   const toggleDestruction = async () => {
     if (!isDestructionActive) {
       const { value: destructionTime } = await Swal.fire({
-        title: "Escolha o tempo de destruição (segundos)",
+        title: "Configurar Autodestruição",
+        html: `
+        <div style="font-size: 1rem; color: #E9EDEF; margin-bottom: 10px;">
+          Escolha o tempo de vida da mensagem (em segundos).
+        </div>
+      `,
         input: "number",
         inputAttributes: {
           min: 1,
           max: 300,
         },
+        // Estilização do Modal
+        background: '#1e2125', // Fundo escuro
+        color: '#E9EDEF', // Texto claro
         showCancelButton: true,
-        confirmButtonText: "OK",
+        confirmButtonText: "Ativar",
         cancelButtonText: "Cancelar",
+        focusConfirm: true,
+
+        // Classes customizadas
+        customClass: {
+          popup: 'bubble-safe-popup',
+          title: 'bubble-safe-title',
+          input: 'bubble-safe-input',
+          confirmButton: 'bubble-safe-confirm-button',
+          cancelButton: 'bubble-safe-cancel-button',
+        },
+
+        // Validação
         inputValidator: (value) => {
           if (!value) {
             return "Você deve inserir um número!";
           }
           if (value < 1 || value > 300) {
             return "O tempo deve ser entre 1 e 300 segundos!";
+          }
+        },
+
+        // Estilização aplicada após a abertura
+        didOpen: (popup) => {
+          popup.style.borderRadius = '15px';
+          popup.style.border = '1px solid #17a2b8';
+          popup.style.boxShadow = '0 0 20px rgba(23, 162, 184, 0.4)';
+
+          const titleElement = popup.querySelector('.bubble-safe-title');
+          if (titleElement) {
+            titleElement.style.color = '#17a2b8';
+            titleElement.style.fontWeight = '700';
+            titleElement.style.fontSize = '1.5rem';
+          }
+
+          const inputElement = popup.querySelector('.bubble-safe-input');
+          if (inputElement) {
+            inputElement.style.backgroundColor = '#2c313a';
+            inputElement.style.color = '#E9EDEF';
+            inputElement.style.border = '2px solid #17a2b8';
+            inputElement.style.borderRadius = '8px';
+            inputElement.style.boxShadow = 'inset 0 1px 3px rgba(0, 0, 0, 0.6)';
+          }
+
+          const confirmButton = popup.querySelector('.bubble-safe-confirm-button');
+          if (confirmButton) {
+            confirmButton.style.background = '#17a2b8';
+            confirmButton.style.color = 'white';
+            confirmButton.style.borderRadius = '8px';
+            confirmButton.style.fontWeight = 'bold';
+            confirmButton.onmouseover = () => confirmButton.style.background = '#138496';
+            confirmButton.onmouseout = () => confirmButton.style.background = '#17a2b8';
+          }
+
+          const cancelButton = popup.querySelector('.bubble-safe-cancel-button');
+          if (cancelButton) {
+            cancelButton.style.background = '#6c757d';
+            cancelButton.style.color = 'white';
+            cancelButton.style.borderRadius = '8px';
+            cancelButton.style.fontWeight = 'bold';
+            cancelButton.onmouseover = () => cancelButton.style.background = '#5a6268';
+            cancelButton.onmouseout = () => cancelButton.style.background = '#6c757d';
           }
         },
       });
@@ -1239,17 +1739,76 @@ const Room = () => {
         });
       }
     } else {
-      setIsDestructionActive(false);
+      // Modal de confirmação para desativar (também estilizado)
+      const result = await Swal.fire({
+        title: "Desativar Autodestruição?",
+        text: "As mensagens futuras não serão mais apagadas automaticamente.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sim, Desativar",
+        cancelButtonText: "Cancelar",
+        reverseButtons: true,
 
-      database.ref(`rooms/${roomId}`).update({
-        isDestructionActive: false,
+        // Estilização do Modal
+        background: '#1e2125',
+        color: '#E9EDEF',
+
+        // Classes customizadas
+        customClass: {
+          popup: 'bubble-safe-popup',
+          title: 'bubble-safe-title-warning',
+          confirmButton: 'bubble-safe-confirm-button-danger',
+          cancelButton: 'bubble-safe-cancel-button',
+        },
+
+        // Estilização aplicada após a abertura
+        didOpen: (popup) => {
+          popup.style.borderRadius = '15px';
+          popup.style.border = '1px solid #dc3545'; // Borda vermelha para aviso
+          popup.style.boxShadow = '0 0 20px rgba(220, 53, 69, 0.4)';
+
+          const titleElement = popup.querySelector('.bubble-safe-title-warning');
+          if (titleElement) {
+            titleElement.style.color = '#dc3545';
+            titleElement.style.fontWeight = '700';
+            titleElement.style.fontSize = '1.5rem';
+          }
+
+          const confirmButton = popup.querySelector('.bubble-safe-confirm-button-danger');
+          if (confirmButton) {
+            confirmButton.style.background = '#dc3545'; // Botão de desativação vermelho
+            confirmButton.style.color = 'white';
+            confirmButton.style.borderRadius = '8px';
+            confirmButton.style.fontWeight = 'bold';
+            confirmButton.onmouseover = () => confirmButton.style.background = '#c82333';
+            confirmButton.onmouseout = () => confirmButton.style.background = '#dc3545';
+          }
+
+          const cancelButton = popup.querySelector('.bubble-safe-cancel-button');
+          if (cancelButton) {
+            cancelButton.style.background = '#6c757d';
+            cancelButton.style.color = 'white';
+            cancelButton.style.borderRadius = '8px';
+            cancelButton.style.fontWeight = 'bold';
+            cancelButton.onmouseover = () => cancelButton.style.background = '#5a6268';
+            cancelButton.onmouseout = () => cancelButton.style.background = '#6c757d';
+          }
+        },
       });
 
-      database.ref(`rooms/${roomId}/messages`).push({
-        text: "O Moderador desativou as mensagens autodestrutivas.",
-        user: "Sistema",
-        timestamp: new Date().toISOString(),
-      });
+      if (result.isConfirmed) {
+        setIsDestructionActive(false);
+
+        database.ref(`rooms/${roomId}`).update({
+          isDestructionActive: false,
+        });
+
+        database.ref(`rooms/${roomId}/messages`).push({
+          text: "O Moderador desativou as mensagens autodestrutivas.",
+          user: "Sistema",
+          timestamp: new Date().toISOString(),
+        });
+      }
     }
   };
 
@@ -1372,8 +1931,7 @@ const Room = () => {
     if (currentAudio) {
       currentAudio.pause();
       setPlayingAudioId(null);
-      if (progressInterval) clearInterval(progressInterval); // **PARA O LOOP**
-      // Mantemos o currentAudio para retomar, mas paramos o loop de atualização visual.
+      if (progressInterval) clearInterval(progressInterval);
     }
   };
 
@@ -1386,29 +1944,82 @@ const Room = () => {
   };
 
   const showShareModal = () => {
-    const content = (
-      <div>
-        <div className="mb-3">
-          <button id="copyLink" className="btn btn-primary w-100 mb-2">
-            <FontAwesomeIcon icon={faClipboard} className="me-2" /> Copiar Link
-          </button>
-          <button id="emailLink" className="btn btn-primary w-100 mb-2">
-            <FontAwesomeIcon icon={faPaperPlane} className="me-2" /> Enviar por
-            E-mail
-          </button>
-          <button id="whatsappLink" className="btn btn-primary w-100 mb-2">
-            <FontAwesomeIcon icon={faWhatsapp} className="me-2" /> Compartilhar
-            no WhatsApp
-          </button>
-          <button id="telegramLink" className="btn btn-primary w-100">
-            <FontAwesomeIcon icon={faTelegram} className="me-2" /> Compartilhar
-            no Telegram
-          </button>
-        </div>
-      </div>
-    );
+    const contentString = `
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px;">
+      
+      <button id="copyLink" style="
+        background: linear-gradient(135deg, #17a2b8, #138496); 
+        color: white; 
+        border: none; 
+        border-radius: 10px; 
+        padding: 15px 10px; 
+        font-weight: bold; 
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(23, 162, 184, 0.4);
+        transition: all 0.2s ease;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        min-height: 90px;
+        font-size: 0.9rem;
+      " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 15px rgba(23, 162, 184, 0.6)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 10px rgba(23, 162, 184, 0.4)';">
+        <i class="fas fa-link fa-2x"></i>
+        <span style="margin-top: 8px;">Copiar Link</span>
+      </button>
 
-    const contentString = ReactDOMServer.renderToString(content);
+      <button id="whatsappLink" style="
+        background: linear-gradient(135deg, #25D366, #128C7E); 
+        color: white; 
+        border: none; 
+        border-radius: 10px; 
+        padding: 15px 10px; 
+        font-weight: bold; 
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(37, 211, 102, 0.4);
+        transition: all 0.2s ease;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        min-height: 90px;
+        font-size: 0.9rem;
+      " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 15px rgba(37, 211, 102, 0.6)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 10px rgba(37, 211, 102, 0.4)';">
+        <i class="fab fa-whatsapp fa-2x"></i>
+        <span style="margin-top: 8px;">WhatsApp</span>
+      </button>
+      
+      <button id="emailLink" style="
+        background: linear-gradient(135deg, #6c757d, #5a6268); 
+        color: white; 
+        border: none; 
+        border-radius: 10px; 
+        padding: 15px 10px; 
+        font-weight: bold; 
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(108, 117, 125, 0.4);
+        transition: all 0.2s ease;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        min-height: 90px;
+        font-size: 0.9rem;
+      " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 15px rgba(108, 117, 125, 0.6)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 10px rgba(108, 117, 125, 0.4)';">
+        <i class="fas fa-envelope fa-2x"></i>
+        <span style="margin-top: 8px;">E-mail</span>
+      </button>
+
+      <button id="telegramLink" style="
+        background: linear-gradient(135deg, #0088CC, #006EAA); 
+        color: white; 
+        border: none; 
+        border-radius: 10px; 
+        padding: 15px 10px; 
+        font-weight: bold; 
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0, 136, 204, 0.4);
+        transition: all 0.2s ease;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        min-height: 90px;
+        font-size: 0.9rem;
+      " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 15px rgba(0, 136, 204, 0.6)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 10px rgba(0, 136, 204, 0.4)';">
+        <i class="fab fa-telegram-plane fa-2x"></i>
+        <span style="margin-top: 8px;">Telegram</span>
+      </button>
+    </div>
+  `;
 
     Swal.fire({
       title: "Escolha uma opção para compartilhar",
@@ -1416,22 +2027,54 @@ const Room = () => {
       showCloseButton: true,
       showCancelButton: false,
       showConfirmButton: false,
-      didOpen: () => {
+      background: '#1e2125',
+      color: '#E9EDEF',
+      customClass: {
+        popup: 'bubble-safe-popup',
+        title: 'bubble-safe-title',
+        closeButton: 'bubble-safe-close-button'
+      },
+      didOpen: (popup) => {
+        popup.style.borderRadius = '15px';
+        popup.style.border = '1px solid #17a2b8';
+        popup.style.boxShadow = '0 0 20px rgba(23, 162, 184, 0.4)';
+
+        const titleElement = popup.querySelector('.bubble-safe-title');
+        if (titleElement) {
+          titleElement.style.color = '#17a2b8';
+          titleElement.style.fontWeight = '700';
+          titleElement.style.fontSize = '1.5rem';
+        }
+
+        const closeButton = popup.querySelector('.bubble-safe-close-button');
+        if (closeButton) {
+          closeButton.style.color = '#E9EDEF';
+          closeButton.style.fontSize = '1.2rem';
+          closeButton.onmouseover = () => closeButton.style.color = '#dc3545';
+          closeButton.onmouseout = () => closeButton.style.color = '#E9EDEF';
+        }
+
+        // Lógica de Eventos (Permanece a mesma, só ajustei o Swal.close() do sucesso)
         document.getElementById("copyLink").addEventListener("click", () => {
+          Swal.close(); // Fecha o modal de compartilhamento antes de mostrar o toast
           navigator.clipboard
             .writeText(shareLink2)
             .then(() => {
               Swal.fire({
-                title: "Sucesso!",
+                title: "Copiado!",
                 text: "Link copiado para a área de transferência!",
                 icon: "success",
-                confirmButtonText: "Ok",
+                timer: 1500,
+                showConfirmButton: false,
+                background: '#1e2125',
+                color: '#E9EDEF',
+                position: 'top-end',
+                toast: true
               });
             })
             .catch((err) => {
               console.error("Erro ao copiar: ", err);
             });
-          Swal.close();
         });
 
         document.getElementById("emailLink").addEventListener("click", () => {
@@ -1458,7 +2101,7 @@ const Room = () => {
           .getElementById("telegramLink")
           .addEventListener("click", () => {
             window.open(
-              `https://t.me/share/url?url=${shareLink2}`,
+              `https://t.me/share/url?url=${shareLink2}&text=Confira este link do chat:`,
               "_blank",
               "noopener,noreferrer"
             );
@@ -1519,41 +2162,130 @@ const Room = () => {
     cursor: "pointer",
   };
 
-  const QRCodeModal = ({ shareLink }) => (
-    <div
-      style={{
-        borderRadius: "10px",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        maxWidth: "100%",
-        padding: "10px",
-      }}
-    >
-      <QRCodeCanvas
-        value={shareLink}
-        size={Math.min(window.innerWidth * 0.8, 190)}
+  const QRCodeModal = ({ shareLink }) => {
+    const handleCopy = () => {
+      navigator.clipboard.writeText(shareLink);
+      Swal.fire({
+        title: 'Copiado!',
+        text: 'O link da sala foi copiado para a área de transferência.',
+        icon: 'success',
+        timer: 1500,
+        showConfirmButton: false,
+        background: '#1e2125',
+        color: '#E9EDEF',
+        position: 'top-end',
+        toast: true
+      });
+    };
+
+    return (
+      <div
         style={{
-          borderRadius: "10px",
-          overflow: "hidden",
-          width: "100%",
-          height: "auto",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          maxWidth: "100%",
+          padding: "10px",
         }}
-      />
-      <p className="d-none">Link: {shareLink}</p>
-    </div>
-  );
+      >
+        <div
+          style={{
+            padding: '10px',
+            backgroundColor: '#fff',
+            borderRadius: '12px',
+            margin: '15px auto',
+            border: '4px solid #17a2b8',
+            boxShadow: '0 0 15px rgba(23, 162, 184, 0.6)'
+          }}
+        >
+          <QRCodeCanvas
+            value={shareLink}
+            size={Math.min(window.innerWidth * 0.8, 190)}
+            style={{
+              borderRadius: "8px",
+              overflow: "hidden",
+              display: 'block'
+            }}
+          />
+        </div>
+
+        <div
+          style={{
+            backgroundColor: '#2c313a',
+            borderRadius: '8px',
+            padding: '10px',
+            marginTop: '15px',
+            border: '1px solid #17a2b8',
+            width: '100%',
+            textAlign: 'center',
+            display: 'none'
+          }}
+        >
+          <p style={{ margin: 0, color: '#9d9fa3', fontSize: '0.8rem' }}>Link para Compartilhar:</p>
+          <code
+            style={{
+              color: 'transparent',
+              overflowWrap: 'break-word',
+              fontSize: '0.9rem',
+              display: 'block'
+            }}
+          >
+            {shareLink}
+          </code>
+        </div>
+
+        <button
+          onClick={handleCopy}
+          className="btn btn-info mt-3 w-100"
+          style={{
+            backgroundColor: '#17a2b8',
+            borderColor: '#17a2b8',
+            fontWeight: 'bold',
+            borderRadius: '8px',
+            transition: 'background-color 0.3s, transform 0.2s',
+            height: '45px'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#138496'}
+          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#17a2b8'}
+        >
+          <FontAwesomeIcon icon={faCopy} className="me-2" />
+          Copiar Link
+        </button>
+
+        <p className="d-none">Link: {shareLink}</p>
+      </div>
+    );
+  };
 
   const showQRCode = () => {
     const modalContent = document.createElement("div");
     ReactDOM.render(<QRCodeModal shareLink={shareLink2} />, modalContent);
 
     Swal.fire({
-      title: "QR Code",
+      title: `<span style="color: #17a2b8; font-weight: 700; font-size: 1.5rem;"><i class="fas fa-qrcode"></i> Compartilhar Sala Segura</span>`,
       html: modalContent,
       showCloseButton: true,
       showCancelButton: false,
       showConfirmButton: false,
+      background: '#1e2125',
+      color: '#E9EDEF',
+      customClass: {
+        popup: 'bubble-safe-popup-qr',
+        closeButton: 'bubble-safe-close-button'
+      },
+      didOpen: (popup) => {
+        popup.style.borderRadius = '15px';
+        popup.style.border = '1px solid #17a2b8';
+        popup.style.boxShadow = '0 0 20px rgba(23, 162, 184, 0.4)';
+
+        const closeButton = popup.querySelector('.bubble-safe-close-button');
+        if (closeButton) {
+          closeButton.style.color = '#E9EDEF';
+          closeButton.style.fontSize = '1.2rem';
+          closeButton.onmouseover = () => closeButton.style.color = '#dc3545';
+          closeButton.onmouseout = () => closeButton.style.color = '#E9EDEF';
+        }
+      }
     });
   };
 
@@ -1859,29 +2591,25 @@ const Room = () => {
                         whileHover={{ scale: 1.1, backgroundColor: 'rgba(255, 255, 255, 0.2)' }}
                         whileTap={{ scale: 0.9 }}
                       >
-                        {/* Ícone de três pontos verticais (Opções) */}
                         <FontAwesomeIcon icon={faEllipsisV} style={{ fontSize: '1.2rem' }} />
                       </motion.button>
 
                       <AnimatePresence>
                         {isDropdownOpen && (
                           <motion.div
-                            className="dropdown-menu show position-absolute mt-2 p-2 bg-dark rounded shadow"
+                            className="dropdown-menu show position-absolute mt-2 p-2 rounded shadow"
                             initial={{ opacity: 0, scale: 0.95, y: -10 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: -10 }}
                             transition={{ duration: 0.2 }}
                             style={{
-                              // Posição ajustada para alinhar com o lado direito do botão
                               left: "-160px",
                               top: "100%",
-                              zIndex: 1050,
+                              zIndex: 2000,
                               minWidth: "220px",
-                              // Adiciona uma pequena flecha (opcional, requer CSS adicional ou uso de ::before)
-                              // Você pode manter este estilo, mas o menu flutuará corretamente abaixo e à esquerda do ícone.
+                              backgroundColor: '#212529',
                             }}
                           >
-                            {/* Botões do Dropdown (Mantidos) */}
                             <li className="nav-item">
                               <button
                                 className="dropdown-item compart text-white d-flex align-items-center"
@@ -2106,45 +2834,164 @@ const Room = () => {
 
           const promptPasswordAndDisplayMessage = async () => {
             let attemptCount = 0;
+            const maxAttempts = 3;
+
             const checkPassword = async () => {
-              const { value: enteredPassword } = await Swal.fire({
-                title: "Digite a senha para ver a mensagem",
+              const { value: enteredPassword, isConfirmed, dismiss } = await Swal.fire({
+                title: "Desbloquear Mensagem",
+                html: `
+        <div style="color: #9d9fa3; font-size: 1rem; margin-bottom: 10px;">
+          Digite a senha para visualizar o conteúdo protegido.
+        </div>
+      `,
                 input: "password",
                 inputLabel: "Senha",
-                inputPlaceholder: "Digite a senha",
+                inputPlaceholder: "Digite a senha (máx. 10 caracteres)",
                 inputAttributes: {
                   maxlength: 10,
                   autocapitalize: "off",
                   autocorrect: "off",
                 },
+
+                // Estilos do Modal Principal
+                background: '#1e2125',
+                color: '#E9EDEF',
                 showCancelButton: true,
+                confirmButtonText: "Desbloquear",
+                cancelButtonText: "Cancelar",
+                focusConfirm: true,
+
+                // Classes customizadas
+                customClass: {
+                  popup: 'bubble-safe-popup-decrypt',
+                  title: 'bubble-safe-title',
+                  input: 'bubble-safe-input',
+                  confirmButton: 'bubble-safe-confirm-button',
+                  cancelButton: 'bubble-safe-cancel-button',
+                },
+
+                // Aplicação de estilos após a abertura
+                didOpen: (popup) => {
+                  popup.style.borderRadius = '15px';
+                  popup.style.border = '1px solid #17a2b8';
+                  popup.style.boxShadow = '0 0 20px rgba(23, 162, 184, 0.4)';
+
+                  const titleElement = popup.querySelector('.bubble-safe-title');
+                  if (titleElement) {
+                    titleElement.style.color = '#17a2b8';
+                    titleElement.style.fontWeight = '700';
+                    titleElement.style.fontSize = '1.5rem';
+                  }
+
+                  const inputElement = popup.querySelector('.bubble-safe-input');
+                  if (inputElement) {
+                    inputElement.style.backgroundColor = '#2c313a';
+                    inputElement.style.color = '#E9EDEF';
+                    inputElement.style.border = '2px solid #17a2b8';
+                    inputElement.style.borderRadius = '8px';
+                    inputElement.style.boxShadow = 'inset 0 1px 3px rgba(0, 0, 0, 0.6)';
+                  }
+
+                  const confirmButton = popup.querySelector('.bubble-safe-confirm-button');
+                  if (confirmButton) {
+                    confirmButton.style.background = '#17a2b8';
+                    confirmButton.style.color = 'white';
+                    confirmButton.style.borderRadius = '8px';
+                    confirmButton.style.fontWeight = 'bold';
+                    confirmButton.onmouseover = () => confirmButton.style.background = '#138496';
+                    confirmButton.onmouseout = () => confirmButton.style.background = '#17a2b8';
+                  }
+
+                  const cancelButton = popup.querySelector('.bubble-safe-cancel-button');
+                  if (cancelButton) {
+                    cancelButton.style.background = '#6c757d';
+                    cancelButton.style.color = 'white';
+                    cancelButton.style.borderRadius = '8px';
+                    cancelButton.style.fontWeight = 'bold';
+                    cancelButton.onmouseover = () => cancelButton.style.background = '#5a6268';
+                    cancelButton.onmouseout = () => cancelButton.style.background = '#6c757d';
+                  }
+                },
               });
 
-              if (enteredPassword) {
+              if (isConfirmed && enteredPassword) {
                 if (enteredPassword === msg.password) {
-                  Swal.fire(
-                    "Correto!",
-                    "Aqui está sua mensagem: " + msg.text,
-                    "success"
-                  );
+                  // ⭐ Modal de Sucesso (Visão) ⭐
+                  Swal.fire({
+                    title: "Acesso Concedido!",
+                    html: `<div style="text-align: left; max-height: 200px; overflow-y: auto; padding: 10px; border: 1px solid #28a745; border-radius: 5px; background-color: #2c313a;">
+                   <strong style="color: #28a745;">Mensagem:</strong><br/>${msg.text}
+                 </div>`,
+                    icon: "success",
+                    background: '#1e2125',
+                    color: '#E9EDEF',
+                    confirmButtonText: "Fechar",
+                    customClass: {
+                      popup: 'bubble-safe-popup-success',
+                      title: 'bubble-safe-title-success',
+                      confirmButton: 'bubble-safe-confirm-button-success',
+                    },
+                    didOpen: (popup) => {
+                      popup.style.borderRadius = '15px';
+                      popup.style.border = '1px solid #28a745';
+                      popup.style.boxShadow = '0 0 20px rgba(40, 167, 69, 0.4)';
+                      const titleElement = popup.querySelector('.bubble-safe-title-success');
+                      if (titleElement) titleElement.style.color = '#28a745';
+                    }
+                  });
                 } else {
                   attemptCount++;
-                  if (attemptCount >= 3) {
+                  const attemptsLeft = maxAttempts - attemptCount;
+
+                  if (attemptCount >= maxAttempts) {
+                    // ⭐ Modal de Erro Crítico (Mensagem Excluída) ⭐
                     const messageRef = database.ref(
                       `rooms/${roomId}/messages/${msg.id}`
                     );
                     messageRef.remove();
-                    Swal.fire(
-                      "Erro!",
-                      "A senha estava incorreta 3 vezes. A mensagem foi excluída.",
-                      "error"
-                    );
+
+                    Swal.fire({
+                      title: "Mensagem Autodestruída!",
+                      text: `A senha estava incorreta ${maxAttempts} vezes. A mensagem foi excluída para sua segurança.`,
+                      icon: "error",
+                      background: '#1e2125',
+                      color: '#E9EDEF',
+                      confirmButtonText: "Entendi",
+                      customClass: {
+                        popup: 'bubble-safe-popup-error',
+                        title: 'bubble-safe-title-error',
+                        confirmButton: 'bubble-safe-confirm-button-error',
+                      },
+                      didOpen: (popup) => {
+                        popup.style.borderRadius = '15px';
+                        popup.style.border = '1px solid #dc3545';
+                        popup.style.boxShadow = '0 0 20px rgba(220, 53, 69, 0.4)';
+                        const titleElement = popup.querySelector('.bubble-safe-title-error');
+                        if (titleElement) titleElement.style.color = '#dc3545';
+                      }
+                    });
                   } else {
-                    Swal.fire(
-                      "Erro!",
-                      "Senha incorreta. Tente novamente.",
-                      "error"
-                    ).then(checkPassword);
+                    // ⭐ Modal de Erro Leve (Tentar Novamente) ⭐
+                    Swal.fire({
+                      title: "Senha Incorreta",
+                      text: `Tente novamente. Você tem ${attemptsLeft} tentativa(s) restante(s).`,
+                      icon: "warning",
+                      background: '#1e2125',
+                      color: '#E9EDEF',
+                      confirmButtonText: "Tentar Novamente",
+                      customClass: {
+                        popup: 'bubble-safe-popup-warning',
+                        title: 'bubble-safe-title-warning',
+                        confirmButton: 'bubble-safe-confirm-button',
+                      },
+                      didOpen: (popup) => {
+                        popup.style.borderRadius = '15px';
+                        popup.style.border = '1px solid #ffc107';
+                        popup.style.boxShadow = '0 0 20px rgba(255, 193, 7, 0.4)';
+                        const titleElement = popup.querySelector('.bubble-safe-title-warning');
+                        if (titleElement) titleElement.style.color = '#ffc107';
+                      }
+                    }).then(checkPassword); // Chama a função recursivamente para nova tentativa
                   }
                 }
               }
@@ -2245,7 +3092,7 @@ const Room = () => {
                       textOverflow: 'ellipsis',
                       fontSize: '0.9rem'
                     }}>
-                      {msg.replyTo.text}
+                      {msg.replyTo.text ? decryptMessage(msg.replyTo.text) : "Mensagem Original"}
                     </span>
                   </div>
                 )}
@@ -2586,13 +3433,11 @@ const Room = () => {
           paddingTop: '10px', // Padding superior para o caso do replyingTo
         }}
       >
-        {/* 💡 PREVIEW DE RESPOSTA: Forçamos position: relative no style para garantir o ancoramento */}
         {replyingTo && (
           <div
-            // Mantemos as classes, mas adicionamos position: relative no style
             className="replying-to p-2 mx-3 mb-2 rounded-top"
             style={{
-              position: 'relative', // 💡 FORÇANDO position: relative para ser o referencial
+              position: 'relative',
               backgroundColor: '#383e47',
               borderLeft: "4px solid #02ffc8ff",
               color: '#E9EDEF',
@@ -2628,19 +3473,20 @@ const Room = () => {
                 marginRight: '10px',
               }}
             >
-              {/* LINHA 1: Nome do Usuário */}
               <strong
                 style={{
                   color: '#02ffc8ff',
-                  fontWeight: '600',
-                  display: 'block',
-                  fontSize: '0.85rem'
+                  fontWeight: '700', // Um pouco mais de peso
+                  fontSize: '0.85rem',
+                  display: 'flex', // Usar flex para alinhar o ícone
+                  alignItems: 'center',
+                  gap: '5px' // Espaçamento entre ícone e texto
                 }}
               >
-                Respondendo a {replyingTo.user}:
+                <FontAwesomeIcon icon={faReply} style={{ color: '#02ffc8ff', transform: 'scaleX(-1)' }} />
+                Respondendo a {replyingTo.user}
               </strong>
 
-              {/* LINHA 2: Texto da Mensagem Original */}
               <span
                 style={{
                   display: 'block',
@@ -2722,7 +3568,6 @@ const Room = () => {
             </div>
           ) : (
             <div className="d-flex align-items-center w-100 position-relative">
-              {/* ... Menu de Opções (showOptions) ... */}
               {showOptions && (
                 <div
                   className="position-absolute shadow-lg rounded-3 bg-dark text-white p-2"
@@ -2735,7 +3580,6 @@ const Room = () => {
                     zIndex: 100,
                   }}
                 >
-                  {/* ... Opções do menu ... */}
                   <button
                     className="d-flex align-items-center w-100 btn text-white text-start py-2"
                     onClick={() => {
@@ -2806,10 +3650,13 @@ const Room = () => {
                 </div>
               )}
 
-              {/* Botão de + */}
               <div className="d-flex align-items-center me-2">
                 <button
-                  onClick={toggleOptions}
+                  ref={buttonRef}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleOptions();
+                  }}
                   className="btn btn-secondary rounded-circle shadow-lg d-flex justify-content-center align-items-center"
                   style={{
                     width: "40px",
@@ -2819,11 +3666,10 @@ const Room = () => {
                     borderColor: "#495057",
                   }}
                 >
-                  <FontAwesomeIcon icon={faPlus} />
+                  <FontAwesomeIcon icon={showOptions ? faTimes : faPlus} />
                 </button>
               </div>
 
-              {/* Campo de Input/Microfone */}
               <div className="input-with-icon w-100 position-relative me-2">
                 <input
                   type="text"
@@ -2894,60 +3740,119 @@ const Room = () => {
           className="modal show d-block"
           tabIndex="-1"
           role="dialog"
-          style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+          style={{
+            backgroundColor: "rgba(0, 0, 0, 0.7)", // Fundo mais escuro
+            backdropFilter: "blur(5px)", // Efeito de desfoque moderno
+          }}
         >
-          <div className="modal-dialog" role="document">
-            <div className="modal-content bg-dark">
-              <div className="modal-header">
-                <h5 className="modal-title">
-                  <FontAwesomeIcon icon={faUserSlash} /> Expulsar Usuários
+          <div className="modal-dialog modal-dialog-centered" role="document">
+            <div
+              className="modal-content"
+              style={{
+                backgroundColor: "#1e2125", // Darker background
+                border: "1px solid #17a2b8", // Borda ciano sutil
+                borderRadius: "15px", // Bordas mais arredondadas
+                boxShadow: "0 0 25px rgba(23, 162, 184, 0.3)", // Sombra ciano
+              }}
+            >
+              <div
+                className="modal-header"
+                style={{
+                  borderBottom: "1px solid #333", // Divisor sutil
+                  padding: "15px 20px",
+                  color: "#fff",
+                }}
+              >
+                <h5 className="modal-title d-flex align-items-center fw-bold">
+                  <FontAwesomeIcon
+                    icon={faUserSlash}
+                    className="me-2"
+                    style={{ color: "#dc3545" }} // Ícone vermelho para ação perigosa
+                  />
+                  Gerenciamento de Expulsão
                 </h5>
                 <button
                   type="button"
-                  className="btn-close text-bg-light"
+                  className="btn-close"
                   aria-label="Close"
                   onClick={toggleExpelModal}
+                  style={{ filter: "invert(1)", opacity: 0.8 }} // Ícone X branco
                 ></button>
               </div>
-              <div className="modal-body bg-dark">
-                <div className="d-flex align-items-center">
+
+              <div className="modal-body" style={{ padding: "20px" }}>
+                {/* Seletor de Usuário e Botão de Expulsar Individual */}
+                <div className="d-flex align-items-center mb-3">
                   <select
                     value={selectedUser}
                     onChange={(e) => setSelectedUser(e.target.value)}
-                    className="form-select my-2 border border-primary"
+                    className="form-select me-2"
+                    style={{
+                      backgroundColor: "#2c313a",
+                      color: "#e9edef",
+                      border: "2px solid #17a2b8", // Borda ciano
+                      borderRadius: "8px",
+                      height: "45px",
+                      transition: "border-color 0.3s",
+                    }}
                   >
-                    <option value="">Selecione um usuário</option>
+                    <option value="">Selecione um usuário para expulsar</option>
                     {allUsers.map((user) => (
                       <option key={user} value={user}>
                         {user}
                       </option>
                     ))}
                   </select>
+
                   <button
-                    className="btn btn-danger"
+                    className="btn"
                     onClick={() => {
                       expelUser(selectedUser);
                       toggleExpelModal();
                     }}
                     disabled={!selectedUser}
-                    style={{ transition: "background-color 0.3s" }}
-                    onMouseOver={(e) =>
-                      (e.currentTarget.style.backgroundColor = "#c82333")
-                    }
-                    onMouseOut={(e) =>
-                      (e.currentTarget.style.backgroundColor = "")
-                    }
+                    style={{
+                      backgroundColor: "#dc3545", // Vermelho forte
+                      color: "#fff",
+                      fontWeight: "bold",
+                      border: "none",
+                      borderRadius: "8px",
+                      minWidth: "45px",
+                      height: "45px",
+                      transition: "background-color 0.3s ease, transform 0.2s ease",
+                    }}
+                    onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#c82333")}
+                    onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#dc3545")}
                   >
                     <FontAwesomeIcon icon={faTrashAlt} />
                   </button>
+                </div>
+
+                <hr style={{ borderColor: '#333' }} />
+
+                {/* Botão de Expulsar Todos os Usuários */}
+                <div className="d-grid gap-2">
                   <button
-                    className="btn btn-danger my-2"
+                    className="btn btn-lg"
                     onClick={expelAllUsers}
-                    style={{ transition: "background-color 0.3s" }}
+                    style={{
+                      backgroundColor: "#7e1a24", // Vermelho escuro, indicando perigo
+                      color: "#fff",
+                      fontWeight: "bold",
+                      border: "2px solid #dc3545", // Borda vermelha
+                      borderRadius: "8px",
+                      padding: "10px 0",
+                      fontSize: "1rem",
+                      transition: "background-color 0.3s ease, transform 0.2s ease",
+                    }}
+                    onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#dc3545")}
+                    onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#7e1a24")}
                   >
-                    Expulsar Todos os Usuários
+                    <FontAwesomeIcon icon={faExclamationTriangle} className="me-2" />
+                    EXPULSAR TODOS OS USUÁRIOS
                   </button>
                 </div>
+
               </div>
             </div>
           </div>

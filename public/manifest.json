@@ -5,14 +5,14 @@
 
   "icons": [
     {
-      "src": "/icon-page-200.png",
+      "src": "/icon-page-200-preview.jpg",
       "sizes": "200x200",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icon-page-200.png",
-      "sizes": "200x200",
+      "src": "/icon-page-200-preview.jpg",
+      "sizes": "200x200",                                          
       "type": "image/png",
       "purpose": "any maskable"
     }
@@ -29,7 +29,7 @@
 
   "screenshots": [
     {
-      "src": "/icon-page-200.png",
+      "src": "/icon-page-200-preview.jpg",
       "sizes": "200x200",
       "type": "image/png",
       "form_factor": "narrow"
@@ -41,13 +41,13 @@
       "name": "Criar Sala",
       "short_name": "Nova Sala",
       "url": "/create-room",
-      "icons": [{ "src": "/icon-page-200.png", "sizes": "200x200" }]
+      "icons": [{ "src": "/icon-page-200-preview.jpg", "sizes": "200x200" }]
     },
     {
       "name": "Meus Planos",
       "short_name": "Planos",
       "url": "/planos",
-      "icons": [{ "src": "/icon-page-200.png", "sizes": "200x200" }]
+      "icons": [{ "src": "/icon-page-200-preview.jpg", "sizes": "200x200" }]
     }
   ],
 

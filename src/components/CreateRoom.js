@@ -20,6 +20,7 @@ import {
   faPowerOff,
   faUserCircle,
   faArrowRight,
+  faSync,
 } from "@fortawesome/free-solid-svg-icons";
 import iconPage from "./img/icon-menu.png";
 import { EmailAuthProvider, getAuth } from "firebase/auth";
@@ -34,8 +35,22 @@ import {
   get,
 } from "firebase/database";
 
+const fetchRandomName = async () => {
+  try {
+    const response = await fetch('https://randomuser.me/api/?nat=us,gb,au');
+    const data = await response.json();
+    const nameData = data.results[0].name;
+    const uniqueName = `${nameData.first}'s ${nameData.last} Hideout`;
+    return uniqueName;
+  } catch (error) {
+    console.error("Erro ao buscar nome:", error);
+    return "The Randomizer Failure"; // Nome de fallback
+  }
+};
+
 const CreateRoom = () => {
-  const [roomName, setRoomName] = useState("");
+  const [roomName, setRoomName] = useState();
+  const [isFetchingName, setIsFetchingName] = useState(false);
   const [userEmail, setUserEmail] = useState(null);
   const [userName, setUserName] = useState("");
   const [isNameConfirmed, setIsNameConfirmed] = useState(false);
@@ -50,6 +65,17 @@ const CreateRoom = () => {
   const [userApelido, setUserApelido] = useState("");
   const LOGOUT_TIMEOUT = 60 * 60 * 1000;
   let logoutTimer;
+
+  const generateNewName = async () => {
+    setIsFetchingName(true);
+    const newName = await fetchRandomName();
+    setRoomName(newName);
+    setIsFetchingName(false);
+  };
+
+  useEffect(() => {
+    generateNewName();
+  }, []);
 
   useEffect(() => {
     setUserName(userApelido);
@@ -452,6 +478,7 @@ const CreateRoom = () => {
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
+  
 
   return (
     <div className="auth-container">
@@ -610,11 +637,14 @@ const CreateRoom = () => {
                 initial={{ opacity: 0, y: -15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-                style={{
-                  color: "#F5F5F5",
-                  fontWeight: "bold",
-                  fontSize: "0.9rem",
-                }}
+               style={{
+      background: 'linear-gradient(90deg, #17a2b8, #F5F5F5, #17a2b8)',
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent',
+      fontSize: '0.9rem',
+      textAlign: 'center',
+      marginBottom: '10px'
+    }}
               >
                 Escolha um nome criativo para sua jornada
               </motion.span>
@@ -766,10 +796,13 @@ const CreateRoom = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.4 }}
                   style={{
-                    color: "#F5F5F5",
-                    fontWeight: "bold",
-                    fontSize: "0.9rem",
-                  }}
+      background: 'linear-gradient(90deg, #17a2b8, #F5F5F5, #17a2b8)',
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent',
+      fontSize: '0.9rem',
+      textAlign: 'center',
+      marginBottom: '10px'
+    }}
                 >
                   Nomeie sua sala de forma única e criativa
                 </motion.span>
@@ -777,10 +810,10 @@ const CreateRoom = () => {
                 <div
                   className="mb-3"
                   style={{
-                    display: "flex", // Contêiner Flex principal para todos os três elementos
+                    display: "flex",
                     alignItems: "center",
-                    gap: "0px", // Remove espaçamento entre os itens
-                    maxWidth: "550px", // Aumentei um pouco o max-width para caber 3 itens
+                    gap: "0px",
+                    maxWidth: "550px",
                     margin: "0 auto",
                     minHeight: "45px",
                   }}
@@ -795,10 +828,10 @@ const CreateRoom = () => {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5, delay: 0.5 }}
                     style={{
-                      flexGrow: 1, // Cresce para ocupar o espaço
+                      flexGrow: 1,
                       border: "2px solid #17a2b8",
-                      borderRight: "none", // Cola no botão Confirmar
-                      borderRadius: "8px 0 0 8px", // Cantos arredondados apenas na extrema esquerda
+                      borderRight: "none",
+                      borderRadius: "8px 0 0 8px",
                       padding: "5px 10px",
                       fontSize: "1rem",
                       background: "#2c313a",
@@ -827,9 +860,9 @@ const CreateRoom = () => {
                           fontWeight: "bold",
                           color: "#fff",
                           border: "2px solid #138496",
-                          borderLeft: "none", // Cola no input
-                          borderRight: "none", // Cola no botão Cancelar
-                          borderRadius: "0", // Sem cantos arredondados
+                          borderLeft: "none",
+                          borderRight: "none",
+                          borderRadius: "0",
                           background: "linear-gradient(90deg, #138496, rgb(23, 117, 184))",
                           boxShadow: "0 4px 10px rgba(23, 162, 184, 0.4)",
                           display: "flex",
@@ -849,19 +882,20 @@ const CreateRoom = () => {
                         )}
                       </motion.button>
 
+                      {/* Botão de Cancelar/Limpar */}
                       <motion.button
                         className="btn btn-danger cancroom"
-                        onClick={handleCancelName}
+                        onClick={() => setRoomName('')} // Alterei para limpar o campo
                         whileHover={{ scale: 1.03 }}
                         whileTap={{ scale: 0.98 }}
                         style={{
-                          width: "50px", // Largura fixa
+                          width: "50px",
                           padding: "10px 0px",
                           fontWeight: "bold",
                           color: "#fff",
                           border: "2px solid rgb(184, 23, 23)",
-                          borderLeft: "none", // Cola no botão Confirmar
-                          borderRadius: "0 8px 8px 0", // Cantos arredondados apenas na extrema direita
+                          borderLeft: "none",
+                          borderRadius: "0 8px 8px 0",
                           background: "linear-gradient(90deg,rgb(203, 81, 81), rgb(184, 23, 23))",
                           boxShadow: "0 4px 10px rgba(203, 81, 81, 0.4)",
                           display: "flex",
