@@ -26,6 +26,10 @@ import {
   faEdit,
   faTrash,
   faCamera,
+  faArrowRight,
+  faVideo,
+  faUsers,
+  faDoorOpen,
 } from "@fortawesome/free-solid-svg-icons";
 import { motion, AnimatePresence } from 'framer-motion';
 import { EmailAuthProvider } from "firebase/auth";
@@ -165,7 +169,7 @@ const UserProfile = () => {
           });
           setUserRooms(rooms);
         } else {
-          setUserRooms([]); // Sem salas encontradas
+          setUserRooms([]);
         }
         setLoading(false);
       },
@@ -322,11 +326,9 @@ const UserProfile = () => {
         const reauthenticated = await reauthenticateUser();
         if (!reauthenticated) return;
 
-        // Remover usuário do nó 'users'
         const userRef = ref(database, `users/${currentUser.uid}`);
         await remove(userRef);
 
-        // Remover todas as salas criadas pelo usuário
         for (const room of userRooms) {
           const roomRef = ref(database, `rooms/${room.id}`);
           await remove(roomRef);
@@ -511,7 +513,6 @@ const UserProfile = () => {
         boxShadow: '0 8px 20px rgba(0, 0, 0, 0.5)',
         color: '#E9EDEF'
       }}>
-        {/* --- Seção do Avatar --- */}
         <div className="text-center mb-5">
           <motion.div
             onClick={handleToggleAvatarSelector}
@@ -538,7 +539,6 @@ const UserProfile = () => {
                 objectFit: 'cover'
               }}
             />
-            {/* Ícone de edição flutuante para indicar interatividade */}
             <div
               style={{
                 position: 'absolute',
@@ -556,7 +556,6 @@ const UserProfile = () => {
           </motion.div>
         </div>
 
-        {/* --- Seletor de Avatar (Toggle) --- */}
         <AnimatePresence>
           {showAvatarSelector && (
             <motion.div
@@ -569,14 +568,14 @@ const UserProfile = () => {
             >
               <h4 className="text-center" style={{ color: '#02ffc8ff', marginBottom: '15px' }}>Escolha um Avatar</h4>
               <div
-                className="avatar-grid d-flex flex-wrap justify-content-center" // Mantemos o flex-wrap para permitir múltiplas linhas
+                className="avatar-grid d-flex flex-wrap justify-content-center"
                 style={{
                   gap: '10px',
-                  maxHeight: '220px', // Define a altura máxima para mostrar cerca de 3 linhas (60px * 3 + padding/gap)
-                  overflowY: 'auto',   // Habilita a rolagem vertical
-                  overflowX: 'hidden', // Esconde a rolagem horizontal
-                  padding: '10px 5px', // Adiciona padding interno para melhor visualização
-                  backgroundColor: '#1E2328', // Fundo sutil para o scroll
+                  maxHeight: '220px',
+                  overflowY: 'auto',
+                  overflowX: 'hidden',
+                  padding: '10px 5px',
+                  backgroundColor: '#1E2328',
                   borderRadius: '6px'
                 }}
               >
@@ -597,7 +596,6 @@ const UserProfile = () => {
                       overflow: 'hidden',
                       border: selectedAvatar === avatar ? '3px solid #02ffc8ff' : '1px solid #495057',
                       transition: 'border 0.2s',
-                      // Removemos flexShrink: 0, pois o flex-wrap já lida com o layout
                     }}
                   >
                     <img
@@ -639,7 +637,7 @@ const UserProfile = () => {
                   </motion.button>
                   <motion.button
                     className="btn btn-secondary"
-                    onClick={handleToggleAvatarSelector} // Ação de cancelar fecha o seletor
+                    onClick={handleToggleAvatarSelector}
                     disabled={isSaving}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -657,7 +655,6 @@ const UserProfile = () => {
           )}
         </AnimatePresence>
 
-        {/* --- Campo: Nome Completo --- */}
         <motion.div
           className="mb-4 pb-2"
           initial={{ opacity: 0, x: -20 }}
@@ -674,7 +671,6 @@ const UserProfile = () => {
           </p>
         </motion.div>
 
-        {/* --- Campo: Email --- */}
         <motion.div
           className="mb-4 pb-2"
           initial={{ opacity: 0, x: -20 }}
@@ -691,7 +687,6 @@ const UserProfile = () => {
           </p>
         </motion.div>
 
-        {/* --- Campo: Celular (Editável) --- */}
         <motion.div
           className="mb-4 pb-2"
           initial={{ opacity: 0, x: -20 }}
@@ -740,7 +735,6 @@ const UserProfile = () => {
           </div>
         </motion.div>
 
-        {/* --- Campo: Apelido (Editável) --- */}
         <motion.div
           className="mb-5 pb-2"
           initial={{ opacity: 0, x: -20 }}
@@ -773,7 +767,6 @@ const UserProfile = () => {
           </div>
         </motion.div>
 
-        {/* --- Botões de Ação do Perfil (Salvar/Cancelar) --- */}
         {isEditing && (
           <div className="d-flex justify-content-end pt-3" style={{ borderTop: '1px solid #3A414A' }}>
             <motion.button
@@ -820,76 +813,128 @@ const UserProfile = () => {
       </div>
 
       <div className="mt-5">
-        <h2 className="text-center mb-4" style={{ color: '#17a2b8' }}>
+        <h2 className="text-center mb-4" style={{ color: '#02ffc8ff' }}>
           Salas Criadas por Você
         </h2>
 
         {userRooms.length === 0 ? (
-          <div className="text-center p-4" style={{
-            backgroundColor: '#2C3136',
-            borderRadius: '8px',
-            color: '#A9B0B7'
-          }}>
-            <p className="mb-0">Você ainda não criou nenhuma sala. Comece agora!</p>
-          </div>
+          <motion.div
+            className="text-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            style={{
+              backgroundColor: '#2C3136',
+              borderRadius: '8px',
+              color: '#A9B0B7',
+              border: '1px dashed #3A414A'
+            }}
+          >
+            <p className="mb-0">Você ainda não criou nenhuma sala. Comece agora! 🚀</p>
+          </motion.div>
         ) : (
           <div className="d-grid gap-3">
             {userRooms.map((room, index) => (
               <motion.div
                 key={room.id}
-                className="p-3 d-flex align-items-center"
+                className="p-3 d-flex align-items-center room-item-link"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
                 whileHover={{ scale: 1.02, boxShadow: '0 4px 15px rgba(2, 255, 200, 0.2)' }}
                 style={{
-                  backgroundColor: '#2C3136', // Fundo sutil do card
-                  borderRadius: '8px',
-                  borderLeft: '4px solid #02ffc8ff', // Destaque na lateral
-                  boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+                  backgroundColor: '#2C3136',
+                  borderRadius: '12px',
+                  borderLeft: '6px solid #02ffc8ff',
+                  boxShadow: '0 4px 10px rgba(0, 0, 0, 0.4)',
                   color: '#E9EDEF',
                   transition: 'all 0.3s ease',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
                 }}
               >
-                {/* --- 1. Nome da Sala (Expansível) --- */}
-                <div className="flex-grow-1">
-                  <h5 className="mb-0 fw-bold" style={{ color: '#FFFFFF' }}>
-                    {room.name || `Sala ${room.id}`}
-                  </h5>
-                </div>
-
-                {/* --- 2. Participantes (Badge Moderno) --- */}
-                <div
-                  className="d-flex align-items-center me-4"
-                  title="Número de participantes"
-                  style={{ color: '#A9B0B7' }}
+                <Link
+                  to={`/room/${room.id}`}
+                  className="text-decoration-none flex-grow-1"
+                  style={{ color: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                  title={`Voltar para a sala: ${room.name || room.id}`}
                 >
-                  <span style={{
-                    backgroundColor: 'rgba(2, 255, 200, 0.2)', // Fundo transparente ciano
-                    color: '#02ffc8ff', // Texto ciano
-                    borderRadius: '4px',
-                    padding: '4px 8px',
-                    fontSize: '0.85rem',
-                    fontWeight: 'bold'
-                  }}>
-                    {/* Ícone de Pessoas (se você tiver o faUsers) */}
-                    {/* <FontAwesomeIcon icon={faUsers} className="me-2" /> */}
-                    {Object.keys(room.participants || {}).length} Participantes
-                  </span>
-                </div>
+                  <div className="flex-grow-1 me-3">
+                    <div className="d-flex align-items-center mb-1">
+                      <FontAwesomeIcon
+                        icon={faDoorOpen}
+                        className="me-2"
+                        style={{ color: '#02ffc8ff', fontSize: '1.2rem', flexShrink: 0 }}
+                        title="Tipo: Sala de Chat"
+                      />
+                      <h5
+                        className="mb-0 fw-bold text-truncate"
+                        style={{ color: '#FFFFFF', flexGrow: 1, minWidth: 0 }}
+                      >
+                        {room.name || `Sala ${room.id}`}
+                      </h5>
+                    </div>
+                    {room.name && (
+                      <p
+                        className="mb-0 text-truncate"
+                        style={{
+                          color: '#A9B0B7',
+                          fontSize: '0.85rem',
+                          marginLeft: '28px',
+                          opacity: 0.8
+                        }}
+                      >
+                        ID: {room.id}
+                      </p>
+                    )}
+                  </div>
 
-                {/* --- 3. Botão de Excluir (Destaque e Segurança) --- */}
+                  <div className="d-flex align-items-center">
+                    <div
+                      className="d-flex align-items-center me-3 p-1 rounded"
+                      title="Número de participantes"
+                      style={{
+                        color: '#02ffc8ff',
+                        backgroundColor: 'rgba(2, 255, 200, 0.1)',
+                        border: '1px solid rgba(2, 255, 200, 0.2)'
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faUsers} className="me-2" style={{ fontSize: '0.9rem' }} />
+                      <span style={{
+                        fontSize: '0.9rem',
+                        fontWeight: '500'
+                      }}>
+                        {Object.keys(room.participants || {}).length} Participante(s)
+                      </span>
+                    </div>
+
+                    <motion.div
+                      whileHover={{ scale: 1.15 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="p-2 rounded-circle"
+                      style={{
+                        backgroundColor: '#02ffc8ff',
+                        flexShrink: 0
+                      }}
+                      title="Entrar na Sala"
+                    >
+                      <FontAwesomeIcon icon={faArrowRight} style={{ color: '#1E2328', fontSize: '1.1rem', fontWeight: 'bold' }} />
+                    </motion.div>
+                  </div>
+                </Link>
+
                 <motion.div
-                  className="p-2 rounded-circle"
-                  whileHover={{ scale: 1.15, backgroundColor: 'rgba(220, 53, 69, 0.15)' }} // Destaque vermelho sutil no hover
+                  className="p-2 rounded-circle ms-3" 
+                  whileHover={{ scale: 1.15, backgroundColor: 'rgba(220, 53, 69, 0.2)' }} 
                   whileTap={{ scale: 0.9 }}
                   onClick={() => handleDeleteRoom(room.id)}
                   title="Excluir Sala"
-                  style={{ cursor: "pointer" }}
+                  style={{ cursor: "pointer", flexShrink: 0, transition: 'all 0.3s ease' }}
                 >
                   <FontAwesomeIcon
                     icon={faTrash}
-                    className="text-danger" // Mantemos o ícone vermelho para indicar perigo
+                    className="text-danger"
+                    style={{ fontSize: '1.2rem' }}
                   />
                 </motion.div>
               </motion.div>
