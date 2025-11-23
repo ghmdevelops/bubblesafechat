@@ -30,8 +30,6 @@ import {
   faEllipsisVertical,
   faUsers,
   faDoorOpen,
-  faShareNodes,
-  faInfoCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { motion, AnimatePresence } from 'framer-motion';
 import { EmailAuthProvider } from "firebase/auth";
@@ -52,6 +50,10 @@ const UserProfile = ({ handleShareRoom }) => {
   const [loading, setLoading] = useState(true);
   const [showAvatarSelector, setShowAvatarSelector] = useState(false);
   const [openMenuId, setOpenMenuId] = useState(null);
+
+  const [isEditingCelular, setIsEditingCelular] = useState(false);
+  const [isEditingApelido, setIsEditingApelido] = useState(false);
+
 
   const toggleMenu = (roomId) => {
     setOpenMenuId(openMenuId === roomId ? null : roomId);
@@ -198,6 +200,24 @@ const UserProfile = ({ handleShareRoom }) => {
     setSelectedAvatar(avatar);
     if (saveAvatarRef.current) {
       saveAvatarRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const handleSaveCelular = async () => {
+    try {
+      console.log("Celular salvo:", editedCelular);
+      setIsEditingCelular(false);
+    } catch (error) {
+      console.error("Erro ao salvar o celular:", error);
+    }
+  };
+
+  const handleSaveApelido = async () => {
+    try {
+      console.log("Apelido salvo:", editedApelido);
+      setIsEditingApelido(false);
+    } catch (error) {
+      console.error("Erro ao salvar o apelido:", error);
     }
   };
 
@@ -414,14 +434,6 @@ const UserProfile = ({ handleShareRoom }) => {
         "error"
       );
       return false;
-    }
-  };
-
-  const handleEditProfile = () => {
-    if (userData) {
-      setEditedCelular(userData.celular);
-      setEditedApelido(userData.apelido);
-      setIsEditing(true);
     }
   };
 
@@ -706,7 +718,8 @@ const UserProfile = ({ handleShareRoom }) => {
               <FontAwesomeIcon icon={faPhone} className="me-2 text-info" />
               Celular
             </span>
-            {!isEditing && (
+
+            {!isEditingCelular && (
               <FontAwesomeIcon
                 icon={faEdit}
                 className="edit-icon p-1 rounded-circle"
@@ -715,13 +728,17 @@ const UserProfile = ({ handleShareRoom }) => {
                   color: "#02ffc8ff",
                   backgroundColor: 'rgba(2, 255, 200, 0.1)'
                 }}
-                onClick={handleEditProfile}
-                title="Editar Celular e Apelido"
+                onClick={() => {
+                  setEditedCelular(userData.celular || '');
+                  setIsEditingCelular(true);
+                }}
+                title="Editar Celular"
               />
             )}
           </h6>
+
           <div className="mt-2">
-            {isEditing ? (
+            {isEditingCelular ? (
               <input
                 type="text"
                 className="form-control"
@@ -740,6 +757,25 @@ const UserProfile = ({ handleShareRoom }) => {
               </p>
             )}
           </div>
+
+          {isEditingCelular && (
+            <div className="d-flex justify-content-end mt-3">
+              <button
+                className="btn btn-sm me-2"
+                onClick={() => setIsEditingCelular(false)}
+                style={{ backgroundColor: '#495057', color: '#FFFFFF' }}
+              >
+                Cancelar
+              </button>
+              <button
+                className="btn btn-sm"
+                onClick={handleSaveCelular}
+                style={{ backgroundColor: '#02ffc8ff', color: '#1B242B' }}
+              >
+                Salvar
+              </button>
+            </div>
+          )}
         </motion.div>
 
         <motion.div
@@ -747,13 +783,34 @@ const UserProfile = ({ handleShareRoom }) => {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.4, delay: 0.5 }}
+          style={{ borderBottom: isEditingApelido ? 'none' : '1px solid #3A414A' }}
         >
-          <h6 className="text-uppercase mb-1" style={{ fontSize: '0.8rem', color: '#A9B0B7' }}>
-            <FontAwesomeIcon icon={faLock} className="me-2 text-info" />
-            Apelido
+          <h6 className="text-uppercase d-flex justify-content-between align-items-center mb-1" style={{ fontSize: '0.8rem', color: '#A9B0B7' }}>
+            <span>
+              <FontAwesomeIcon icon={faLock} className="me-2 text-info" />
+              Apelido
+            </span>
+
+            {!isEditingApelido && (
+              <FontAwesomeIcon
+                icon={faEdit}
+                className="edit-icon p-1 rounded-circle"
+                style={{
+                  cursor: "pointer",
+                  color: "#02ffc8ff",
+                  backgroundColor: 'rgba(2, 255, 200, 0.1)'
+                }}
+                onClick={() => {
+                  setEditedApelido(userData.apelido || '');
+                  setIsEditingApelido(true);
+                }}
+                title="Editar Apelido"
+              />
+            )}
           </h6>
+
           <div className="mt-2">
-            {isEditing ? (
+            {isEditingApelido ? (
               <input
                 type="text"
                 className="form-control"
@@ -768,10 +825,29 @@ const UserProfile = ({ handleShareRoom }) => {
               />
             ) : (
               <p className="lead fw-bold" style={{ fontSize: '1.1rem', color: '#FFFFFF' }}>
-                {userData.apelido}
+                {userData.apelido || 'Não fornecido'}
               </p>
             )}
           </div>
+
+          {isEditingApelido && (
+            <div className="d-flex justify-content-end mt-3">
+              <button
+                className="btn btn-sm me-2"
+                onClick={() => setIsEditingApelido(false)} // Função Cancelar Apelido
+                style={{ backgroundColor: '#495057', color: '#FFFFFF' }}
+              >
+                Cancelar
+              </button>
+              <button
+                className="btn btn-sm"
+                onClick={handleSaveApelido}
+                style={{ backgroundColor: '#02ffc8ff', color: '#1B242B' }}
+              >
+                Salvar
+              </button>
+            </div>
+          )}
         </motion.div>
 
         {isEditing && (

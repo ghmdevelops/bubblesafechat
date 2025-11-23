@@ -550,7 +550,6 @@ h3 {
 }
 
 .reply-preview {
-  z-index: 1051 !important;
   position: relative;
   background-color: #383e47;
   border-left: 4px solid #02ffc8ff;

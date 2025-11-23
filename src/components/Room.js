@@ -9,6 +9,7 @@ import Swal from "sweetalert2";
 import "@sweetalert2/theme-dark/dark.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCheckDouble } from '@fortawesome/free-solid-svg-icons';
 import { faSmile as faSmileRegular } from '@fortawesome/free-regular-svg-icons';
 import {
   faEllipsis,
@@ -2491,6 +2492,29 @@ const Room = () => {
     visible: { x: 0, opacity: 1 },
   };
 
+  const computeSecurityLevel = () => {
+    try {
+      let score = 100; 
+
+      if (isDestructionActive) score += 20;
+
+      const protectedMessages = Array.isArray(messages)
+        ? messages.filter((m) => m.requiresPassword).length
+        : 0;
+      score += Math.min(20, protectedMessages * 5);
+
+      if (Array.isArray(allUsers) && allUsers.length > 10) score -= 10;
+      if (Array.isArray(pendingRequests) && pendingRequests.length > 3) score -= 10;
+      if (score >= 70) return { level: "Alto", color: "#28a745", score };
+      if (score >= 45) return { level: "Médio", color: "#ffc107", score };
+      return { level: "Baixo", color: "#dc3545", score };
+    } catch (e) {
+      return { level: "Desconhecido", color: "#6c757d", score: 0 };
+    }
+  };
+
+  const security = computeSecurityLevel();
+
   return (
     <div>
       <Joyride
@@ -2540,10 +2564,10 @@ const Room = () => {
               className="d-flex align-items-center"
               style={{
                 margin: '10px 0 15px 0',
-                fontSize: '1.4rem', // Tamanho moderno e legível
-                color: '#e9edef', // Texto principal (Sala) em cinza claro
-                fontWeight: '600', // Semibold
-                padding: '0 10px', // Adicionar um pequeno padding horizontal
+                fontSize: '1.4rem', 
+                color: '#e9edef', 
+                fontWeight: '600', 
+                padding: '0 10px', 
               }}
             >
               <FontAwesomeIcon
@@ -2556,9 +2580,27 @@ const Room = () => {
                   color: '#02ffc8ff',
                   fontWeight: '700',
                   marginLeft: '8px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px'
                 }}
               >
-                {roomName}
+                <span>{roomName}</span>
+                {security && (
+                  <span
+                    title={`Segurança: ${security.level} (${security.score})`}
+                    style={{
+                      background: security.color,
+                      color: '#fff',
+                      padding: '2px 8px',
+                      borderRadius: '12px',
+                      fontSize: '0.75rem',
+                      fontWeight: '700'
+                    }}
+                  >
+                    {security.level}
+                  </span>
+                )}
               </span>
             </h1>
 
@@ -2668,6 +2710,7 @@ const Room = () => {
                                 <FontAwesomeIcon icon={faTrash} className="me-2 text-danger" /> Excluir Chat
                               </button>
                             </li>
+                            
                           </motion.div>
                         )}
                       </AnimatePresence>
@@ -3072,7 +3115,6 @@ const Room = () => {
                     className="reply-preview mt-2"
                     style={{
                       ...replyPreviewStyles,
-                      zIndex: 10,
                       marginBottom: '5px',
                       backgroundColor: 'rgba(2, 255, 200, 0.1)',
                       padding: '8px',
@@ -3082,7 +3124,7 @@ const Room = () => {
                     }}
                   >
                     <strong style={{ fontSize: '0.8rem', color: '#02ffc8ff' }}>
-                      Respondendo a {msg.replyTo.user}:
+                      Respondendo a {msg.replyTo.user}
                     </strong>{" "}
                     <span style={{
                       color: '#E9EDEF',
@@ -3267,9 +3309,16 @@ const Room = () => {
                   </div>
 
                   <div className="status-reactions d-flex align-items-center">
-                    {msg.readBy && (
-                      <div className="sub-textMsg me-2">
-                        <small style={{ color: '#999', fontSize: '10px' }}>lido por: {msg.readBy.join(", ")}</small>
+                    {msg.readBy && msg.readBy.length > 0 && (
+                      <div className="msg-status me-2" style={{ lineHeight: '1' }}>
+                        <FontAwesomeIcon
+                          icon={faCheckDouble}
+                          style={{
+                            fontSize: '10px',
+                            color: '#02ffc8ff',
+                          }}
+                          title={`Lido por: ${msg.readBy.join(", ")}`}
+                        />
                       </div>
                     )}
 
