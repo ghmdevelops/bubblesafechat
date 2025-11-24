@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { auth } from "../firebaseConfig";
 import { Helmet } from "react-helmet";
-import { signInAnonymously } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import {
   GoogleAuthProvider,
@@ -471,25 +470,6 @@ const Login = () => {
     }
   };
 
-  async function loginWithBiometric() {
-    try {
-      const publicKey = {
-        challenge: new Uint8Array(32),
-        allowCredentials: [],
-        timeout: 60000,
-        userVerification: "required"
-      };
-
-      await navigator.credentials.get({ publicKey });
-      await signInAnonymously(auth);
-
-      alert("Autenticado com biometria!");
-    } catch (e) {
-      console.error(e);
-      alert("Falha na biometria");
-    }
-  }
-
   return (
     <div className="auth-container">
       <Helmet>
@@ -595,10 +575,6 @@ const Login = () => {
                 Accessing Room
               </>
             )}
-          </button>
-
-          <button onClick={loginWithBiometric} className="btn btn-dark w-100 mt-2">
-            🔐 Login with Biometric
           </button>
 
           <p className="text-white-50 mt-2 mb-1" style={{ fontSize: '0.9rem', fontWeight: '300' }}>
