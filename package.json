@@ -19,7 +19,7 @@
     "bootstrap": "^5.3.3",
     "chart.js": "^4.5.1",
     "crypto-js": "^4.2.0",
-    "firebase": "^10.14.0",
+    "firebase": "^12.6.0",
     "firebase-admin": "^12.6.0",
     "firebase-functions": "^6.0.1",
     "framer-motion": "^11.18.2",

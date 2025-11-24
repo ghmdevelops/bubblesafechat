@@ -228,12 +228,35 @@ const Room = () => {
   };
 
   const avatars = [
-    "https://i.pravatar.cc/150?img=1",
-    "https://i.pravatar.cc/150?img=3",
-    "https://i.pravatar.cc/150?img=5",
-    "https://i.pravatar.cc/150?img=6",
-    "https://i.pravatar.cc/150?img=7",
-    "https://i.pravatar.cc/150?img=8",
+    "https://www.gravatar.com/avatar/a?d=identicon&s=150",
+    "https://emojicdn.elk.sh/👍",
+    "https://emojicdn.elk.sh/💡",
+
+    "https://i.pravatar.cc/150?img=19",
+    "https://i.pravatar.cc/150?img=20",
+    "https://i.pravatar.cc/150?img=21",
+    "https://i.pravatar.cc/150?img=22",
+    "https://i.pravatar.cc/150?img=23",
+    "https://i.pravatar.cc/150?img=24",
+    "https://i.pravatar.cc/150?img=25",
+    "https://i.pravatar.cc/150?img=26",
+
+    "https://www.gravatar.com/avatar/k?d=identicon&s=150",
+    "https://www.gravatar.com/avatar/m?d=retro&s=150",
+    "https://www.gravatar.com/avatar/p?d=wavatar&s=150",
+    "https://www.gravatar.com/avatar/r?d=monsterid&s=150",
+
+    "https://emojicdn.elk.sh/👑",
+    "https://emojicdn.elk.sh/💸",
+    "https://emojicdn.elk.sh/🔥",
+    "https://emojicdn.elk.sh/💯",
+    "https://emojicdn.elk.sh/⭐",
+    "https://emojicdn.elk.sh/🎨",
+    "https://emojicdn.elk.sh/🔑",
+    "https://emojicdn.elk.sh/⚙️",
+    "https://emojicdn.elk.sh/👽",
+    "https://emojicdn.elk.sh/🦄",
+    "https://emojicdn.elk.sh/🍕"
   ];
 
   const promptPasswordAndDisplayMessage = (msg) => {
@@ -1626,11 +1649,30 @@ const Room = () => {
         setTimeout(() => {
           navigate("/");
         }, 100);
+        setUserName("");
         Swal.fire({
-          title: "Sucesso!",
-          text: "Sala e arquivos e mensagens excluídos com sucesso!",
+          title: "Sala excluída com Sucesso!",
           icon: "success",
-          confirmButtonText: "Ok",
+          html: "Obrigado por usar nossos serviços! Fechando em <b style='color: #02ffc8ff;'></b> segundos...",
+          timer: 3000,
+          timerProgressBar: true,
+          didOpen: () => {
+            const timerElement = Swal.getPopup().querySelector("b");
+            const interval = 1000;
+            const updateTimer = () => {
+              const timeLeftInSeconds = Math.ceil(Swal.getTimerLeft() / 1000);
+              timerElement.textContent = Math.max(0, timeLeftInSeconds);
+            };
+            updateTimer();
+
+            const timerInterval = setInterval(updateTimer, interval);
+            Swal.stopTimer = () => clearInterval(timerInterval);
+          },
+          willClose: () => {
+            if (Swal.stopTimer) {
+              Swal.stopTimer();
+            }
+          },
         });
       });
     } catch (error) {
@@ -1877,17 +1919,14 @@ const Room = () => {
   let progressInterval = null;
 
   const updateProgress = (audio, messageId) => {
-    // Limpa qualquer intervalo anterior
     if (progressInterval) {
       clearInterval(progressInterval);
     }
 
-    // Inicia um novo intervalo para atualizar a cada 100ms
     progressInterval = setInterval(() => {
       if (audio.duration) {
         const percentage = (audio.currentTime / audio.duration) * 100;
 
-        // Atualiza o estado do progresso apenas para a mensagem atual
         setAudioProgress(prev => ({
           ...prev,
           [messageId]: percentage
@@ -1900,13 +1939,13 @@ const Room = () => {
     if (currentAudio && currentAudio.src === audioUrl && currentAudio.currentTime > 0) {
       currentAudio.play();
       setPlayingAudioId(messageId);
-      updateProgress(currentAudio, messageId); // **REINICIA O PROGRESSO**
+      updateProgress(currentAudio, messageId);
       return;
     }
 
     if (currentAudio) {
       currentAudio.pause();
-      if (progressInterval) clearInterval(progressInterval); // Limpa o anterior
+      if (progressInterval) clearInterval(progressInterval);
     }
 
     const audio = new Audio(audioUrl);
@@ -1915,7 +1954,7 @@ const Room = () => {
       audio.currentTime = 0;
       setPlayingAudioId(null);
       setCurrentAudio(null);
-      setAudioProgress(prev => ({ // Reseta o progresso visual
+      setAudioProgress(prev => ({
         ...prev,
         [messageId]: 0
       }));
@@ -1925,7 +1964,7 @@ const Room = () => {
     audio.play();
     setPlayingAudioId(messageId);
     setCurrentAudio(audio);
-    updateProgress(audio, messageId); // **INICIA O PROGRESSO**
+    updateProgress(audio, messageId);
   };
 
   const pauseAudio = () => {
@@ -1947,7 +1986,6 @@ const Room = () => {
   const showShareModal = () => {
     const contentString = `
     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px;">
-      
       <button id="copyLink" style="
         background: linear-gradient(135deg, #17a2b8, #138496); 
         color: white; 
@@ -2055,9 +2093,8 @@ const Room = () => {
           closeButton.onmouseout = () => closeButton.style.color = '#E9EDEF';
         }
 
-        // Lógica de Eventos (Permanece a mesma, só ajustei o Swal.close() do sucesso)
         document.getElementById("copyLink").addEventListener("click", () => {
-          Swal.close(); // Fecha o modal de compartilhamento antes de mostrar o toast
+          Swal.close();
           navigator.clipboard
             .writeText(shareLink2)
             .then(() => {
@@ -2080,7 +2117,7 @@ const Room = () => {
 
         document.getElementById("emailLink").addEventListener("click", () => {
           window.open(
-            `mailto:?subject=Compartilhe este link&body=Confira este link do chat: ${shareLink2}`,
+            `mailto:?subject=Compartilhe este link&body=Confira este link do chat: ${shareLink}`,
             "_blank",
             "noopener,noreferrer"
           );
@@ -2091,7 +2128,7 @@ const Room = () => {
           .getElementById("whatsappLink")
           .addEventListener("click", () => {
             window.open(
-              `https://api.whatsapp.com/send?text=Confira este link do chat: ${shareLink2}`,
+              `https://api.whatsapp.com/send?text=Confira este link do chat: ${shareLink}`,
               "_blank",
               "noopener,noreferrer"
             );
@@ -2102,7 +2139,7 @@ const Room = () => {
           .getElementById("telegramLink")
           .addEventListener("click", () => {
             window.open(
-              `https://t.me/share/url?url=${shareLink2}&text=Confira este link do chat:`,
+              `https://t.me/share/url?url=${shareLink}&text=Confira este link do chat:`,
               "_blank",
               "noopener,noreferrer"
             );
@@ -2494,7 +2531,7 @@ const Room = () => {
 
   const computeSecurityLevel = () => {
     try {
-      let score = 100; 
+      let score = 100;
 
       if (isDestructionActive) score += 20;
 
@@ -2564,10 +2601,10 @@ const Room = () => {
               className="d-flex align-items-center"
               style={{
                 margin: '10px 0 15px 0',
-                fontSize: '1.4rem', 
-                color: '#e9edef', 
-                fontWeight: '600', 
-                padding: '0 10px', 
+                fontSize: '1.4rem',
+                color: '#e9edef',
+                fontWeight: '600',
+                padding: '0 10px',
               }}
             >
               <FontAwesomeIcon
@@ -2710,7 +2747,7 @@ const Room = () => {
                                 <FontAwesomeIcon icon={faTrash} className="me-2 text-danger" /> Excluir Chat
                               </button>
                             </li>
-                            
+
                           </motion.div>
                         )}
                       </AnimatePresence>
@@ -2720,7 +2757,7 @@ const Room = () => {
               ) : (
                 <li className="nav-item exitchatsd">
                   <button className="dropdown-item" onClick={leaveRoom}>
-                    <FontAwesomeIcon icon={faSignOutAlt} className="me-2" /> Sair do Chat
+                    <FontAwesomeIcon icon={faSignOutAlt} className="me-2" />
                   </button>
                 </li>
               )}
@@ -3923,47 +3960,88 @@ const Room = () => {
           className="modal show d-block"
           tabIndex="-1"
           role="dialog"
-          style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+          style={{ backgroundColor: "rgba(0, 0, 0, 0.7)" }}
         >
-          <div className="modal-dialog modal-lg" role="document">
-            <div className="modal-content bg-dark">
-              <div className="modal-header">
-                <h5 className="modal-title">Escolha seu Avatar</h5>
+          <div className="modal-dialog modal-md modal-dialog-centered" role="document">
+            <div
+              className="modal-content"
+              style={{
+                backgroundColor: '#1E2328',
+                borderRadius: '12px',
+                border: '1px solid #3A414A',
+                boxShadow: '0 5px 15px rgba(0, 0, 0, 0.5)'
+              }}
+            >
+              <div className="modal-header border-0 pb-0">
+                <h5 className="modal-title fw-bold" style={{ color: '#02ffc8ff' }}>
+                  Escolha seu Avatar 🎨
+                </h5>
                 <button
                   type="button"
-                  className="btn-close text-bg-light"
+                  className="btn-close"
                   aria-label="Close"
                   onClick={() => setShowAvatarModal(false)}
+                  style={{ filter: 'invert(1)', opacity: 0.8 }}
                 ></button>
               </div>
-              <div className="modal-body">
+              {/* APLICANDO SCROLLBAR AQUI */}
+              <div
+                className="modal-body pt-3"
+                style={{
+                  maxHeight: '70vh', // Limita a altura do corpo a 70% da altura da viewport
+                  overflowY: 'auto', // Adiciona a barra de rolagem vertical se o conteúdo exceder maxHeight
+                }}
+              >
                 <div className="d-flex flex-wrap justify-content-center">
                   {avatars.map((avatarUrl, index) => (
                     <img
                       key={index}
                       src={avatarUrl}
                       alt={`Avatar ${index + 1}`}
-                      className={`avatar-option ${selectedAvatar === avatarUrl ? "selected" : ""
-                        }`}
+                      className={`avatar-option`}
                       onClick={() => setSelectedAvatar(avatarUrl)}
                       style={{
-                        width: "80px",
-                        height: "80px",
+                        width: "75px",
+                        height: "75px",
                         borderRadius: "50%",
-                        margin: "10px",
+                        margin: "8px",
                         cursor: "pointer",
+                        transition: 'all 0.2s ease-in-out',
                         border:
                           selectedAvatar === avatarUrl
-                            ? "3px solid #007bff"
-                            : "2px solid #ccc",
+                            ? "4px solid #02ffc8ff"
+                            : "2px solid #3A414A",
+                        boxShadow:
+                          selectedAvatar === avatarUrl
+                            ? '0 0 10px #02ffc8ff, 0 0 5px rgba(2, 255, 200, 0.5)'
+                            : 'none',
+                        transform: selectedAvatar === avatarUrl ? 'scale(1.1)' : 'scale(1)',
+                      }}
+                      onMouseEnter={(e) => {
+                        if (selectedAvatar !== avatarUrl) {
+                          e.currentTarget.style.border = '2px solid #A9B0B7';
+                          e.currentTarget.style.transform = 'scale(1.05)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (selectedAvatar !== avatarUrl) {
+                          e.currentTarget.style.border = '2px solid #3A414A';
+                          e.currentTarget.style.transform = 'scale(1)';
+                        }
                       }}
                     />
                   ))}
                 </div>
               </div>
-              <div className="modal-footer">
+              <div className="modal-footer border-0 pt-0">
                 <button
-                  className="btn btn-primary"
+                  className="btn w-100 fw-bold"
+                  style={{
+                    backgroundColor: '#02ffc8ff',
+                    color: '#1E2328',
+                    borderRadius: '6px',
+                    border: 'none'
+                  }}
                   onClick={() => {
                     if (selectedAvatar) {
                       finalizeAccess();

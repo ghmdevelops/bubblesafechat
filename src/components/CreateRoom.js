@@ -478,7 +478,42 @@ const CreateRoom = () => {
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
-  
+
+  const createRoomSpeed = async () => {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      setLoading(true);
+      const encryptionKey = generateEncryptionKey();
+      sessionStorage.setItem("encryptionKey", encryptionKey);
+
+      const automaticName = "Private Room " + Math.floor(Math.random() * 9999);
+      const automaticNick = "Anônimo";
+
+      const randomAvatar = `https://api.dicebear.com/6.x/bottts/svg?seed=${Math.floor(Math.random() * 9999999)}`;
+
+      try {
+        const roomsRef = dbRef(database, "rooms");
+        const newRoomRef = push(roomsRef);
+
+        await set(newRoomRef, {
+          name: automaticName,
+          createdAt: new Date().toISOString(),
+          creator: currentUser.uid,
+          creatorName: automaticNick,
+          encryptionKey: encryptionKey,
+          avatar: randomAvatar
+        });
+
+        navigate(`/room/${newRoomRef.key}`);
+      } catch (error) {
+        Swal.fire("Erro", "Não foi possível criar a sala rápida.", "error");
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      navigate("/login");
+    }
+  };
 
   return (
     <div className="auth-container">
@@ -637,14 +672,14 @@ const CreateRoom = () => {
                 initial={{ opacity: 0, y: -15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-               style={{
-      background: 'linear-gradient(90deg, #17a2b8, #F5F5F5, #17a2b8)',
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent',
-      fontSize: '0.9rem',
-      textAlign: 'center',
-      marginBottom: '10px'
-    }}
+                style={{
+                  background: 'linear-gradient(90deg, #17a2b8, #F5F5F5, #17a2b8)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  fontSize: '0.9rem',
+                  textAlign: 'center',
+                  marginBottom: '10px',
+                }}
               >
                 Escolha um nome criativo para sua jornada
               </motion.span>
@@ -716,6 +751,32 @@ const CreateRoom = () => {
                   </motion.button>
                 )}
               </div>
+              <button
+                onClick={createRoomSpeed}
+                className="btn w-100 mt-1 fw-bold" // Removido btn-success para aplicar cor customizada
+                style={{
+                  fontSize: "1.1rem",
+                  padding: '12px 20px',
+                  borderRadius: '8px', // Bordas levemente arredondadas
+                  backgroundColor: '#02ffc8ff', // Cor de destaque
+                  color: '#1E2328', // Texto escuro
+                  border: 'none',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 4px 15px rgba(2, 255, 200, 0.4)', // Sombra para destaque
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#00e6b8'; // Cor mais suave no hover
+                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(2, 255, 200, 0.6)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#02ffc8ff';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(2, 255, 200, 0.4)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                🚀 Flash Match
+              </button>
             </label>
           </motion.div>
         ) : (
@@ -796,13 +857,13 @@ const CreateRoom = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.4 }}
                   style={{
-      background: 'linear-gradient(90deg, #17a2b8, #F5F5F5, #17a2b8)',
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent',
-      fontSize: '0.9rem',
-      textAlign: 'center',
-      marginBottom: '10px'
-    }}
+                    background: 'linear-gradient(90deg, #17a2b8, #F5F5F5, #17a2b8)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    fontSize: '0.9rem',
+                    textAlign: 'center',
+                    marginBottom: '10px'
+                  }}
                 >
                   Nomeie sua sala de forma única e criativa
                 </motion.span>
