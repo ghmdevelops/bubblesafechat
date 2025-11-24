@@ -375,7 +375,6 @@ const Room = () => {
           const attemptsLeft = 3 - attemptCount;
 
           if (attemptCount >= 3) {
-            // ⭐ Cenário 3: Bloqueio e Exclusão (3 Tentativas) ⭐
             const messageRef = database.ref(
               `rooms/${roomId}/messages/${msg.id}`
             );
@@ -1516,7 +1515,7 @@ const Room = () => {
         newMessage.replyTo = {
           id: replyingTo.id,
           user: replyingTo.user,
-          text: replyingTo.text,
+          text: replyingTo.text ?? '',
         };
       }
 
@@ -2051,12 +2050,12 @@ const Room = () => {
         box-shadow: 0 4px 10px rgba(0, 136, 204, 0.4);
         transition: all 0.2s ease;
         display: flex; flex-direction: column; align-items: center; justify-content: center;
-        min-height: 90px;
+        min-height: 9n0px;
         font-size: 0.9rem;
       " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 15px rgba(0, 136, 204, 0.6)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 10px rgba(0, 136, 204, 0.4)';">
         <i class="fab fa-telegram-plane fa-2x"></i>
         <span style="margin-top: 8px;">Telegram</span>
-      </button>
+      </button> 
     </div>
   `;
 
@@ -3024,7 +3023,6 @@ const Room = () => {
                   const attemptsLeft = maxAttempts - attemptCount;
 
                   if (attemptCount >= maxAttempts) {
-                    // ⭐ Modal de Erro Crítico (Mensagem Excluída) ⭐
                     const messageRef = database.ref(
                       `rooms/${roomId}/messages/${msg.id}`
                     );
@@ -3151,17 +3149,19 @@ const Room = () => {
                   <div
                     className="reply-preview mt-2"
                     style={{
-                      ...replyPreviewStyles,
                       marginBottom: '5px',
                       backgroundColor: 'rgba(2, 255, 200, 0.1)',
                       padding: '8px',
                       borderRadius: '8px',
                       borderLeft: '4px solid #02ffc8ff',
-                      marginTop: '-5px'
+                      marginTop: '-5px',
                     }}
                   >
                     <strong style={{ fontSize: '0.8rem', color: '#02ffc8ff' }}>
-                      Respondendo a {msg.replyTo.user}
+                      {msg.replyTo.text
+                        ? `Respondendo a ${msg.replyTo.user}`
+                        : `Respondendo à mensagem de áudio de ${msg.replyTo.user}`
+                      }
                     </strong>{" "}
                     <span style={{
                       color: '#E9EDEF',
@@ -3169,9 +3169,12 @@ const Room = () => {
                       maxHeight: '30px',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
-                      fontSize: '0.9rem'
+                      fontSize: '0.9rem',
                     }}>
-                      {msg.replyTo.text ? decryptMessage(msg.replyTo.text) : "Mensagem Original"}
+                      {msg.replyTo.text
+                        ? decryptMessage(msg.replyTo.text)
+                        : "Tocar para ouvir"
+                      }
                     </span>
                   </div>
                 )}
@@ -3184,7 +3187,7 @@ const Room = () => {
                     marginBottom: "8px",
                     color: "#e9edef",
                     wordWrap: 'break-word',
-                    whiteSpace: 'pre-wrap'
+                    whiteSpace: 'pre-wrap',
                   }}
                 >
                   {msg.requiresPassword ? (
